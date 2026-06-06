@@ -141,6 +141,16 @@ function coinMarkup() {
   return `<span class="coin-symbol" aria-label="coins"></span>`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
+
 function card(product) {
   return `
     <article class="product-card">
@@ -317,10 +327,12 @@ function renderAdmin() {
   const counts = adminDashboard.counts;
   const upi = adminDashboard.integrations.payments.upi || {};
   const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
+  const joinApplications = adminDashboard.joinApplications || [];
   els.adminGrid.innerHTML = `
     <article><strong>Product Review</strong><span>${counts.sellRequests} sell requests in system</span></article>
     <article><strong>Inventory</strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
     <article><strong>Orders</strong><span>${counts.orders} order records</span></article>
+    <article><strong>Join Us</strong><span>${counts.joinApplications || joinApplications.length || 0} applications in system</span></article>
     <article><strong>Returns</strong><span>${counts.returns} return requests</span></article>
     <article><strong>Maintenance Mode</strong><span>Full ${adminDashboard.maintenance.full ? "on" : "off"} • paused: ${adminDashboard.maintenance.pausedFeatures.length || 0}</span></article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
@@ -341,6 +353,19 @@ function renderAdmin() {
           <div class="admin-row">
             <span>${item.id} • ${item.amount} ${coinMarkup()} • Ref: ${item.upiReference || "not entered"}</span>
             <button class="secondary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
+          </div>
+        `).join("")}
+      </div>
+    </article>
+    <article class="wide-card">
+      <strong>Join Us Applications</strong>
+      <span>${joinApplications.length ? "New applicants from the Join Us page." : "No Join Us applications yet."}</span>
+      <div class="admin-list">
+        ${joinApplications.map(item => `
+          <div class="admin-row stacked">
+            <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
+            <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
+            <span>${escapeHtml(item.experience || "No experience note entered")}</span>
           </div>
         `).join("")}
       </div>

@@ -740,6 +740,11 @@ textarea {
   background: #fbfcf8;
 }
 
+.admin-row.stacked {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
 .task-card ul {
   margin: 14px 0 0;
   padding-left: 18px;

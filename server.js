@@ -334,7 +334,8 @@ async function handleApi(req, res) {
       },
       maintenance: db.maintenance,
       integrations: db.integrations,
-      rechargeRequests: db.rechargeRequests || []
+      rechargeRequests: db.rechargeRequests || [],
+      joinApplications: db.joinApplications || []
     });
   }
 
