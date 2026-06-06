@@ -357,6 +357,32 @@ function renderAdmin() {
       </form>
     </article>
     <article class="wide-card">
+      <strong>Add Product</strong>
+      <span>Add real launch inventory after warehouse check. Product price must be in coins.</span>
+      <form class="admin-product-form" id="adminProductForm">
+        <input name="title" placeholder="Product name" required />
+        <select name="category" required>
+          ${categories.map(category => `<option value="${category.id}">${category.name}</option>`).join("")}
+        </select>
+        <select name="city" required>
+          <option>Lucknow</option>
+          <option>Ayodhya</option>
+          <option>Gonda</option>
+        </select>
+        <input name="price" type="number" min="1" step="1" placeholder="Coin price" required />
+        <select name="condition" required>
+          <option>Excellent</option>
+          <option selected>Good</option>
+          <option>Fair</option>
+          <option>Needs cleaning</option>
+          <option>Needs repair</option>
+        </select>
+        <input name="quantity" type="number" min="1" step="1" value="1" placeholder="Quantity" />
+        <input name="checks" class="span-2" placeholder="Checks, comma separated: Warehouse checked, Cleaned, Tested" />
+        <button class="primary-button" type="submit">Add Product</button>
+      </form>
+    </article>
+    <article class="wide-card">
       <strong>Pending UPI Recharges</strong>
       <span>${pendingRecharges.length ? "Verify payment in your UPI account before approving." : "No pending recharge requests."}</span>
       <div class="admin-list">
@@ -685,6 +711,37 @@ function wireEvents() {
         renderAdmin();
         renderPartnerTasks();
         alert("Admin login successful.");
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    if (event.target.id === "adminProductForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      const checks = String(form.get("checks") || "")
+        .split(",")
+        .map(check => check.trim())
+        .filter(Boolean);
+      try {
+        await api("/api/admin/products", {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({
+            title: form.get("title"),
+            category: form.get("category"),
+            city: form.get("city"),
+            price: form.get("price"),
+            condition: form.get("condition"),
+            quantity: form.get("quantity"),
+            checks: checks.length ? checks : ["Warehouse checked"],
+          }),
+        });
+        event.target.reset();
+        await loadData();
+        await loadProtectedData();
+        renderAll();
+        alert("Product added to marketplace.");
       } catch (error) {
         alert(error.message);
       }

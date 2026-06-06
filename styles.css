@@ -752,6 +752,16 @@ textarea {
   gap: 10px;
 }
 
+.admin-product-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-product-form .span-2 {
+  grid-column: span 2;
+}
+
 .admin-list {
   display: grid;
   gap: 8px;
@@ -867,8 +877,13 @@ textarea {
   }
 
   .inline-form,
+  .admin-product-form,
   .admin-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-product-form .span-2 {
+    grid-column: span 1;
   }
 
   .section-head,
