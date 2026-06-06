@@ -378,6 +378,19 @@ async function handleApi(req, res) {
     return sendJson(res, 200, { rechargeRequest });
   }
 
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "join-applications" && parts[3] && ["accept", "reject"].includes(parts[4])) {
+    if (!requireAdmin(req, res)) return;
+    const application = (db.joinApplications || []).find(item => item.id === parts[3]);
+    if (!application) return sendError(res, 404, "Join application not found");
+    if (application.status !== "submitted") return sendError(res, 400, "Join application already reviewed");
+    const accepted = parts[4] === "accept";
+    application.status = accepted ? "accepted" : "rejected";
+    application.reviewedAt = new Date().toISOString();
+    application.reviewDecision = application.status;
+    await writeDb(db);
+    return sendJson(res, 200, { application });
+  }
+
   if (method === "PATCH" && parts[1] === "admin" && parts[2] === "maintenance") {
     if (!requireAdmin(req, res)) return;
     const body = await readBody(req);

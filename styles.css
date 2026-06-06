@@ -745,6 +745,13 @@ textarea {
   align-items: start;
 }
 
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 .task-card ul {
   margin: 14px 0 0;
   padding-left: 18px;

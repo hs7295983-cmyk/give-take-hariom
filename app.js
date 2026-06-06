@@ -366,6 +366,12 @@ function renderAdmin() {
             <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
             <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
             <span>${escapeHtml(item.experience || "No experience note entered")}</span>
+            ${item.status === "submitted" ? `
+              <div class="admin-actions">
+                <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
+                <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
+              </div>
+            ` : ""}
           </div>
         `).join("")}
       </div>
@@ -535,6 +541,40 @@ function wireEvents() {
         renderWallet();
         renderAdmin();
         alert(`Approved ${data.rechargeRequest.amount} coins for ${data.rechargeRequest.userId}.`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const acceptApplication = event.target.closest("[data-accept-application]");
+    if (acceptApplication) {
+      try {
+        const data = await api(`/api/admin/join-applications/${acceptApplication.dataset.acceptApplication}/accept`, {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({}),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert(`Accepted application: ${data.application.id}`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const rejectApplication = event.target.closest("[data-reject-application]");
+    if (rejectApplication) {
+      try {
+        const data = await api(`/api/admin/join-applications/${rejectApplication.dataset.rejectApplication}/reject`, {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({}),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert(`Rejected application: ${data.application.id}`);
       } catch (error) {
         alert(error.message);
       }
