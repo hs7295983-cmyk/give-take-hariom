@@ -1,0 +1,893 @@
+{
+  "meta": {
+    "name": "GIVE & TAKE",
+    "phase": "phase-2-local-backend",
+    "coinValue": 1,
+    "coinRechargeMinimum": 50,
+    "coinRechargeStep": 50,
+    "serviceCities": [
+      "Lucknow",
+      "Ayodhya",
+      "Gonda"
+    ],
+    "checkoutCurrency": "coins-only",
+    "updatedAt": "2026-06-05T16:05:59.867Z"
+  },
+  "maintenance": {
+    "full": false,
+    "pausedFeatures": [],
+    "message": "GIVE & TAKE is under maintenance. We will be back soon.",
+    "expectedReturn": ""
+  },
+  "categories": [
+    {
+      "id": "mobiles",
+      "name": "Mobiles",
+      "text": "Phones with IMEI, lock, battery, display, and diagnostic checks."
+    },
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "text": "Laptops, tablets, headphones, speakers, and smart devices."
+    },
+    {
+      "id": "books",
+      "name": "Books",
+      "text": "Study books, course sets, exam material, and novels."
+    },
+    {
+      "id": "furniture",
+      "name": "Furniture",
+      "text": "Tables, chairs, storage, and useful home furniture."
+    },
+    {
+      "id": "fashion",
+      "name": "Clothes & Shoes",
+      "text": "Clean, verified wearable items and accessories."
+    },
+    {
+      "id": "home",
+      "name": "Home & Kitchen",
+      "text": "Useful household, kitchen, decor, and appliance items."
+    },
+    {
+      "id": "bags",
+      "name": "Bags",
+      "text": "Backpacks, handbags, luggage, and office bags."
+    },
+    {
+      "id": "toys",
+      "name": "Toys & More",
+      "text": "Toys, hobby items, bundles, and low-value useful items."
+    }
+  ],
+  "products": [
+    {
+      "id": "p1",
+      "title": "Samsung Galaxy M32",
+      "category": "mobiles",
+      "city": "Lucknow",
+      "price": 8200,
+      "condition": "Good",
+      "source": "GIVE & TAKE Verified",
+      "views": 240,
+      "sold": 18,
+      "badges": [
+        "Tested",
+        "Return Eligible"
+      ],
+      "checks": [
+        "IMEI matched",
+        "Battery normal",
+        "Minor body marks"
+      ],
+      "artA": "#bde7ff",
+      "artB": "#30586c",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 25,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p2",
+      "title": "iPhone XR 64GB",
+      "category": "mobiles",
+      "city": "Ayodhya",
+      "price": 11800,
+      "condition": "Fair",
+      "source": "Refurbished",
+      "views": 380,
+      "sold": 21,
+      "badges": [
+        "Tested",
+        "Cleaned"
+      ],
+      "checks": [
+        "Face ID working",
+        "Battery fair",
+        "Local display noted"
+      ],
+      "artA": "#f5d3cb",
+      "artB": "#6b4f64",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 24,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p3",
+      "title": "Redmi Note 11",
+      "category": "mobiles",
+      "city": "Gonda",
+      "price": 6900,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 210,
+      "sold": 15,
+      "badges": [
+        "Verified",
+        "Return Eligible"
+      ],
+      "checks": [
+        "Charger included",
+        "Camera checked",
+        "No screen crack"
+      ],
+      "artA": "#ffd28c",
+      "artB": "#be6b37",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 23,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p4",
+      "title": "Lenovo ThinkPad",
+      "category": "electronics",
+      "city": "Lucknow",
+      "price": 18500,
+      "condition": "Good",
+      "source": "GIVE & TAKE Verified",
+      "views": 510,
+      "sold": 9,
+      "badges": [
+        "Tested",
+        "Cleaned"
+      ],
+      "checks": [
+        "Keyboard working",
+        "Battery backup checked",
+        "Charger included"
+      ],
+      "artA": "#c7d2fe",
+      "artB": "#243b73",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 22,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p5",
+      "title": "Boat Bluetooth Speaker",
+      "category": "electronics",
+      "city": "Ayodhya",
+      "price": 1450,
+      "condition": "Like New",
+      "source": "Open Box",
+      "views": 150,
+      "sold": 28,
+      "badges": [
+        "Tested"
+      ],
+      "checks": [
+        "Sound checked",
+        "Charging checked",
+        "Cable included"
+      ],
+      "artA": "#c9f7e1",
+      "artB": "#256b52",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 21,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p6",
+      "title": "Sony Headphones",
+      "category": "electronics",
+      "city": "Gonda",
+      "price": 2200,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 175,
+      "sold": 11,
+      "badges": [
+        "Tested",
+        "Cleaned"
+      ],
+      "checks": [
+        "Mic checked",
+        "Cushions cleaned",
+        "Bluetooth working"
+      ],
+      "artA": "#f6e7a8",
+      "artB": "#4f6f8f",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 20,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p7",
+      "title": "Class 12 PCM Book Set",
+      "category": "books",
+      "city": "Lucknow",
+      "price": 780,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 98,
+      "sold": 8,
+      "badges": [
+        "Quality Checked"
+      ],
+      "checks": [
+        "No missing pages",
+        "Some highlighting",
+        "Latest useful edition"
+      ],
+      "artA": "#ffe3a3",
+      "artB": "#977b35",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 19,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p8",
+      "title": "UPSC Starter Books",
+      "category": "books",
+      "city": "Ayodhya",
+      "price": 1250,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 310,
+      "sold": 22,
+      "badges": [
+        "Quality Checked"
+      ],
+      "checks": [
+        "Set complete",
+        "Clean pages",
+        "Minor notes"
+      ],
+      "artA": "#d8f1f0",
+      "artB": "#3b7270",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 18,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p9",
+      "title": "Engineering Drawing Book",
+      "category": "books",
+      "city": "Gonda",
+      "price": 350,
+      "condition": "Fair",
+      "source": "Collected Item",
+      "views": 80,
+      "sold": 6,
+      "badges": [
+        "Best Value"
+      ],
+      "checks": [
+        "Usable pages",
+        "Older edition",
+        "Low-cost pick"
+      ],
+      "artA": "#ead7ff",
+      "artB": "#59476f",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 17,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p10",
+      "title": "Study Table",
+      "category": "furniture",
+      "city": "Lucknow",
+      "price": 3100,
+      "condition": "Good",
+      "source": "GIVE & TAKE Verified",
+      "views": 165,
+      "sold": 5,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Stable",
+        "Minor scratches",
+        "Pickup checked"
+      ],
+      "artA": "#d5f0c0",
+      "artB": "#607b35",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 16,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p11",
+      "title": "Office Chair",
+      "category": "furniture",
+      "city": "Ayodhya",
+      "price": 2400,
+      "condition": "Fair",
+      "source": "Collected Item",
+      "views": 145,
+      "sold": 7,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Wheels working",
+        "Fabric cleaned",
+        "Armrest marks"
+      ],
+      "artA": "#cde7ff",
+      "artB": "#33628c",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 15,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p12",
+      "title": "Small Wooden Shelf",
+      "category": "furniture",
+      "city": "Gonda",
+      "price": 1600,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 90,
+      "sold": 4,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Strong body",
+        "Polished",
+        "No major crack"
+      ],
+      "artA": "#f4d6b3",
+      "artB": "#8d5930",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 14,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p13",
+      "title": "Denim Jacket",
+      "category": "fashion",
+      "city": "Lucknow",
+      "price": 950,
+      "condition": "Like New",
+      "source": "Collected Item",
+      "views": 330,
+      "sold": 19,
+      "badges": [
+        "Cleaned",
+        "Return Eligible"
+      ],
+      "checks": [
+        "Size M",
+        "No stains",
+        "Washed"
+      ],
+      "artA": "#b9d7f5",
+      "artB": "#2f4d73",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 13,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p14",
+      "title": "Sports Shoes UK 8",
+      "category": "fashion",
+      "city": "Ayodhya",
+      "price": 1250,
+      "condition": "Good",
+      "source": "GIVE & TAKE Verified",
+      "views": 270,
+      "sold": 13,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Sole checked",
+        "No tear",
+        "Minor wear"
+      ],
+      "artA": "#d7f5c2",
+      "artB": "#54783e",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 12,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p15",
+      "title": "Cotton Kurta Set",
+      "category": "fashion",
+      "city": "Gonda",
+      "price": 700,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 120,
+      "sold": 6,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Size L",
+        "Fresh cleaned",
+        "No defect"
+      ],
+      "artA": "#ffd7d2",
+      "artB": "#9b4d43",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 11,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p16",
+      "title": "Mixer Grinder",
+      "category": "home",
+      "city": "Lucknow",
+      "price": 2600,
+      "condition": "Good",
+      "source": "Tested Appliance",
+      "views": 240,
+      "sold": 10,
+      "badges": [
+        "Tested",
+        "Cleaned"
+      ],
+      "checks": [
+        "Motor checked",
+        "Jar included",
+        "Safe wiring"
+      ],
+      "artA": "#ffe4a8",
+      "artB": "#a66a22",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 10,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p17",
+      "title": "Table Lamp",
+      "category": "home",
+      "city": "Ayodhya",
+      "price": 650,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 92,
+      "sold": 14,
+      "badges": [
+        "Tested"
+      ],
+      "checks": [
+        "Switch working",
+        "Cable checked",
+        "Bulb included"
+      ],
+      "artA": "#fff1b8",
+      "artB": "#68602a",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 9,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p18",
+      "title": "Kitchen Storage Set",
+      "category": "home",
+      "city": "Gonda",
+      "price": 520,
+      "condition": "Like New",
+      "source": "Open Box",
+      "views": 76,
+      "sold": 9,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Set complete",
+        "No cracks",
+        "Hygiene checked"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 8,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p19",
+      "title": "College Backpack",
+      "category": "bags",
+      "city": "Lucknow",
+      "price": 850,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 220,
+      "sold": 18,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Zips working",
+        "No tear",
+        "Washed"
+      ],
+      "artA": "#d7e0ff",
+      "artB": "#445690",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 7,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p20",
+      "title": "Travel Duffel Bag",
+      "category": "bags",
+      "city": "Ayodhya",
+      "price": 1150,
+      "condition": "Good",
+      "source": "Collected Item",
+      "views": 160,
+      "sold": 7,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Handles strong",
+        "Zips checked",
+        "Minor marks"
+      ],
+      "artA": "#ecd6ba",
+      "artB": "#8a603a",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 6,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p21",
+      "title": "Office Laptop Bag",
+      "category": "bags",
+      "city": "Gonda",
+      "price": 700,
+      "condition": "Fair",
+      "source": "Collected Item",
+      "views": 105,
+      "sold": 5,
+      "badges": [
+        "Best Value"
+      ],
+      "checks": [
+        "Usable",
+        "Zip checked",
+        "Visible wear"
+      ],
+      "artA": "#cfe7dd",
+      "artB": "#446a5a",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 5,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p22",
+      "title": "Kids Toy Bundle",
+      "category": "toys",
+      "city": "Lucknow",
+      "price": 450,
+      "condition": "Good",
+      "source": "Low-Value Bundle",
+      "views": 190,
+      "sold": 14,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Pieces checked",
+        "Cleaned",
+        "Bundle value"
+      ],
+      "artA": "#ffe1ef",
+      "artB": "#91536d",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 4,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p23",
+      "title": "Cricket Bat",
+      "category": "toys",
+      "city": "Ayodhya",
+      "price": 900,
+      "condition": "Fair",
+      "source": "Collected Item",
+      "views": 125,
+      "sold": 8,
+      "badges": [
+        "Quality Checked"
+      ],
+      "checks": [
+        "Usable grip",
+        "Body marks",
+        "No crack"
+      ],
+      "artA": "#f5dda6",
+      "artB": "#7b5d2e",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 3,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p24",
+      "title": "Bluetooth Keyboard",
+      "category": "electronics",
+      "city": "Lucknow",
+      "price": 1250,
+      "condition": "Like New",
+      "source": "Open Box",
+      "views": 280,
+      "sold": 17,
+      "badges": [
+        "Tested"
+      ],
+      "checks": [
+        "Keys working",
+        "Bluetooth checked",
+        "Battery included"
+      ],
+      "artA": "#dce9ff",
+      "artB": "#425e9a",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 2,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    },
+    {
+      "id": "p25",
+      "title": "Single Pillow Pair",
+      "category": "home",
+      "city": "Gonda",
+      "price": 120,
+      "condition": "Good",
+      "source": "Donation/Bundle Eligible",
+      "views": 65,
+      "sold": 3,
+      "badges": [
+        "Cleaned"
+      ],
+      "checks": [
+        "Low-value item",
+        "Bundle pickup suggested",
+        "Hygiene checked"
+      ],
+      "artA": "#f2e1c6",
+      "artB": "#8f734b",
+      "status": "listed",
+      "quantity": 1,
+      "newest": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "collected-inventory"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "9999999999",
+      "email": "demo@giveandtake.local",
+      "city": "Lucknow",
+      "profileComplete": false,
+      "role": "customer"
+    }
+  ],
+  "wallets": {
+    "user-demo": {
+      "balance": 2450,
+      "ledger": [
+        {
+          "id": "l1",
+          "type": "credit",
+          "amount": 1200,
+          "reason": "Item accepted after warehouse check",
+          "createdAt": "2026-06-05T15:57:50.713Z"
+        },
+        {
+          "id": "l2",
+          "type": "debit",
+          "amount": 650,
+          "reason": "Product purchase",
+          "createdAt": "2026-06-05T15:57:50.713Z"
+        },
+        {
+          "id": "l3",
+          "type": "credit",
+          "amount": 500,
+          "reason": "UPI coin recharge",
+          "createdAt": "2026-06-05T15:57:50.713Z"
+        },
+        {
+          "id": "l4",
+          "type": "debit",
+          "amount": 50,
+          "reason": "Delivery paid in coins",
+          "createdAt": "2026-06-05T15:57:50.713Z"
+        },
+        {
+          "id": "l5",
+          "type": "credit",
+          "amount": 5,
+          "reason": "Referral reward",
+          "createdAt": "2026-06-05T15:57:50.713Z"
+        }
+      ]
+    }
+  },
+  "sellRequests": [
+    {
+      "id": "GT-S1001",
+      "userId": "user-demo",
+      "city": "Lucknow",
+      "category": "mobiles",
+      "title": "Demo phone upload",
+      "expectedCoins": 7000,
+      "status": "warehouse-final-check",
+      "timeline": [
+        "upload-submitted",
+        "under-review",
+        "pickup-scheduled",
+        "doorstep-verified",
+        "product-collected",
+        "warehouse-final-check"
+      ],
+      "createdAt": "2026-06-05T15:57:50.713Z"
+    }
+  ],
+  "partnerTasks": [
+    {
+      "id": "GT-P229",
+      "type": "pickup-verification",
+      "city": "Lucknow",
+      "category": "mobiles",
+      "status": "assigned",
+      "checklist": [
+        "Verify IMEI",
+        "Run speaker test",
+        "Run microphone test",
+        "Check display",
+        "Capture photos",
+        "Capture short video",
+        "OTP handover"
+      ]
+    },
+    {
+      "id": "GT-P230",
+      "type": "bundle-pickup",
+      "city": "Gonda",
+      "category": "books",
+      "status": "assigned",
+      "checklist": [
+        "Check each item",
+        "Capture photos",
+        "Mark accepted or rejected",
+        "Collect OTP"
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "GT-1042",
+      "userId": "user-demo",
+      "productIds": [
+        "p5"
+      ],
+      "totalCoins": 1450,
+      "status": "coins-confirmed",
+      "timeline": [
+        "order-placed",
+        "coins-confirmed"
+      ],
+      "createdAt": "2026-06-05T15:57:50.713Z"
+    }
+  ],
+  "joinApplications": [],
+  "rechargeRequests": [],
+  "returns": [],
+  "integrations": {
+    "payments": {
+      "preferred": "UPI only",
+      "allowedMethods": [
+        "UPI"
+      ],
+      "status": "local-upi-simulation",
+      "upi": {
+        "merchantName": "GIVE & TAKE",
+        "upiId": "",
+        "note": "Add your UPI ID from the admin panel before public launch."
+      },
+      "notes": "Only UPI is enabled. Without a payment gateway API, recharge requests stay pending until admin verifies the UPI payment."
+    },
+    "delivery": {
+      "ownPartnerPanel": "active-local-system",
+      "externalDeliveryApps": "disabled",
+      "shiprocket": "disabled",
+      "delhivery": "disabled",
+      "porter": "disabled",
+      "notes": "No third-party delivery API is connected. Pickup, verification, and delivery are handled by the internal GIVE & TAKE partner panel."
+    }
+  }
+}

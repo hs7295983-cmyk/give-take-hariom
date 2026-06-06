@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GIVE & TAKE | Coin-Based Reuse Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="GIVE & TAKE home">
+        <span class="brand-mark">G&T</span>
+        <span>
+          <strong>GIVE & TAKE</strong>
+          <small>Unused to useful</small>
+        </span>
+      </a>
+      <label class="search-shell" aria-label="Search products">
+        <span>Search</span>
+        <input id="searchInput" type="search" placeholder="Search phones, books, furniture..." />
+      </label>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#market">Market</a>
+        <a href="#sell">Sell Item</a>
+        <a href="#wallet">Wallet</a>
+        <a href="#orders">Orders</a>
+        <a href="#join">Join Us</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-button" id="langToggle" type="button" title="Language">EN</button>
+        <a class="wallet-pill" href="#wallet"><span id="walletBalance">2,450</span> <span class="coin-symbol" aria-label="coins"></span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="page active" id="page-home" data-page="home">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="kicker">Lucknow, Ayodhya, Gonda launch</p>
+            <h1>Give unused things. Take what you need.</h1>
+            <p>
+              GIVE & TAKE turns home items into coins after pickup, verification, warehouse check, and approval. Shop the marketplace using coins only.
+            </p>
+            <div class="hero-actions">
+              <a class="primary-button" href="#sell">Sell an Item</a>
+              <a class="secondary-button" href="#market">Browse Products</a>
+            </div>
+          </div>
+          <div class="hero-panel" aria-label="Marketplace status">
+            <div class="status-card">
+              <span>Product price</span>
+              <strong>Coins only</strong>
+              <small>1 coin = 1 rupee</small>
+            </div>
+            <div class="flow-card">
+              <span>Upload</span>
+              <span>Pickup</span>
+              <span>Warehouse</span>
+              <span>Coins</span>
+            </div>
+            <div class="hero-product">
+              <div class="product-art phone-art"></div>
+              <div>
+                <strong>Verified Phone</strong>
+                <span>Good • Tested • 8,200 coins</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="quick-grid" aria-label="Core rules">
+          <article>
+            <span class="mini-icon">01</span>
+            <h3>Coin-only checkout</h3>
+            <p>Products are purchased with coins. Recharge starts at 50 coins in multiples of 50.</p>
+          </article>
+          <article>
+            <span class="mini-icon">02</span>
+            <h3>Verified inventory</h3>
+            <p>Products appear for buyers only after warehouse final check, cleaning, pricing, and approval.</p>
+          </article>
+          <article>
+            <span class="mini-icon">03</span>
+            <h3>Local first</h3>
+            <p>Pickup and delivery begin in Lucknow, Ayodhya, and Gonda with serviceability checks.</p>
+          </article>
+        </section>
+
+        <section class="section-head">
+          <div>
+            <p class="kicker">Categories</p>
+            <h2>Move through the website page by page.</h2>
+          </div>
+        </section>
+        <div class="category-grid" id="categoryGrid"></div>
+
+        <section class="section-head">
+          <div>
+            <p class="kicker">Discovery</p>
+            <h2>Featured products from the sample launch inventory.</h2>
+          </div>
+          <a class="text-link" href="#market">View all</a>
+        </section>
+        <div class="product-grid" id="featuredProducts"></div>
+      </section>
+
+      <section class="page" id="page-market" data-page="market">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Marketplace</p>
+            <h1>Browse verified coin-priced products.</h1>
+          </div>
+          <button class="primary-button" data-route="sell" type="button">Sell Item</button>
+        </div>
+        <div class="toolbar">
+          <select id="categoryFilter" aria-label="Category filter"></select>
+          <select id="cityFilter" aria-label="City filter">
+            <option value="all">All launch cities</option>
+            <option>Lucknow</option>
+            <option>Ayodhya</option>
+            <option>Gonda</option>
+          </select>
+          <select id="sortFilter" aria-label="Sort products">
+            <option value="trending">Trending</option>
+            <option value="newest">Newest</option>
+            <option value="low">Coin price low to high</option>
+            <option value="high">Coin price high to low</option>
+            <option value="views">Most viewed</option>
+            <option value="purchased">Most purchased</option>
+          </select>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </section>
+
+      <section class="page" id="page-category" data-page="category">
+        <button class="back-button" data-route="home" type="button">Back</button>
+        <div class="page-title">
+          <div>
+            <p class="kicker">Category</p>
+            <h1 id="categoryTitle">Category</h1>
+          </div>
+        </div>
+        <div class="product-grid" id="categoryProducts"></div>
+      </section>
+
+      <section class="page" id="page-product" data-page="product">
+        <button class="back-button" data-route="market" type="button">Back to marketplace</button>
+        <div id="productDetail" class="product-detail"></div>
+      </section>
+
+      <section class="page" id="page-sell" data-page="sell">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Sell unused item</p>
+            <h1>Upload details category-wise.</h1>
+          </div>
+        </div>
+        <div class="sell-layout">
+          <form class="panel-form" id="sellForm">
+            <label>Service city
+              <select name="city" required>
+                <option>Lucknow</option>
+                <option>Ayodhya</option>
+                <option>Gonda</option>
+              </select>
+            </label>
+            <label>Category
+              <select id="sellCategory" required></select>
+            </label>
+            <label>Product title
+              <input name="title" required placeholder="Example: Samsung phone, study table, book set" />
+            </label>
+            <label>Expected coin value
+              <input name="expectedCoins" type="number" min="0" placeholder="Example: 1200" />
+            </label>
+            <label>Condition
+              <select name="condition">
+                <option>Like New</option>
+                <option>Good</option>
+                <option>Fair</option>
+                <option>Needs Repair</option>
+              </select>
+            </label>
+            <label>Photos from 3-4 angles
+              <input type="file" accept="image/*" multiple />
+            </label>
+            <label>Product details
+              <textarea name="details" placeholder="Brand, age, bill, accessories, defects, reason for selling..."></textarea>
+            </label>
+            <div id="dynamicFields" class="dynamic-fields"></div>
+            <label class="check-row">
+              <input type="checkbox" required />
+              <span>I confirm this item is allowed and the information is true.</span>
+            </label>
+            <button class="primary-button full" type="submit">Submit for Review</button>
+          </form>
+          <aside class="process-panel">
+            <h2>Status timeline</h2>
+            <ol class="timeline">
+              <li>Upload submitted</li>
+              <li>Under review</li>
+              <li>Pickup scheduled</li>
+              <li>Doorstep verified</li>
+              <li>Warehouse final check</li>
+              <li>Coins credited</li>
+            </ol>
+            <div class="notice">
+              Final coins are credited only after warehouse approval. User can reject the pickup offer before handover.
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-wallet" data-page="wallet">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Coin wallet</p>
+            <h1>2,450 <span class="coin-symbol large" aria-label="coins"></span> available.</h1>
+          </div>
+        </div>
+        <div class="wallet-layout">
+          <section class="wallet-card">
+            <h2>Recharge coins</h2>
+            <p>Minimum 50 coins. Recharge must be in multiples of 50. UPI is the only payment method enabled.</p>
+            <div class="recharge-grid" id="rechargeGrid"></div>
+          </section>
+          <section class="wallet-card">
+            <h2>Coin ledger</h2>
+            <div class="ledger-list" id="ledgerList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="page-cart" data-page="cart">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Cart</p>
+            <h1>Checkout reserves product for 15 minutes.</h1>
+          </div>
+        </div>
+        <div id="cartView" class="cart-view"></div>
+      </section>
+
+      <section class="page" id="page-orders" data-page="orders">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Orders</p>
+            <h1>Track purchases and return window.</h1>
+          </div>
+        </div>
+        <div class="orders-grid" id="ordersGrid">
+          <article class="order-card">
+            <strong>Order GT-1042</strong>
+            <span>Payment/coins confirmed</span>
+            <div class="mini-steps"><span>Placed</span><span>Packing</span><span>Out</span><span>Delivered</span></div>
+          </article>
+          <article class="order-card">
+            <strong>Pickup GT-P221</strong>
+            <span>Warehouse final check</span>
+            <div class="mini-steps"><span>Collected</span><span>Received</span><span>Check</span><span>Coins</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-profile" data-page="profile">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Profile</p>
+            <h1>Login only when action needs it.</h1>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <article><h3>Login</h3><p>Phone OTP or email. Name and address are asked during checkout or selling.</p></article>
+          <article><h3>Serviceability</h3><p>Lucknow, Ayodhya, and Gonda are active launch cities.</p></article>
+          <article><h3>KYC</h3><p>Risk-based only for high-value or sensitive products.</p></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-join" data-page="join">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Join us</p>
+            <h1>Apply to work with GIVE & TAKE.</h1>
+          </div>
+        </div>
+        <form class="panel-form compact" id="joinForm">
+          <label>Role
+            <select name="role">
+              <option>Delivery / Verification Partner</option>
+              <option>Warehouse Helper</option>
+              <option>Customer Support</option>
+              <option>City Operations Partner</option>
+            </select>
+          </label>
+          <label>City
+            <select name="city"><option>Lucknow</option><option>Ayodhya</option><option>Gonda</option></select>
+          </label>
+          <label>Full name <input name="name" placeholder="Your name" /></label>
+          <label>Phone <input name="phone" placeholder="Mobile number" /></label>
+          <label>Experience <textarea name="experience" placeholder="Tell us your availability and experience"></textarea></label>
+          <button class="primary-button full" type="submit">Submit Application</button>
+        </form>
+      </section>
+
+      <section class="page" id="page-support" data-page="support">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Support</p>
+            <h1>Help for pickup, wallet, orders, and returns.</h1>
+          </div>
+        </div>
+        <div class="support-grid">
+          <article><h3>WhatsApp support</h3><p>Fast launch support for pickup, delivery, wallet, and return problems.</p></article>
+          <article><h3>Return proof</h3><p>Return requests need issue category, explanation, photos or video within 24-48 hours.</p></article>
+          <article><h3>Recharge help</h3><p>Rupee refund applies only for payment or recharge errors, not normal product returns.</p></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-policies" data-page="policies">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Policies</p>
+            <h1>Clear rules for trust.</h1>
+          </div>
+        </div>
+        <div class="policy-grid">
+          <article><h3>Coin Policy</h3><p>Coins cannot be withdrawn as cash or transferred. They are used inside GIVE & TAKE only.</p></article>
+          <article><h3>Return Policy</h3><p>24-48 hour return only if item is not as described, wrong, or has undisclosed issue.</p></article>
+          <article><h3>Prohibited Items</h3><p>No illegal, stolen, unsafe, fake, adult, food, medicine, hygiene, animal, document, or hazardous products.</p></article>
+          <article><h3>Privacy Policy</h3><p>KYC is risk-based and limited. Data safety checks are mandatory for phones, laptops, and tablets.</p></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-admin" data-page="admin">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Protected admin prototype</p>
+            <h1>Operations dashboard.</h1>
+          </div>
+        </div>
+        <div class="admin-grid" id="adminGrid">
+          <article><strong>Product Review</strong><span>18 pending uploads</span></article>
+          <article><strong>Pickup Scheduling</strong><span>9 slots need confirmation</span></article>
+          <article><strong>Warehouse Check</strong><span>11 items awaiting final approval</span></article>
+          <article><strong>Coin Approval</strong><span>6 credits ready</span></article>
+          <article><strong>Maintenance Mode</strong><span>Full off • Recharge active • Checkout active</span></article>
+          <article><strong>Pricing Override</strong><span>Reason required for manual change</span></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-partner" data-page="partner">
+        <div class="page-title">
+          <div>
+            <p class="kicker">Protected partner prototype</p>
+            <h1>Pickup and verification panel.</h1>
+          </div>
+        </div>
+        <div class="partner-layout" id="partnerTasks">
+          <article class="task-card">
+            <strong>Pickup GT-P229</strong>
+            <span>Mobile phone • Lucknow • 4:00 PM</span>
+            <ul>
+              <li>Verify IMEI and model</li>
+              <li>Run mic, camera, speaker, charging, display checks</li>
+              <li>Capture photos, checklist, and short video</li>
+              <li>Show system-calculated value</li>
+              <li>Confirm handover by OTP and digital confirmation</li>
+            </ul>
+          </article>
+          <article class="task-card">
+            <strong>Pickup GT-P230</strong>
+            <span>Books + bag bundle • Gonda • 12:30 PM</span>
+            <ul>
+              <li>Check item-wise condition</li>
+              <li>Capture photos</li>
+              <li>Mark accepted, rejected, or low-value bundle</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a href="#policies">Policies</a>
+      <a href="#support">Support</a>
+      <span>GIVE & TAKE • Phase 2 backend website</span>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
