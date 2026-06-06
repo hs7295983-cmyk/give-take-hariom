@@ -700,6 +700,43 @@ textarea {
   font-weight: 900;
 }
 
+.recharge-grid.payment-step {
+  grid-template-columns: 1fr;
+}
+
+.payment-summary,
+.upi-payment-box {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.payment-summary span,
+.upi-payment-box span,
+.upi-payment-box small {
+  color: var(--muted);
+}
+
+.payment-summary strong {
+  color: var(--ink);
+  font-size: 28px;
+}
+
+.upi-payment-box strong {
+  color: #2e7354;
+  font-size: 22px;
+  word-break: break-word;
+}
+
+.upi-reference-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+}
+
 .ledger-list {
   display: grid;
   gap: 10px;
@@ -878,6 +915,7 @@ textarea {
 
   .inline-form,
   .admin-product-form,
+  .upi-reference-form,
   .admin-row {
     grid-template-columns: 1fr;
   }

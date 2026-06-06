@@ -65,6 +65,7 @@ const state = {
   productId: null,
   cart: [],
   query: "",
+  rechargeAmount: null,
 };
 
 const els = {
@@ -268,15 +269,30 @@ function renderFormFields() {
 function renderWallet() {
   const upi = platformConfig.integrations?.payments?.upi || {};
   document.getElementById("walletUpiNotice")?.remove();
-  els.rechargeGrid.innerHTML = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
-    <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="coins"></span></button>
-  `).join("");
-  els.rechargeGrid.insertAdjacentHTML("beforebegin", `
-    <div class="notice" id="walletUpiNotice">
-      Pay by UPI only${upi.upiId ? ` to <strong>${upi.upiId}</strong>` : ". Admin must add UPI ID before public recharge."}
-      Coins are credited after admin verifies payment.
-    </div>
-  `);
+  if (state.rechargeAmount) {
+    els.rechargeGrid.classList.add("payment-step");
+    els.rechargeGrid.innerHTML = `
+      <div class="payment-summary">
+        <span>Selected amount</span>
+        <strong>${formatCoins(state.rechargeAmount)}</strong>
+      </div>
+      <div class="upi-payment-box">
+        <span>Pay using any UPI app</span>
+        <strong>${upi.upiId ? escapeHtml(upi.upiId) : "UPI ID not configured"}</strong>
+        <small>After payment, enter your UPI transaction/reference ID below.</small>
+      </div>
+      <form class="upi-reference-form" id="upiReferenceForm">
+        <input name="upiReference" placeholder="Enter UPI transaction/reference ID" required />
+        <button class="primary-button" type="submit">Submit Recharge Request</button>
+        <button class="secondary-button" data-cancel-recharge type="button">Change Amount</button>
+      </form>
+    `;
+  } else {
+    els.rechargeGrid.classList.remove("payment-step");
+    els.rechargeGrid.innerHTML = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
+      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="coins"></span></button>
+    `).join("");
+  }
   els.walletBalance.textContent = new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
   if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="coins"></span> available.`;
@@ -514,24 +530,20 @@ function wireEvents() {
 
     const recharge = event.target.closest("[data-recharge]");
     if (recharge) {
-      try {
-        const upi = platformConfig.integrations?.payments?.upi || {};
-        if (!upi.upiId) {
-          alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
-          return;
-        }
-        const upiReference = prompt(`Pay ${recharge.dataset.recharge} coins amount by UPI to ${upi.upiId}, then enter UPI reference/transaction ID.`);
-        if (!upiReference) return;
-        const data = await api("/api/wallet/recharge", {
-          method: "POST",
-          body: JSON.stringify({ userId: "user-demo", amount: Number(recharge.dataset.recharge), method: "UPI", upiReference }),
-        });
-        wallet = data.wallet;
-        renderWallet();
-        alert(`Recharge request submitted: ${data.rechargeRequest.id}. Coins will be credited after admin verifies payment.`);
-      } catch (error) {
-        alert(error.message);
+      const upi = platformConfig.integrations?.payments?.upi || {};
+      if (!upi.upiId) {
+        alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
+        return;
       }
+      state.rechargeAmount = Number(recharge.dataset.recharge);
+      renderWallet();
+      document.querySelector(".payment-step")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    const cancelRecharge = event.target.closest("[data-cancel-recharge]");
+    if (cancelRecharge) {
+      state.rechargeAmount = null;
+      renderWallet();
     }
 
     const checkout = event.target.closest("[data-checkout]");
@@ -742,6 +754,28 @@ function wireEvents() {
         await loadProtectedData();
         renderAll();
         alert("Product added to marketplace.");
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    if (event.target.id === "upiReferenceForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      try {
+        const data = await api("/api/wallet/recharge", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: "user-demo",
+            amount: Number(state.rechargeAmount),
+            method: "UPI",
+            upiReference: form.get("upiReference"),
+          }),
+        });
+        wallet = data.wallet;
+        state.rechargeAmount = null;
+        renderWallet();
+        alert(`Recharge request submitted: ${data.rechargeRequest.id}. Coins will be credited after admin verifies payment.`);
       } catch (error) {
         alert(error.message);
       }
