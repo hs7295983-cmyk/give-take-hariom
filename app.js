@@ -151,6 +151,10 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function isMaintenanceActive() {
+  return Boolean(platformConfig.maintenance?.full);
+}
+
 function card(product) {
   return `
     <article class="product-card">
@@ -328,13 +332,20 @@ function renderAdmin() {
   const upi = adminDashboard.integrations.payments.upi || {};
   const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
   const joinApplications = adminDashboard.joinApplications || [];
+  const maintenance = adminDashboard.maintenance || {};
   els.adminGrid.innerHTML = `
     <article><strong>Product Review</strong><span>${counts.sellRequests} sell requests in system</span></article>
     <article><strong>Inventory</strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
     <article><strong>Orders</strong><span>${counts.orders} order records</span></article>
     <article><strong>Join Us</strong><span>${counts.joinApplications || joinApplications.length || 0} applications in system</span></article>
     <article><strong>Returns</strong><span>${counts.returns} return requests</span></article>
-    <article><strong>Maintenance Mode</strong><span>Full ${adminDashboard.maintenance.full ? "on" : "off"} • paused: ${adminDashboard.maintenance.pausedFeatures.length || 0}</span></article>
+    <article>
+      <strong>Maintenance Mode</strong>
+      <span>Full ${maintenance.full ? "on" : "off"} • paused: ${maintenance.pausedFeatures?.length || 0}</span>
+      <button class="${maintenance.full ? "secondary-button" : "primary-button"}" data-maintenance-toggle="${maintenance.full ? "off" : "on"}" type="button">
+        ${maintenance.full ? "Turn Off" : "Turn On"}
+      </button>
+    </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
     <article class="wide-card">
       <strong>UPI Settings</strong>
@@ -437,6 +448,12 @@ function navigate(rawHash) {
   state.route = route || "home";
   if (route === "category") state.category = value || "mobiles";
   if (route === "product") state.productId = value || products[0].id;
+  if (isMaintenanceActive() && state.route !== "admin") {
+    state.route = "maintenance";
+    const message = platformConfig.maintenance?.message || "GIVE & TAKE is under maintenance. We will be back soon.";
+    const messageEl = document.getElementById("maintenanceMessage");
+    if (messageEl) messageEl.textContent = message;
+  }
 
   els.pages.forEach(page => page.classList.toggle("active", page.dataset.page === state.route));
   if (!document.querySelector(`.page[data-page="${state.route}"]`)) {
@@ -575,6 +592,27 @@ function wireEvents() {
         adminDashboard = adminData;
         renderAdmin();
         alert(`Rejected application: ${data.application.id}`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const maintenanceToggle = event.target.closest("[data-maintenance-toggle]");
+    if (maintenanceToggle) {
+      try {
+        const nextFull = maintenanceToggle.dataset.maintenanceToggle === "on";
+        const data = await api("/api/admin/maintenance", {
+          method: "PATCH",
+          admin: true,
+          body: JSON.stringify({
+            full: nextFull,
+            message: "GIVE & TAKE is under maintenance. We will be back soon.",
+          }),
+        });
+        adminDashboard.maintenance = data.maintenance;
+        platformConfig.maintenance = data.maintenance;
+        renderAdmin();
+        alert(nextFull ? "Maintenance mode is ON." : "Maintenance mode is OFF.");
       } catch (error) {
         alert(error.message);
       }
