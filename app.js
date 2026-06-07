@@ -18,6 +18,8 @@ const fallbackCategories = [
   { id: "toys", name: "Toys & More", text: "Toys, hobby items, bundles, and low-value useful items." },
 ];
 
+const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
+
 const fallbackProducts = [
   {
     id: "gtl01",
@@ -1752,7 +1754,7 @@ function card(product) {
         </div>
         <h3>${product.title}</h3>
         <div class="coin-price">${formatCoins(product.price)}</div>
-        <p>${product.city} • ${categories.find(c => c.id === product.category).name}</p>
+        <p>${categories.find(c => c.id === product.category).name}</p>
         <div class="card-actions">
           <button class="primary-button" data-product="${product.id}" type="button">View</button>
           <button class="secondary-button" data-add="${product.id}" type="button" title="Add to cart">+</button>
@@ -1786,8 +1788,8 @@ function getFilteredProducts() {
   const query = state.query.toLowerCase();
   let list = [...products].filter(product => {
     const matchesCategory = category === "all" || product.category === category;
-    const matchesCity = city === "all" || product.city === city;
-    const matchesQuery = !query || `${product.title} ${product.city} ${product.source}`.toLowerCase().includes(query);
+    const matchesCity = city === "all" || SERVICE_CITIES_TEXT.includes(city);
+    const matchesQuery = !query || `${product.title} ${SERVICE_CITIES_TEXT} ${product.source}`.toLowerCase().includes(query);
     return matchesCategory && matchesCity && matchesQuery;
   });
 
@@ -1826,7 +1828,7 @@ function renderProductDetail() {
       </div>
       <h1>${product.title}</h1>
       <div class="coin-price">${formatCoins(product.price)}</div>
-      <p>${product.city} • Product price is coin-only. Delivery charge can be paid by coins online or cash on delivery.</p>
+      <p>Product price is coin-only. Delivery charge can be paid by coins online or cash on delivery.</p>
       <div class="checklist">
         ${visibleChecks.map(check => `<span>${check}</span>`).join("")}
       </div>
@@ -1986,11 +1988,6 @@ function renderAdmin() {
         <select name="category" required>
           ${categories.map(category => `<option value="${category.id}">${category.name}</option>`).join("")}
         </select>
-        <select name="city" required>
-          <option>Lucknow</option>
-          <option>Ayodhya</option>
-          <option>Gonda</option>
-        </select>
         <input name="price" type="number" min="1" step="1" placeholder="Coin price" required />
         <select name="condition" required>
           <option>Excellent</option>
@@ -2012,7 +2009,7 @@ function renderAdmin() {
           <div class="admin-product-row">
             <div>
               <strong>${escapeHtml(product.title || "Untitled product")}</strong>
-              <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.city || "city")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
+              <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
               <span>${formatCoins(product.price || 0)}</span>
             </div>
             <div class="admin-product-actions">
@@ -2566,7 +2563,7 @@ function wireEvents() {
           body: JSON.stringify({
             title: form.get("title"),
             category: form.get("category"),
-            city: form.get("city"),
+            city: "Lucknow",
             price: form.get("price"),
             condition: form.get("condition"),
             quantity: form.get("quantity"),
