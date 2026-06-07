@@ -510,7 +510,10 @@ function renderAdmin() {
         ${pendingRecharges.map(item => `
           <div class="admin-row">
             <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
-            <button class="secondary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
+            <div class="admin-actions">
+              <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
+              <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
+            </div>
           </div>
         `).join("")}
       </div>
@@ -736,6 +739,24 @@ function wireEvents() {
         renderWallet();
         renderAdmin();
         alert(`Approved ${data.rechargeRequest.amount} coins for ${data.rechargeRequest.userId}.`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const rejectRecharge = event.target.closest("[data-reject-recharge]");
+    if (rejectRecharge) {
+      if (!confirm("Reject this recharge request? Coins will not be credited.")) return;
+      try {
+        const data = await api(`/api/admin/recharges/${rejectRecharge.dataset.rejectRecharge}/reject`, {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({}),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert(`Rejected recharge request: ${data.rechargeRequest.id}.`);
       } catch (error) {
         alert(error.message);
       }
