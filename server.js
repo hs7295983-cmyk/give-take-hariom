@@ -340,6 +340,7 @@ async function handleApi(req, res) {
       },
       maintenance: db.maintenance,
       integrations: db.integrations,
+      products: db.products || [],
       rechargeRequests: db.rechargeRequests || [],
       joinApplications: db.joinApplications || []
     });
@@ -432,6 +433,34 @@ async function handleApi(req, res) {
     db.products.unshift(product);
     await writeDb(db);
     return sendJson(res, 201, { product });
+  }
+
+  if (method === "PATCH" && parts[1] === "admin" && parts[2] === "products" && parts[3]) {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const product = db.products.find(item => item.id === parts[3]);
+    if (!product) return sendError(res, 404, "Product not found");
+    if (typeof body.title === "string" && body.title.trim()) product.title = body.title.trim();
+    if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
+    if (typeof body.condition === "string" && body.condition.trim()) product.condition = body.condition.trim();
+    if (body.price !== undefined) {
+      const price = Number(body.price);
+      if (!Number.isFinite(price) || price < 0) return sendError(res, 400, "Product price is invalid");
+      product.price = price;
+    }
+    if (typeof body.status === "string" && ["listed", "unlisted", "sold"].includes(body.status)) product.status = body.status;
+    product.updatedAt = new Date().toISOString();
+    await writeDb(db);
+    return sendJson(res, 200, { product });
+  }
+
+  if (method === "DELETE" && parts[1] === "admin" && parts[2] === "products" && parts[3]) {
+    if (!requireAdmin(req, res)) return;
+    const index = db.products.findIndex(item => item.id === parts[3]);
+    if (index === -1) return sendError(res, 404, "Product not found");
+    const [product] = db.products.splice(index, 1);
+    await writeDb(db);
+    return sendJson(res, 200, { product });
   }
 
   return sendError(res, 404, "API route not found");

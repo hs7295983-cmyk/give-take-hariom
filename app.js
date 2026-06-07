@@ -183,6 +183,18 @@ async function loadProtectedData() {
   partnerTasks = taskData.tasks;
 }
 
+async function refreshAdminProducts() {
+  const [adminData, productData] = await Promise.all([
+    api("/api/admin/dashboard", { admin: true }),
+    api("/api/products?sort=trending"),
+  ]);
+  adminDashboard = adminData;
+  products = productData.products;
+  renderAdmin();
+  renderProducts();
+  renderProductDetail();
+}
+
 function formatCoins(value) {
   return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="coins"></span>`;
 }
@@ -417,6 +429,7 @@ function renderAdmin() {
   const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
   const joinApplications = adminDashboard.joinApplications || [];
   const maintenance = adminDashboard.maintenance || {};
+  const adminProducts = adminDashboard.products || [];
   els.adminGrid.innerHTML = `
     <article><strong>Product Review</strong><span>${counts.sellRequests} sell requests in system</span></article>
     <article><strong>Inventory</strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
@@ -465,6 +478,30 @@ function renderAdmin() {
         <input name="checks" class="span-2" placeholder="Checks, comma separated: Warehouse checked, Cleaned, Tested" />
         <button class="primary-button" type="submit">Add Product</button>
       </form>
+    </article>
+    <article class="wide-card">
+      <strong>Products Manager</strong>
+      <span>Manage product name, price, condition, listing status, and deletion.</span>
+      <div class="admin-product-manager">
+        ${adminProducts.map(product => `
+          <div class="admin-product-row">
+            <div>
+              <strong>${escapeHtml(product.title || "Untitled product")}</strong>
+              <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.city || "city")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
+              <span>${formatCoins(product.price || 0)}</span>
+            </div>
+            <div class="admin-product-actions">
+              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="title" type="button">Edit Name</button>
+              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="price" type="button">Edit Price</button>
+              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="condition" type="button">Edit Condition</button>
+              <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${product.id}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
+                ${product.status === "listed" ? "Unlist Product" : "List Product"}
+              </button>
+              <button class="danger-button" data-delete-product="${product.id}" type="button">Delete Product</button>
+            </div>
+          </div>
+        `).join("") || `<p>No products available yet.</p>`}
+      </div>
     </article>
     <article class="wide-card">
       <strong>Pending UPI Recharges</strong>
@@ -754,6 +791,87 @@ function wireEvents() {
         platformConfig.maintenance = data.maintenance;
         renderAdmin();
         alert(nextFull ? "Maintenance mode is ON." : "Maintenance mode is OFF.");
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const editProduct = event.target.closest("[data-edit-product]");
+    if (editProduct) {
+      const productId = editProduct.dataset.editProduct;
+      const field = editProduct.dataset.editField;
+      const product = (adminDashboard?.products || []).find(item => item.id === productId);
+      if (!product) {
+        alert("Product not found. Please refresh admin data.");
+        return;
+      }
+
+      const labels = {
+        title: "product name",
+        price: "coin price",
+        condition: "condition",
+      };
+      const currentValue = field === "price" ? product.price : product[field];
+      const nextValue = prompt(`Enter new ${labels[field] || field}:`, currentValue ?? "");
+      if (nextValue === null) return;
+
+      const payload = {};
+      if (field === "price") {
+        const price = Number(nextValue);
+        if (!Number.isFinite(price) || price < 0) {
+          alert("Enter a valid coin price.");
+          return;
+        }
+        payload.price = price;
+      } else {
+        const text = String(nextValue).trim();
+        if (!text) {
+          alert("Value cannot be empty.");
+          return;
+        }
+        payload[field] = text;
+      }
+
+      try {
+        await api(`/api/admin/products/${productId}`, {
+          method: "PATCH",
+          admin: true,
+          body: JSON.stringify(payload),
+        });
+        await refreshAdminProducts();
+        alert("Product updated.");
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const productStatus = event.target.closest("[data-product-status]");
+    if (productStatus) {
+      try {
+        await api(`/api/admin/products/${productStatus.dataset.productStatus}`, {
+          method: "PATCH",
+          admin: true,
+          body: JSON.stringify({ status: productStatus.dataset.nextStatus }),
+        });
+        await refreshAdminProducts();
+        alert(productStatus.dataset.nextStatus === "listed" ? "Product listed." : "Product unlisted.");
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const deleteProduct = event.target.closest("[data-delete-product]");
+    if (deleteProduct) {
+      const product = (adminDashboard?.products || []).find(item => item.id === deleteProduct.dataset.deleteProduct);
+      const name = product?.title || "this product";
+      if (!confirm(`Delete ${name}? This will remove it from admin and marketplace data.`)) return;
+      try {
+        await api(`/api/admin/products/${deleteProduct.dataset.deleteProduct}`, {
+          method: "DELETE",
+          admin: true,
+        });
+        await refreshAdminProducts();
+        alert("Product deleted.");
       } catch (error) {
         alert(error.message);
       }
