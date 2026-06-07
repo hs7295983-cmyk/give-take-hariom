@@ -223,7 +223,9 @@ async function handleApi(req, res) {
   }
 
   if (method === "GET" && parts[1] === "sell-requests") {
-    return sendJson(res, 200, { sellRequests: db.sellRequests });
+    const userId = url.searchParams.get("userId");
+    const sellRequests = userId ? db.sellRequests.filter(request => request.userId === userId) : db.sellRequests;
+    return sendJson(res, 200, { sellRequests });
   }
 
   if (method === "POST" && parts[1] === "orders") {

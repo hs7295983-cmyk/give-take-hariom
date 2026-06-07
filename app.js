@@ -53,6 +53,7 @@ let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
 let wallet = { balance: 0, ledger: [] };
 let orders = [];
+let sellRequests = [];
 let adminDashboard = null;
 let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
@@ -93,6 +94,7 @@ const els = {
   ledgerList: document.getElementById("ledgerList"),
   cartView: document.getElementById("cartView"),
   ordersGrid: document.getElementById("ordersGrid"),
+  accountGrid: document.getElementById("accountGrid"),
   adminGrid: document.getElementById("adminGrid"),
   partnerTasks: document.getElementById("partnerTasks"),
   walletBalance: document.getElementById("walletBalance"),
@@ -113,17 +115,19 @@ async function api(path, options = {}) {
 async function loadBackendData() {
   try {
     const userId = getCurrentUserId();
-    const [configData, categoryData, productData, walletData, orderData] = await Promise.all([
+    const [configData, categoryData, productData, walletData, orderData, sellRequestData] = await Promise.all([
       api("/api/config"),
       api("/api/categories"),
       api("/api/products?sort=trending"),
       userId ? api(`/api/wallet/${encodeURIComponent(userId)}`) : Promise.resolve({ wallet: { balance: 0, ledger: [] } }),
       userId ? api(`/api/orders?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ orders: [] }),
+      userId ? api(`/api/sell-requests?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ sellRequests: [] }),
     ]);
     categories = categoryData.categories;
     products = productData.products;
     wallet = walletData.wallet;
     orders = orderData.orders;
+    sellRequests = sellRequestData.sellRequests || [];
     platformConfig = configData;
     if (adminToken) await loadProtectedData();
     return true;
@@ -154,8 +158,8 @@ function renderAuthStatus() {
   const authLink = document.getElementById("authNavLink");
   const heroLoginLink = document.getElementById("heroLoginLink");
   if (authLink) {
-    authLink.textContent = currentUser ? "Logout" : "Login";
-    authLink.href = "#auth";
+    authLink.textContent = currentUser ? "My Account" : "Login";
+    authLink.href = currentUser ? "#account" : "#auth";
   }
   if (heroLoginLink) {
     heroLoginLink.textContent = currentUser ? "Account" : "Login";
@@ -354,6 +358,35 @@ function renderOrders() {
   `).join("") || `<p>No orders yet.</p>`;
 }
 
+function renderAccount() {
+  if (!els.accountGrid) return;
+  if (!currentUser) {
+    els.accountGrid.innerHTML = `
+      <article><h3>Account</h3><p>Please login to view account details.</p><a class="primary-button" href="#auth">Login</a></article>
+    `;
+    return;
+  }
+  const latestOrders = orders.slice(0, 3);
+  const latestSellRequests = sellRequests.slice(0, 3);
+  els.accountGrid.innerHTML = `
+    <article><h3>Email</h3><p>${escapeHtml(currentUser.email || "Logged in user")}</p><button class="secondary-button" data-logout type="button">Logout</button></article>
+    <article><h3>Wallet</h3><p>${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} ${coinMarkup()} available</p><a class="primary-button" href="#wallet">Open Wallet</a></article>
+    <article><h3>Orders</h3><p>${orders.length} order records</p><a class="secondary-button" href="#orders">View Orders</a></article>
+    <article class="wide-card"><h3>Recent Sell Requests</h3>
+      <div class="account-list">
+        ${latestSellRequests.map(request => `<span>${escapeHtml(request.id)} • ${escapeHtml(request.title || "Item")} • ${escapeHtml(String(request.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No sell requests yet.</span>"}
+      </div>
+      <a class="secondary-button" href="#sell">Sell an Item</a>
+    </article>
+    <article class="wide-card"><h3>Recent Orders</h3>
+      <div class="account-list">
+        ${latestOrders.map(order => `<span>${escapeHtml(order.id)} • ${formatCoins(order.totalCoins || 0)} • ${escapeHtml(String(order.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No orders yet.</span>"}
+      </div>
+      <a class="secondary-button" href="#market">Browse Products</a>
+    </article>
+  `;
+}
+
 function renderAdmin() {
   if (!adminToken) {
     els.adminGrid.innerHTML = `
@@ -520,6 +553,7 @@ function renderAll() {
   renderFormFields();
   renderWallet();
   renderOrders();
+  renderAccount();
   renderAdmin();
   renderPartnerTasks();
   renderAuthStatus();
@@ -531,7 +565,7 @@ function navigate(rawHash) {
   state.route = route || "home";
   if (route === "category") state.category = value || "mobiles";
   if (route === "product") state.productId = value || products[0].id;
-  if (["wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId()) {
+  if (["account", "wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId()) {
     state.route = "auth";
   }
   if (isMaintenanceActive() && state.route !== "admin") {
@@ -550,6 +584,7 @@ function navigate(rawHash) {
   renderProductDetail();
   renderCart();
   renderOrders();
+  renderAccount();
   renderAdmin();
   renderPartnerTasks();
   renderAuthStatus();
