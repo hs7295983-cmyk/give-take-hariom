@@ -1814,6 +1814,8 @@ function renderProducts() {
 
 function renderProductDetail() {
   const product = products.find(item => item.id === state.productId) || products[0];
+  const hiddenChecks = new Set(["Original price listed", "Admin price editable"]);
+  const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   els.productDetail.innerHTML = `
     ${productVisual(product, "detail-image")}
     <article class="detail-panel">
@@ -1826,7 +1828,7 @@ function renderProductDetail() {
       <div class="coin-price">${formatCoins(product.price)}</div>
       <p>${product.city} • Product price is coin-only. Delivery charge can be paid by coins online or cash on delivery.</p>
       <div class="checklist">
-        ${product.checks.map(check => `<span>${check}</span>`).join("")}
+        ${visibleChecks.map(check => `<span>${check}</span>`).join("")}
       </div>
       <button class="primary-button full" data-add="${product.id}" type="button">Add to Cart</button>
     </article>
