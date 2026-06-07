@@ -159,11 +159,12 @@ function renderAuthStatus() {
   const heroLoginLink = document.getElementById("heroLoginLink");
   if (authLink) {
     authLink.textContent = currentUser ? "My Account" : "Login";
+    authLink.dataset.short = currentUser ? "Account" : "Login";
     authLink.href = currentUser ? "#account" : "#auth";
   }
   if (heroLoginLink) {
-    heroLoginLink.textContent = currentUser ? "Account" : "Login";
-    heroLoginLink.href = "#auth";
+    heroLoginLink.textContent = currentUser ? "My Account" : "Login";
+    heroLoginLink.href = currentUser ? "#account" : "#auth";
   }
 }
 
