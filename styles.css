@@ -946,17 +946,22 @@ textarea {
   }
 
   .main-nav {
-    justify-content: space-between;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: 100%;
+    gap: 6px;
+    overflow: visible;
   }
 
   .main-nav a {
     font-size: 0;
+    min-width: 0;
+    text-align: center;
   }
 
   .main-nav a::after {
     content: attr(data-short);
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .product-grid,
