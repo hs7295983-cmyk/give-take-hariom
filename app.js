@@ -67,6 +67,12 @@ let platformConfig = {
   }
 };
 
+function normalizeWallet(nextWallet) {
+  return nextWallet && typeof nextWallet.balance === "number"
+    ? { balance: nextWallet.balance, ledger: Array.isArray(nextWallet.ledger) ? nextWallet.ledger : [] }
+    : { balance: 0, ledger: [] };
+}
+
 const state = {
   route: "home",
   category: null,
@@ -125,7 +131,7 @@ async function loadBackendData() {
     ]);
     categories = categoryData.categories;
     products = productData.products;
-    wallet = walletData.wallet;
+    wallet = normalizeWallet(walletData.wallet);
     orders = orderData.orders;
     sellRequests = sellRequestData.sellRequests || [];
     platformConfig = configData;
@@ -651,7 +657,7 @@ function wireEvents() {
           method: "POST",
           body: JSON.stringify({ userId: getCurrentUserId(), userEmail: currentUser?.email || "", productIds: state.cart, city, deliveryChargeMode: "cod-rupees" }),
         });
-        wallet = data.wallet;
+        wallet = normalizeWallet(data.wallet);
         orders.unshift(data.order);
         state.cart = [];
         renderWallet();
@@ -687,7 +693,7 @@ function wireEvents() {
           admin: true,
           body: JSON.stringify({}),
         });
-        wallet = data.wallet;
+        wallet = normalizeWallet(data.wallet);
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
         renderWallet();
@@ -928,7 +934,7 @@ function wireEvents() {
             upiReference: form.get("upiReference"),
           }),
         });
-        wallet = data.wallet;
+        wallet = normalizeWallet(data.wallet);
         state.rechargeAmount = null;
         renderWallet();
         alert(`Recharge request submitted: ${data.rechargeRequest.id}. Coins will be credited after admin verifies payment.`);

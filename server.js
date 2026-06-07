@@ -163,6 +163,7 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "wallet" && parts[2] === "recharge") {
     const body = await readBody(req);
     const userId = body.userId || "user-demo";
+    if (!db.wallets[userId]) db.wallets[userId] = { balance: 0, ledger: [] };
     const amount = Number(body.amount);
     const paymentMethod = String(body.method || "UPI").toUpperCase();
     if (!Number.isFinite(amount) || amount < db.meta.coinRechargeMinimum || amount % db.meta.coinRechargeStep !== 0) {
