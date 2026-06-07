@@ -19,35 +19,1657 @@ const fallbackCategories = [
 ];
 
 const fallbackProducts = [
-  ["p1", "Samsung Galaxy M32", "mobiles", "Lucknow", 8200, "Good", "GIVE & TAKE Verified", 240, 18, ["Tested", "Return Eligible"], ["IMEI matched", "Battery normal", "Minor body marks"], "#bde7ff", "#30586c"],
-  ["p2", "iPhone XR 64GB", "mobiles", "Ayodhya", 11800, "Fair", "Refurbished", 380, 21, ["Tested", "Cleaned"], ["Face ID working", "Battery fair", "Local display noted"], "#f5d3cb", "#6b4f64"],
-  ["p3", "Redmi Note 11", "mobiles", "Gonda", 6900, "Good", "Collected Item", 210, 15, ["Verified", "Return Eligible"], ["Charger included", "Camera checked", "No screen crack"], "#ffd28c", "#be6b37"],
-  ["p4", "Lenovo ThinkPad", "electronics", "Lucknow", 18500, "Good", "GIVE & TAKE Verified", 510, 9, ["Tested", "Cleaned"], ["Keyboard working", "Battery backup checked", "Charger included"], "#c7d2fe", "#243b73"],
-  ["p5", "Boat Bluetooth Speaker", "electronics", "Ayodhya", 1450, "Like New", "Open Box", 150, 28, ["Tested"], ["Sound checked", "Charging checked", "Cable included"], "#c9f7e1", "#256b52"],
-  ["p6", "Sony Headphones", "electronics", "Gonda", 2200, "Good", "Collected Item", 175, 11, ["Tested", "Cleaned"], ["Mic checked", "Cushions cleaned", "Bluetooth working"], "#f6e7a8", "#4f6f8f"],
-  ["p7", "Class 12 PCM Book Set", "books", "Lucknow", 780, "Good", "Collected Item", 98, 8, ["Quality Checked"], ["No missing pages", "Some highlighting", "Latest useful edition"], "#ffe3a3", "#977b35"],
-  ["p8", "UPSC Starter Books", "books", "Ayodhya", 1250, "Good", "Collected Item", 310, 22, ["Quality Checked"], ["Set complete", "Clean pages", "Minor notes"], "#d8f1f0", "#3b7270"],
-  ["p9", "Engineering Drawing Book", "books", "Gonda", 350, "Fair", "Collected Item", 80, 6, ["Best Value"], ["Usable pages", "Older edition", "Low-cost pick"], "#ead7ff", "#59476f"],
-  ["p10", "Study Table", "furniture", "Lucknow", 3100, "Good", "GIVE & TAKE Verified", 165, 5, ["Cleaned"], ["Stable", "Minor scratches", "Pickup checked"], "#d5f0c0", "#607b35"],
-  ["p11", "Office Chair", "furniture", "Ayodhya", 2400, "Fair", "Collected Item", 145, 7, ["Cleaned"], ["Wheels working", "Fabric cleaned", "Armrest marks"], "#cde7ff", "#33628c"],
-  ["p12", "Small Wooden Shelf", "furniture", "Gonda", 1600, "Good", "Collected Item", 90, 4, ["Cleaned"], ["Strong body", "Polished", "No major crack"], "#f4d6b3", "#8d5930"],
-  ["p13", "Denim Jacket", "fashion", "Lucknow", 950, "Like New", "Collected Item", 330, 19, ["Cleaned", "Return Eligible"], ["Size M", "No stains", "Washed"], "#b9d7f5", "#2f4d73"],
-  ["p14", "Sports Shoes UK 8", "fashion", "Ayodhya", 1250, "Good", "GIVE & TAKE Verified", 270, 13, ["Cleaned"], ["Sole checked", "No tear", "Minor wear"], "#d7f5c2", "#54783e"],
-  ["p15", "Cotton Kurta Set", "fashion", "Gonda", 700, "Good", "Collected Item", 120, 6, ["Cleaned"], ["Size L", "Fresh cleaned", "No defect"], "#ffd7d2", "#9b4d43"],
-  ["p16", "Mixer Grinder", "home", "Lucknow", 2600, "Good", "Tested Appliance", 240, 10, ["Tested", "Cleaned"], ["Motor checked", "Jar included", "Safe wiring"], "#ffe4a8", "#a66a22"],
-  ["p17", "Table Lamp", "home", "Ayodhya", 650, "Good", "Collected Item", 92, 14, ["Tested"], ["Switch working", "Cable checked", "Bulb included"], "#fff1b8", "#68602a"],
-  ["p18", "Kitchen Storage Set", "home", "Gonda", 520, "Like New", "Open Box", 76, 9, ["Cleaned"], ["Set complete", "No cracks", "Hygiene checked"], "#d3f4e9", "#3a6e63"],
-  ["p19", "College Backpack", "bags", "Lucknow", 850, "Good", "Collected Item", 220, 18, ["Cleaned"], ["Zips working", "No tear", "Washed"], "#d7e0ff", "#445690"],
-  ["p20", "Travel Duffel Bag", "bags", "Ayodhya", 1150, "Good", "Collected Item", 160, 7, ["Cleaned"], ["Handles strong", "Zips checked", "Minor marks"], "#ecd6ba", "#8a603a"],
-  ["p21", "Office Laptop Bag", "bags", "Gonda", 700, "Fair", "Collected Item", 105, 5, ["Best Value"], ["Usable", "Zip checked", "Visible wear"], "#cfe7dd", "#446a5a"],
-  ["p22", "Kids Toy Bundle", "toys", "Lucknow", 450, "Good", "Low-Value Bundle", 190, 14, ["Cleaned"], ["Pieces checked", "Cleaned", "Bundle value"], "#ffe1ef", "#91536d"],
-  ["p23", "Cricket Bat", "toys", "Ayodhya", 900, "Fair", "Collected Item", 125, 8, ["Quality Checked"], ["Usable grip", "Body marks", "No crack"], "#f5dda6", "#7b5d2e"],
-  ["p24", "Bluetooth Keyboard", "electronics", "Lucknow", 1250, "Like New", "Open Box", 280, 17, ["Tested"], ["Keys working", "Bluetooth checked", "Battery included"], "#dce9ff", "#425e9a"],
-  ["p25", "Single Pillow Pair", "home", "Gonda", 120, "Good", "Donation/Bundle Eligible", 65, 3, ["Cleaned"], ["Low-value item", "Bundle pickup suggested", "Hygiene checked"], "#f2e1c6", "#8f734b"],
-].map(([id, title, category, city, price, condition, source, views, sold, badges, checks, artA, artB], index) => ({
-  id, title, category, city, price, condition, source, views, sold, badges, checks, artA, artB,
-  newest: 25 - index,
-}));
+  {
+    id: "gtl01",
+    title: "Disposable Waterproof Shower Cap for Women - 1 Pack",
+    category: "home",
+    city: "Lucknow",
+    price: 2,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 615,
+    sold: 5,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/3.jpg?v=1761747759",
+    status: "listed",
+    quantity: 1,
+    newest: 55,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/disposable-shower-caps"
+  },
+  {
+    id: "gtl02",
+    title: "Reusable Transparent Double-Sided Nano Adhesive Gel Pad (1 Pc)",
+    category: "home",
+    city: "Ayodhya",
+    price: 3,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 606,
+    sold: 4,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/23577_01_without_sku_3253db29-3b47-47e0-a828-eb877ccb2615.jpg?v=1780294178",
+    status: "listed",
+    quantity: 1,
+    newest: 54,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/reusable-transparent-double-sided-nano-adhesive-gel-wall-sticker-pad-grip-1-pc"
+  },
+  {
+    id: "gtl03",
+    title: "Transparent Self Adhesive Wall Hook Holder – Punch Free, Strong & Durable",
+    category: "home",
+    city: "Gonda",
+    price: 3,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 597,
+    sold: 21,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/23576_01_without_sku_b58c1620-3502-41fa-a24b-ed07bd24d875.jpg?v=1780140882",
+    status: "listed",
+    quantity: 1,
+    newest: 53,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/transparent-self-adhesive-wall-hook-holder-punch-free-for-kitchen-bathroom-1-pc"
+  },
+  {
+    id: "gtl04",
+    title: "Transparent Self-Adhesive Wall Sticker Hook – Nail-Free, Waterproof (1 Pc)",
+    category: "home",
+    city: "Lucknow",
+    price: 3,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 588,
+    sold: 20,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/23572_01_without_sku_7ffa6339-c40f-4f53-b214-adfc4f9d165f.jpg?v=1780126525",
+    status: "listed",
+    quantity: 1,
+    newest: 52,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/transparent-self-adhesive-wall-sticker-hook-punch-free-for-keys-hanging-1-pc"
+  },
+  {
+    id: "gtl05",
+    title: "Anti-Fray Spiral Cable Protector (2-Pack) – Durable Silicone/TPU Guard",
+    category: "electronics",
+    city: "Ayodhya",
+    price: 3,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 579,
+    sold: 19,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/CordProtective-WOSKU-01.jpg?v=1759924408",
+    status: "listed",
+    quantity: 1,
+    newest: 51,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/mobile-cable-grip"
+  },
+  {
+    id: "gtl06",
+    title: "Angel Silicone Data Cable Protector - Durable 2-in-1 Cord Saver",
+    category: "electronics",
+    city: "Gonda",
+    price: 3,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 570,
+    sold: 18,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_67d8ac65-23b4-4c0d-95d9-8e5ac9356c5d.jpg?v=1750909279",
+    status: "listed",
+    quantity: 1,
+    newest: 50,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/silicone-data-cable-protector-2-in1-cord-saver-cover"
+  },
+  {
+    id: "gtl07",
+    title: "Micro USB OTG Adapter – Portable USB Connector for Smartphones",
+    category: "electronics",
+    city: "Lucknow",
+    price: 4,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 561,
+    sold: 17,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_Adapter.jpg?v=1759553846",
+    status: "listed",
+    quantity: 1,
+    newest: 49,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/usb-c-otg-adapter-1-pc"
+  },
+  {
+    id: "gtl08",
+    title: "Midnight Spice Refreshing Wet Wipes for Face, Body & Hands (1 Pc)",
+    category: "fashion",
+    city: "Ayodhya",
+    price: 4,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 552,
+    sold: 16,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/RefreshingWetWipe02-01.jpg?v=1779688276",
+    status: "listed",
+    quantity: 1,
+    newest: 48,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/midnight-spice-refreshing-wet-wipes-face-body-hand-cleansing-1-pc"
+  },
+  {
+    id: "gtl09",
+    title: "Reusable Silicone Swimming Ear Plugs Set - Comfortable & Waterproof",
+    category: "fashion",
+    city: "Gonda",
+    price: 5,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 543,
+    sold: 15,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/WhatsAppImage2025-09-27at9.54.16AM_a64b066d-aa84-4f24-8f8a-50f69d26d220.jpg?v=1759317669",
+    status: "listed",
+    quantity: 1,
+    newest: 47,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/reusable-silicone-swimming-ear-plugs-set"
+  },
+  {
+    id: "gtl10",
+    title: "Anti-Sweat Thumb & Finger Sleeves for Mobile Gaming (1 Pair)",
+    category: "electronics",
+    city: "Lucknow",
+    price: 6,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 534,
+    sold: 14,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/3image_36eafacf-fbf8-408f-8d59-0f9af160dee4.jpg?v=1722922521",
+    status: "listed",
+    quantity: 1,
+    newest: 46,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/thumb-finger-sleeve-mobile-games-gaming-sleeve"
+  },
+  {
+    id: "gtl11",
+    title: "Transparent Zip Lock Bag 33x23 cm – Durable & Reusable Storage",
+    category: "bags",
+    city: "Ayodhya",
+    price: 6,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 525,
+    sold: 13,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/transparentZipLockPouches-WOSKU-01.jpg?v=1775046506",
+    status: "listed",
+    quantity: 1,
+    newest: 45,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/transparent-plastic-zip-lock-bag-1-pc-33x23-cm"
+  },
+  {
+    id: "gtl12",
+    title: "Effervescent Car Wiper Detergent Tablets for Clear Windshield",
+    category: "home",
+    city: "Gonda",
+    price: 6,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 516,
+    sold: 12,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/products/721402.jpg?v=1737631045",
+    status: "listed",
+    quantity: 1,
+    newest: 44,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/car-wiper-detergent-effervescent-tablets-washer"
+  },
+  {
+    id: "gtl13",
+    title: "Plastic Hand Mobile Stand (Mix Color / 1 Pc)",
+    category: "furniture",
+    city: "Lucknow",
+    price: 7,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 507,
+    sold: 11,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/05_345ca402-89e9-4f72-b996-c4b59e9b816a.jpg?v=1751025748",
+    status: "listed",
+    quantity: 1,
+    newest: 43,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/14318_hand_mobile_stand_1pc"
+  },
+  {
+    id: "gtl14",
+    title: "Soft Noise Reduction Ear Plugs – Comfortable & Reusable Pair",
+    category: "home",
+    city: "Ayodhya",
+    price: 7,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 498,
+    sold: 10,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/EarPlugs-WOSKU-01.jpg?v=1767595979",
+    status: "listed",
+    quantity: 1,
+    newest: 42,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/soft-noise-reduction-ear-plugs-1-pair"
+  },
+  {
+    id: "gtl15",
+    title: "Soft Bristle Kids Toothbrush – Gentle Grip for Daily Oral Care",
+    category: "toys",
+    city: "Gonda",
+    price: 7,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 489,
+    sold: 9,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_brush_65dcc414-23c0-4ea7-abb1-0252d741eff6.jpg?v=1767692500",
+    status: "listed",
+    quantity: 1,
+    newest: 41,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/soft-bristle-kids-toothbrush-1-pc"
+  },
+  {
+    id: "gtl16",
+    title: "Glass Premium Oil Spray Bottle 300ml - Fine Mist Dispenser",
+    category: "home",
+    city: "Lucknow",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 480,
+    sold: 8,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_oil-bottle.jpg?v=1759918949",
+    status: "listed",
+    quantity: 1,
+    newest: 40,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/premium-oil-spray-bottle-300-ml-1-pc"
+  },
+  {
+    id: "gtl17",
+    title: "Sky Blue Lotus Design Gold Tone Jhumka Earrings with Pearl Beads",
+    category: "fashion",
+    city: "Ayodhya",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 471,
+    sold: 7,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/J4IQNzJHtY.jpg?v=1779972730",
+    status: "listed",
+    quantity: 1,
+    newest: 39,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/sky-blue-lotus-design-gold-tone-jhumka-earrings-with-pearl-beads"
+  },
+  {
+    id: "gtl18",
+    title: "4-Compartment Plastic Dish Set with Spoon & Fork – Versatile Dinner & Pav Bhaji Plate",
+    category: "home",
+    city: "Gonda",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 462,
+    sold: 6,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/products/7_97284e7c-a87d-4d7c-a876-f7a3ee5665e6.jpg?v=1751020558",
+    status: "listed",
+    quantity: 1,
+    newest: 38,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/2037-4compartment-dish-with-spoon-and-fork2-dish-set-with-1spoon-and-1fork-dinner-plate-plastic-compartment-plate-pav-bhaji-plate-4-compartments-divided-plastic-food-plate"
+  },
+  {
+    id: "gtl19",
+    title: "Swizzy Jelly 500ml Tumbler with Straw – Stylish & Reusable",
+    category: "home",
+    city: "Lucknow",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 453,
+    sold: 5,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/Sipper-Bottle-1.jpg?v=1776847724",
+    status: "listed",
+    quantity: 1,
+    newest: 37,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/stylish-swizzy-jelly-tumbler-with-straw-and-fun-lid-1-pc-500ml"
+  },
+  {
+    id: "gtl20",
+    title: "Heart-Shaped Grater & Slicer Set for Fruits & Vegetables",
+    category: "home",
+    city: "Ayodhya",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 444,
+    sold: 4,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_64192fbb-9cb6-43a3-90cd-8bc5555cb385.jpg?v=1745666634",
+    status: "listed",
+    quantity: 1,
+    newest: 36,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/2965-heart-grater-set-and-heart-grater-slicer-used-widely-for-grating-and-slicing-of-fruits-vegetables-cheese-etc-including-all-kitchen-purposes"
+  },
+  {
+    id: "gtl21",
+    title: "Bicycle-Shaped Plastic Flower Pot Stand for Home Decor",
+    category: "furniture",
+    city: "Gonda",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 435,
+    sold: 21,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_20cc7ccb-9298-4d4b-b437-e112320162c0.jpg?v=1741672544",
+    status: "listed",
+    quantity: 1,
+    newest: 35,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/plastic-cycle-flower-vases-for-home-decor-bicycle-flower-pot-stand-1-pc"
+  },
+  {
+    id: "gtl22",
+    title: "Soft Plastic Toothbrush Set with Portable Round Box – 20 pcs",
+    category: "home",
+    city: "Lucknow",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 426,
+    sold: 20,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/03_689007d6-abd5-4e02-acd8-fbd95f95b1c5.jpg?v=1751115694",
+    status: "listed",
+    quantity: 1,
+    newest: 34,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/13198_pla_soft_toothbrush_10pc_set"
+  },
+  {
+    id: "gtl23",
+    title: "Silver Plated Ad Stone Double Line Bracelet",
+    category: "fashion",
+    city: "Ayodhya",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 417,
+    sold: 19,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/b4nxpoxptG.jpg?v=1761650973",
+    status: "listed",
+    quantity: 1,
+    newest: 33,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/silver-plated-ad-stone-double-line-bracelet"
+  },
+  {
+    id: "gtl24",
+    title: "Graceful AD Bracelet with flower motif for women",
+    category: "fashion",
+    city: "Gonda",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 408,
+    sold: 18,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/yrHB9kG074.png?v=1767781830",
+    status: "listed",
+    quantity: 1,
+    newest: 32,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/graceful-ad-bracelet-with-flower-motif-for-women"
+  },
+  {
+    id: "gtl25",
+    title: "Sparkling AD Floral Design Bracelet For party wear",
+    category: "fashion",
+    city: "Lucknow",
+    price: 101,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 399,
+    sold: 17,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/rlDgB1afrt.png?v=1767781830",
+    status: "listed",
+    quantity: 1,
+    newest: 31,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/sparkling-ad-floral-design-bracelet-for-party-wear"
+  },
+  {
+    id: "gtl26",
+    title: "3 Compartment Lunch Box with Spoon & Fork Space - BPA Free",
+    category: "home",
+    city: "Ayodhya",
+    price: 102,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 390,
+    sold: 16,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/0J0NNS4SHp.jpg?v=1769076349",
+    status: "listed",
+    quantity: 1,
+    newest: 30,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/3-compartment-lunch-box-with-spoon-and-fork-space"
+  },
+  {
+    id: "gtl27",
+    title: "Portable Mini USB Fan, Light & 3-Port USB Hub Combo",
+    category: "electronics",
+    city: "Gonda",
+    price: 102,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 381,
+    sold: 15,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_09d06b38-6095-44e6-a340-d2dd86836934.jpg?v=1767781418",
+    status: "listed",
+    quantity: 1,
+    newest: 29,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/mini-usb-fan-usb-light-3-port-hub-combo"
+  },
+  {
+    id: "gtl28",
+    title: "Premium Big Desktop Mobile Phone Stand Holder for Smartphones",
+    category: "furniture",
+    city: "Lucknow",
+    price: 102,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 372,
+    sold: 14,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/phoneHolder-WOSKU-01_a0a72634-4f36-42fb-aa41-1ae44e79413d.jpg?v=1767411832",
+    status: "listed",
+    quantity: 1,
+    newest: 28,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/premium-big-desktop-mobile-phone-stand-holder-for-smartphones-1-pc"
+  },
+  {
+    id: "gtl29",
+    title: "Plastic Medium Size Cane Fruit Baskets",
+    category: "home",
+    city: "Ayodhya",
+    price: 103,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 363,
+    sold: 13,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/products/248205.jpg?v=1750912867",
+    status: "listed",
+    quantity: 1,
+    newest: 27,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/2482-plastic-medium-size-cane-fruit-baskets"
+  },
+  {
+    id: "gtl30",
+    title: "Mini Bag Sealer, 2 in 1 Seal & Cutter Heat Sealers",
+    category: "bags",
+    city: "Gonda",
+    price: 105,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 354,
+    sold: 12,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/3030322.webp?v=1776688450",
+    status: "listed",
+    quantity: 1,
+    newest: 26,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/mini-bag-sealer-2-in-1-seal-cutter-heat-sealers"
+  },
+  {
+    id: "gtl31",
+    title: "Water Floating Smokeless Candles & Lotus Flowers Sensor Led TeaLight (Pack of 6)",
+    category: "electronics",
+    city: "Lucknow",
+    price: 302,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 345,
+    sold: 11,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/09_7c5f4b8b-0f28-48c3-ad08-a4d4b9b68830.jpg?v=1737627580",
+    status: "listed",
+    quantity: 1,
+    newest: 25,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/6556-water-floating-smokeless-candles-lotus-flowers-sensor-led-tealight-for-outdoor-and-indoor-decoration-pack-of-6-candle-candle-pack-of-6"
+  },
+  {
+    id: "gtl32",
+    title: "46pcs Metal 1 / 4\"\" Socket Set (Black, 46pcs)",
+    category: "home",
+    city: "Ayodhya",
+    price: 302,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 336,
+    sold: 10,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/0452_b1f1c4e1-adb2-4f8f-9d49-9276bc00dd67.jpg?v=1769171990",
+    status: "listed",
+    quantity: 1,
+    newest: 24,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/46-piece-metal-socket-set"
+  },
+  {
+    id: "gtl33",
+    title: "Heavy-Duty Furniture Lifter & Shifting Tool Set",
+    category: "home",
+    city: "Gonda",
+    price: 302,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 327,
+    sold: 9,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/products/7image_1a79ec66-96d3-4271-b158-c4cb7228c094.jpg?v=1737634058",
+    status: "listed",
+    quantity: 1,
+    newest: 23,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/1619c-heavy-furniture-lifter-and-furniture-shifting-tool-1"
+  },
+  {
+    id: "gtl34",
+    title: "Crystal Design LED Flameless Tealight Candles (6 Pc)",
+    category: "electronics",
+    city: "Lucknow",
+    price: 302,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 318,
+    sold: 8,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/LightDiya-WOSKU-01.jpg?v=1758514971",
+    status: "listed",
+    quantity: 1,
+    newest: 22,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/crystal-design-led-flameless-tealight-candles-6-pc"
+  },
+  {
+    id: "gtl35",
+    title: "Kids Educational Laptop Learning Toy with Alphabets & Music",
+    category: "toys",
+    city: "Ayodhya",
+    price: 305,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 309,
+    sold: 7,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/22123_01_without_sku_26072e9b-18ab-425f-ae3a-bbcbe09c3f8e.jpg?v=1780379965",
+    status: "listed",
+    quantity: 1,
+    newest: 21,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/kids-educational-laptop-learning-toy-with-numbers-alphabets-music-for-kids-1-pc"
+  },
+  {
+    id: "gtl36",
+    title: "Happy Birthday LED Acrylic Message Lamp with Wooden Base | Decorative Table Light",
+    category: "furniture",
+    city: "Gonda",
+    price: 306,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 300,
+    sold: 6,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/gxZoF2d7D2.jpg?v=1770106701",
+    status: "listed",
+    quantity: 1,
+    newest: 20,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/happy-birthday-led-acrylic-message-lamp-with-wooden-base-decorative-table-light"
+  },
+  {
+    id: "gtl37",
+    title: "Romantic Heart Love Decorative Gift Set (1 Set)",
+    category: "home",
+    city: "Lucknow",
+    price: 309,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 291,
+    sold: 5,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/LoveCombo-WOSKU-01.jpg?v=1769855861",
+    status: "listed",
+    quantity: 1,
+    newest: 19,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/romantic-heart-love-decorative-gift-set-1-set"
+  },
+  {
+    id: "gtl38",
+    title: "Mechanical Walking Dinosaur Toy with LED Lights, Sound Effects and Pull-Along Action for Kids",
+    category: "electronics",
+    city: "Ayodhya",
+    price: 310,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 282,
+    sold: 4,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/PVEZ0PzEhN.jpg?v=1780146885",
+    status: "listed",
+    quantity: 1,
+    newest: 18,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/mechanical-walking-dinosaur-toy-with-led-lights-sound-effects-and-pull-along-action-for-kids"
+  },
+  {
+    id: "gtl39",
+    title: "Interactive Pull-Along Frog Toy with Colorful LED Lights & Music for Toddlers",
+    category: "electronics",
+    city: "Gonda",
+    price: 310,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 273,
+    sold: 21,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/3LDYd4lPiK.jpg?v=1780146886",
+    status: "listed",
+    quantity: 1,
+    newest: 17,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/interactive-pull-along-frog-toy-with-colorful-led-lights-music-for-toddlers"
+  },
+  {
+    id: "gtl40",
+    title: "Romantic Heart Love Table Decor Gift Set (1 Set)",
+    category: "furniture",
+    city: "Lucknow",
+    price: 314,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 264,
+    sold: 20,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_ad553cc2-392b-451a-9b42-631f30e759e9.jpg?v=1769858225",
+    status: "listed",
+    quantity: 1,
+    newest: 16,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/romantic-heart-love-table-decor-gift-set-1-set"
+  },
+  {
+    id: "gtl41",
+    title: "Customize Stainless Steel Vacuum Insulated Water Bottle | Leak Proof Flask for Tea Coffee | Reusable Water Bottle with Hanging Strap | Bottle for Hot & Cold Drinks Wide Mouth Water Flask 1200 ML",
+    category: "electronics",
+    city: "Ayodhya",
+    price: 315,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 255,
+    sold: 19,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/4_7d6f3586-7203-4868-b4b6-bb19b23a72dd.jpg?v=1737618223",
+    status: "listed",
+    quantity: 1,
+    newest: 15,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/ss-vacuum-insulated-water-bottle-1200-ml"
+  },
+  {
+    id: "gtl42",
+    title: "Topper Cool Water Premium Car Perfume With Rich Fregrence (50ml)",
+    category: "home",
+    city: "Gonda",
+    price: 318,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 246,
+    sold: 18,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/1cd5bee5-dcea-4784-9b69-9e7ac6d3a047.jpg?v=1742900960",
+    status: "listed",
+    quantity: 1,
+    newest: 14,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/topper-cool-water-premium-car-perfume-with-rich-fregrence-50ml"
+  },
+  {
+    id: "gtl43",
+    title: "Personalized Temperature Water Bottle & Chocolate Set (Multi Circle Box / 2 Pc Set)",
+    category: "home",
+    city: "Lucknow",
+    price: 319,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 237,
+    sold: 17,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/001_ed0626ef-2cda-4bc7-ad4e-55046f9b0a80.jpg?v=1737618597",
+    status: "listed",
+    quantity: 1,
+    newest: 13,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/personalized-temprature-water-bottle-chocolate-with-attractive-multi-circle-box-2-pc-set"
+  },
+  {
+    id: "gtl44",
+    title: "Personalized Temperature Water Bottle with Rose Almond Chocolate 2 Pc Mix Color",
+    category: "home",
+    city: "Ayodhya",
+    price: 319,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 228,
+    sold: 16,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_7e4eb14b-e6a0-4184-8a20-4baaee27c1da.jpg?v=1733401048",
+    status: "listed",
+    quantity: 1,
+    newest: 12,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/personalized-temperature-water-bottle-rose-almond-chocolate-with-attractive-peacock-box-2-pc-set-mix-color-bottle"
+  },
+  {
+    id: "gtl45",
+    title: "Personalized Temperature Water Bottle Decorative Light with Kesar Pista Almond Chocolate 3 Pc",
+    category: "electronics",
+    city: "Gonda",
+    price: 319,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 219,
+    sold: 15,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/03_d834bcfb-cfab-4b15-979d-d8443bee5a8c.jpg?v=1737618509",
+    status: "listed",
+    quantity: 1,
+    newest: 11,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/personalized-temperature-water-bottle-decorative-light-kesar-pista-almond-chocolate-with-attractive-peacock-box-3-pc-set"
+  },
+  {
+    id: "gtl46",
+    title: "LED Round Static Grey Sand Art Lamp | Modern Ambient Decorative Night Light",
+    category: "electronics",
+    city: "Lucknow",
+    price: 320,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 210,
+    sold: 14,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/9t22Dk0XVk.jpg?v=1767781752",
+    status: "listed",
+    quantity: 1,
+    newest: 10,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/led-round-static-grey-sand-art-lamp-modern-ambient-decorative-night-light"
+  },
+  {
+    id: "gtl47",
+    title: "Insulated 5.5L Water Jug for Cool, Odorless Hydration",
+    category: "home",
+    city: "Ayodhya",
+    price: 323,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 201,
+    sold: 13,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/Water-Jug-02_3944ad91-c267-4299-a1df-f798dafaaf8e.jpg?v=1760002481",
+    status: "listed",
+    quantity: 1,
+    newest: 9,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/12263_crystal_water_jug_5_5ltr"
+  },
+  {
+    id: "gtl48",
+    title: "M12 Max Wireless Earbuds, Black Touch Control Bluetooth",
+    category: "electronics",
+    city: "Gonda",
+    price: 324,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 192,
+    sold: 12,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/products/05_eea997e4-ab37-43e2-9977-bd78ffefe476.jpg?v=1737635364",
+    status: "listed",
+    quantity: 1,
+    newest: 8,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/6705_true_wireless_airbuds_m12max"
+  },
+  {
+    id: "gtl49",
+    title: "Creative Solar Drummer Car Aromatherapy, Solar Powered Car Air Freshener (1 Pc)",
+    category: "home",
+    city: "Lucknow",
+    price: 324,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 183,
+    sold: 11,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/02_d5496b47-e5a9-4749-a4ed-dc840b4ec8d3.jpg?v=1750933727",
+    status: "listed",
+    quantity: 1,
+    newest: 7,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/18332-creative-solar-power-aromatherapy-car-air-freshner"
+  },
+  {
+    id: "gtl50",
+    title: "Personalized Temperature Water Bottle, (2 Pc Set), Mix Color",
+    category: "home",
+    city: "Ayodhya",
+    price: 324,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 174,
+    sold: 10,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/266cd06d-0273-4037-a538-6707067854b5_535276ca-8310-4cfb-bdf3-19faa8f6d40e.jpg?v=1758196294",
+    status: "listed",
+    quantity: 1,
+    newest: 6,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/whl146-19712-coffee-bottle-box-cpr"
+  },
+  {
+    id: "gtl51",
+    title: "Vikas Cast Iron Dosa Tawa 29 cm – Durable & Naturally Non-Stick",
+    category: "home",
+    city: "Gonda",
+    price: 807,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 165,
+    sold: 9,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/b8DXFXVQal.png?v=1780660278",
+    status: "listed",
+    quantity: 1,
+    newest: 5,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/vikas-cast-iron-dosa-tawa-29-cm-with-long-handle-naturally-non-stick-extra-durable"
+  },
+  {
+    id: "gtl52",
+    title: "Kids inflatable sofa chair with backrest & Foot Air Pump (1 Set 85x74 Cm Approx)",
+    category: "furniture",
+    city: "Lucknow",
+    price: 821,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 156,
+    sold: 8,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_02a99679-f927-49c0-a98c-dd43244e7b4e.jpg?v=1737616845",
+    status: "listed",
+    quantity: 1,
+    newest: 4,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/18230-inflatable-air-sofa-with-air-pump"
+  },
+  {
+    id: "gtl53",
+    title: "2 in 1 Plastic Keychain with Mobile Stand / Phone Holder (100 Pcs Set / Multicolor)",
+    category: "furniture",
+    city: "Ayodhya",
+    price: 828,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 147,
+    sold: 7,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/01_bfdfcc92-a02f-441d-9777-29933ffb35a5.jpg?v=1737620909",
+    status: "listed",
+    quantity: 1,
+    newest: 3,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/2-in-1-plastic-keychain-mobile-stand-100pcs-set"
+  },
+  {
+    id: "gtl54",
+    title: "Portable Stainless Steel Foldable Barbecue Grill (1 Pc)",
+    category: "home",
+    city: "Gonda",
+    price: 833,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 138,
+    sold: 6,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/CharcoalBBQ-WOSKU-01.jpg?v=1777453440",
+    status: "listed",
+    quantity: 1,
+    newest: 2,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/portable-stainless-steel-foldable-barbecue-grill-1-pc"
+  },
+  {
+    id: "gtl55",
+    title: "Abstract Praying Lady Sculpture – Modern Matte Finish Showpiece",
+    category: "home",
+    city: "Lucknow",
+    price: 833,
+    condition: "New",
+    source: "GIVE & TAKE Verified",
+    views: 129,
+    sold: 5,
+    badges: [
+      "Launch Inventory",
+      "Supplier Sourced"
+    ],
+    checks: [
+      "GIVE & TAKE verified",
+      "Original price listed",
+      "Admin price editable"
+    ],
+    artA: "#d3f4e9",
+    artB: "#3a6e63",
+    imageUrl: "https://deodap.in/cdn/shop/files/6rlJHY9zEE.jpg?v=1776684092",
+    status: "listed",
+    quantity: 1,
+    newest: 1,
+    returnWindowHours: 48,
+    owner: "give-and-take",
+    sourceType: "launch-supplier-inventory",
+    supplierUrl: "https://deodap.in/products/abstract-praying-lady-sculpture-decorative-home-showpiece"
+  }
+];
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
@@ -203,6 +1825,18 @@ function coinMarkup() {
   return `<span class="coin-symbol" aria-label="coins"></span>`;
 }
 
+function productVisual(product, className = "product-visual") {
+  const fallbackStyle = `--art-a:${product.artA};--art-b:${product.artB}`;
+  if (product.imageUrl) {
+    return `
+      <div class="${className}" style="${fallbackStyle}">
+        <img class="product-photo" src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />
+      </div>
+    `;
+  }
+  return `<div class="${className}" style="${fallbackStyle}"></div>`;
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;",
@@ -220,7 +1854,7 @@ function isMaintenanceActive() {
 function card(product) {
   return `
     <article class="product-card">
-      <div class="product-visual" style="--art-a:${product.artA};--art-b:${product.artB}"></div>
+      ${productVisual(product)}
       <div class="product-body">
         <div class="badges">
           <span class="badge">${product.source}</span>
@@ -291,7 +1925,7 @@ function renderProducts() {
 function renderProductDetail() {
   const product = products.find(item => item.id === state.productId) || products[0];
   els.productDetail.innerHTML = `
-    <div class="detail-image" style="--art-a:${product.artA};--art-b:${product.artB}"></div>
+    ${productVisual(product, "detail-image")}
     <article class="detail-panel">
       <div class="badges">
         <span class="badge">${product.source}</span>

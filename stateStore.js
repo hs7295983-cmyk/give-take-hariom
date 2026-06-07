@@ -31,9 +31,28 @@ function getPool() {
   return pool;
 }
 
+function applyCatalogVersion(db) {
+  const seed = createSeed();
+  if (db.meta?.catalogVersion === seed.meta.catalogVersion) return { db, changed: false };
+  const nextDb = {
+    ...db,
+    meta: {
+      ...db.meta,
+      catalogVersion: seed.meta.catalogVersion,
+      updatedAt: new Date().toISOString()
+    },
+    categories: seed.categories,
+    products: seed.products
+  };
+  return { db: nextDb, changed: true };
+}
+
 async function ensureLocalDb() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(dbPath)) fs.writeFileSync(dbPath, JSON.stringify(createSeed(), null, 2));
+  const current = JSON.parse(fs.readFileSync(dbPath, "utf8"));
+  const synced = applyCatalogVersion(current);
+  if (synced.changed) fs.writeFileSync(dbPath, JSON.stringify(synced.db, null, 2));
 }
 
 async function ensurePostgresDb() {
@@ -50,6 +69,15 @@ async function ensurePostgresDb() {
     await client.query(
       "insert into app_state (id, data, updated_at) values ($1, $2::jsonb, now())",
       [stateId, JSON.stringify(createSeed())]
+    );
+    return;
+  }
+  const current = await client.query("select data from app_state where id = $1", [stateId]);
+  const synced = applyCatalogVersion(current.rows[0].data);
+  if (synced.changed) {
+    await client.query(
+      "update app_state set data = $2::jsonb, updated_at = now() where id = $1",
+      [stateId, JSON.stringify(synced.db)]
     );
   }
 }
