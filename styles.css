@@ -309,7 +309,8 @@ main {
 
 .status-card,
 .hero-product,
-.flow-card {
+.flow-card,
+.hero-login-card {
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.13);
@@ -319,7 +320,8 @@ main {
 
 .status-card span,
 .status-card small,
-.hero-product span {
+.hero-product span,
+.hero-login-card span {
   display: block;
   color: rgba(255, 255, 255, 0.75);
 }
@@ -344,6 +346,22 @@ main {
   text-align: center;
   font-size: 13px;
   font-weight: 800;
+}
+
+.hero-login-card {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-login-card strong {
+  max-width: 420px;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.hero-login-card .primary-button {
+  width: fit-content;
 }
 
 .hero-product {

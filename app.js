@@ -152,9 +152,15 @@ async function loadAuthUser() {
 
 function renderAuthStatus() {
   const authLink = document.getElementById("authNavLink");
-  if (!authLink) return;
-  authLink.textContent = currentUser ? "Logout" : "Login";
-  authLink.href = "#auth";
+  const heroLoginLink = document.getElementById("heroLoginLink");
+  if (authLink) {
+    authLink.textContent = currentUser ? "Logout" : "Login";
+    authLink.href = "#auth";
+  }
+  if (heroLoginLink) {
+    heroLoginLink.textContent = currentUser ? "Account" : "Login";
+    heroLoginLink.href = "#auth";
+  }
 }
 
 async function loadProtectedData() {
