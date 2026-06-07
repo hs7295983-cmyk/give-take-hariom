@@ -821,7 +821,7 @@ function wireEvents() {
           options: { shouldCreateUser: true },
         });
         if (error) throw error;
-        alert("OTP sent to email. Check inbox/spam, then enter the code.");
+        alert("Sign-in link sent. Check your email inbox/spam and open the link.");
       } catch (error) {
         alert(error.message);
       }
