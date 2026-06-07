@@ -1,6 +1,11 @@
 const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
 const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
+const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
+const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 const fallbackCategories = [
   { id: "mobiles", name: "Mobiles", text: "Phones with IMEI, lock, battery, display, and diagnostic checks." },
@@ -46,11 +51,13 @@ const fallbackProducts = [
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
-let wallet = { balance: 2450, ledger: [] };
+let wallet = { balance: 0, ledger: [] };
 let orders = [];
 let adminDashboard = null;
 let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+let currentUser = null;
+let pendingLoginEmail = "";
 let platformConfig = {
   integrations: {
     payments: {
@@ -105,12 +112,13 @@ async function api(path, options = {}) {
 
 async function loadBackendData() {
   try {
+    const userId = getCurrentUserId();
     const [configData, categoryData, productData, walletData, orderData] = await Promise.all([
       api("/api/config"),
       api("/api/categories"),
       api("/api/products?sort=trending"),
-      api("/api/wallet/user-demo"),
-      api("/api/orders?userId=user-demo"),
+      userId ? api(`/api/wallet/${encodeURIComponent(userId)}`) : Promise.resolve({ wallet: { balance: 0, ledger: [] } }),
+      userId ? api(`/api/orders?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ orders: [] }),
     ]);
     categories = categoryData.categories;
     products = productData.products;
@@ -123,6 +131,30 @@ async function loadBackendData() {
     console.warn("Using local fallback data:", error.message);
     return false;
   }
+}
+
+function getCurrentUserId() {
+  return currentUser?.id || "";
+}
+
+function requireCustomerLogin() {
+  if (getCurrentUserId()) return true;
+  alert("Please login first.");
+  location.hash = "auth";
+  return false;
+}
+
+async function loadAuthUser() {
+  if (!authClient) return;
+  const { data } = await authClient.auth.getUser();
+  currentUser = data.user || null;
+}
+
+function renderAuthStatus() {
+  const authLink = document.getElementById("authNavLink");
+  if (!authLink) return;
+  authLink.textContent = currentUser ? "Logout" : "Login";
+  authLink.href = "#auth";
 }
 
 async function loadProtectedData() {
@@ -296,25 +328,15 @@ function renderWallet() {
   els.walletBalance.textContent = new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
   if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="coins"></span> available.`;
-  const ledger = wallet.ledger?.length ? wallet.ledger : [
-    { type: "credit", amount: 1200, reason: "Item accepted after warehouse check" },
-    { type: "debit", amount: 650, reason: "Product purchase" },
-    { type: "credit", amount: 500, reason: "UPI coin recharge" },
-    { type: "debit", amount: 50, reason: "Delivery paid in coins" },
-    { type: "credit", amount: 5, reason: "Referral reward" },
-  ];
+  const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
     return `<div class="ledger-item"><strong>${sign}${new Intl.NumberFormat("en-IN").format(entry.amount)}</strong><span>${entry.reason}</span></div>`;
-  }).join("");
+  }).join("") || `<p>No wallet activity yet.</p>`;
 }
 
 function renderOrders() {
-  const fallbackOrders = [
-    { id: "GT-1042", status: "coins-confirmed", timeline: ["order-placed", "coins-confirmed"] },
-    { id: "GT-P221", status: "warehouse-final-check", timeline: ["collected", "received", "check"] },
-  ];
-  const list = orders.length ? orders : fallbackOrders;
+  const list = orders || [];
   els.ordersGrid.innerHTML = list.map(order => `
     <article class="order-card">
       <strong>${order.id}</strong>
@@ -323,7 +345,7 @@ function renderOrders() {
         ${(order.timeline || []).slice(0, 4).map(step => `<span>${String(step).replaceAll("-", " ")}</span>`).join("")}
       </div>
     </article>
-  `).join("");
+  `).join("") || `<p>No orders yet.</p>`;
 }
 
 function renderAdmin() {
@@ -404,7 +426,7 @@ function renderAdmin() {
       <div class="admin-list">
         ${pendingRecharges.map(item => `
           <div class="admin-row">
-            <span>${item.id} • ${item.amount} ${coinMarkup()} • Ref: ${item.upiReference || "not entered"}</span>
+            <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
             <button class="secondary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
           </div>
         `).join("")}
@@ -484,12 +506,28 @@ function renderCart() {
   `;
 }
 
+function renderAll() {
+  renderSelectors();
+  renderCategories();
+  renderProducts();
+  renderProductDetail();
+  renderFormFields();
+  renderWallet();
+  renderOrders();
+  renderAdmin();
+  renderPartnerTasks();
+  renderAuthStatus();
+}
+
 function navigate(rawHash) {
   const hash = (rawHash || location.hash || "#home").replace("#", "");
   const [route, value] = hash.split("/");
   state.route = route || "home";
   if (route === "category") state.category = value || "mobiles";
   if (route === "product") state.productId = value || products[0].id;
+  if (["wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId()) {
+    state.route = "auth";
+  }
   if (isMaintenanceActive() && state.route !== "admin") {
     state.route = "maintenance";
     const message = platformConfig.maintenance?.message || "GIVE & TAKE is under maintenance. We will be back soon.";
@@ -508,11 +546,26 @@ function navigate(rawHash) {
   renderOrders();
   renderAdmin();
   renderPartnerTasks();
+  renderAuthStatus();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function wireEvents() {
   document.body.addEventListener("click", async event => {
+    const logout = event.target.closest("[data-logout]");
+    if (logout) {
+      if (authClient) await authClient.auth.signOut();
+      currentUser = null;
+      pendingLoginEmail = "";
+      wallet = { balance: 0, ledger: [] };
+      orders = [];
+      state.rechargeAmount = null;
+      renderAll();
+      location.hash = "auth";
+      alert("Logged out.");
+      return;
+    }
+
     const category = event.target.closest("[data-category]");
     if (category) location.hash = `category/${category.dataset.category}`;
 
@@ -530,6 +583,7 @@ function wireEvents() {
 
     const recharge = event.target.closest("[data-recharge]");
     if (recharge) {
+      if (!requireCustomerLogin()) return;
       const upi = platformConfig.integrations?.payments?.upi || {};
       if (!upi.upiId) {
         alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
@@ -548,11 +602,12 @@ function wireEvents() {
 
     const checkout = event.target.closest("[data-checkout]");
     if (checkout) {
+      if (!requireCustomerLogin()) return;
       try {
         const city = document.getElementById("checkoutCity")?.value || "Lucknow";
         const data = await api("/api/orders", {
           method: "POST",
-          body: JSON.stringify({ userId: "user-demo", productIds: state.cart, city, deliveryChargeMode: "cod-rupees" }),
+          body: JSON.stringify({ userId: getCurrentUserId(), userEmail: currentUser?.email || "", productIds: state.cart, city, deliveryChargeMode: "cod-rupees" }),
         });
         wallet = data.wallet;
         orders.unshift(data.order);
@@ -667,12 +722,14 @@ function wireEvents() {
   els.sellCategory.addEventListener("change", renderFormFields);
   document.getElementById("sellForm").addEventListener("submit", async event => {
     event.preventDefault();
+    if (!requireCustomerLogin()) return;
     const form = new FormData(event.currentTarget);
     try {
       const data = await api("/api/sell-requests", {
         method: "POST",
         body: JSON.stringify({
-          userId: "user-demo",
+          userId: getCurrentUserId(),
+          userEmail: currentUser?.email || "",
           city: form.get("city"),
           category: els.sellCategory.value,
           title: form.get("title"),
@@ -709,6 +766,50 @@ function wireEvents() {
     }
   });
   document.body.addEventListener("submit", async event => {
+    if (event.target.id === "loginEmailForm") {
+      event.preventDefault();
+      if (!authClient) {
+        alert("Customer login is not configured yet. Add Supabase URL and anon key in config.js.");
+        return;
+      }
+      const form = new FormData(event.target);
+      pendingLoginEmail = String(form.get("email") || "").trim();
+      try {
+        const { error } = await authClient.auth.signInWithOtp({
+          email: pendingLoginEmail,
+          options: { shouldCreateUser: true },
+        });
+        if (error) throw error;
+        alert("OTP sent to email. Check inbox/spam, then enter the code.");
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    if (event.target.id === "loginOtpForm") {
+      event.preventDefault();
+      if (!authClient) {
+        alert("Customer login is not configured yet. Add Supabase URL and anon key in config.js.");
+        return;
+      }
+      const form = new FormData(event.target);
+      try {
+        const { data, error } = await authClient.auth.verifyOtp({
+          email: pendingLoginEmail,
+          token: String(form.get("otp") || "").trim(),
+          type: "email",
+        });
+        if (error) throw error;
+        currentUser = data.user || null;
+        await loadBackendData();
+        renderAll();
+        location.hash = "wallet";
+        alert("Login successful.");
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
     if (event.target.id === "adminLoginForm") {
       event.preventDefault();
       const form = new FormData(event.target);
@@ -761,12 +862,14 @@ function wireEvents() {
     }
     if (event.target.id === "upiReferenceForm") {
       event.preventDefault();
+      if (!requireCustomerLogin()) return;
       const form = new FormData(event.target);
       try {
         const data = await api("/api/wallet/recharge", {
           method: "POST",
           body: JSON.stringify({
-            userId: "user-demo",
+            userId: getCurrentUserId(),
+            userEmail: currentUser?.email || "",
             amount: Number(state.rechargeAmount),
             method: "UPI",
             upiReference: form.get("upiReference"),
@@ -810,17 +913,18 @@ function wireEvents() {
 }
 
 async function init() {
+  await loadAuthUser();
   await loadBackendData();
-  renderSelectors();
-  renderCategories();
-  renderProducts();
-  renderFormFields();
-  renderWallet();
-  renderOrders();
-  renderAdmin();
-  renderPartnerTasks();
+  renderAll();
   wireEvents();
   navigate();
+  if (authClient) {
+    authClient.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user || null;
+      await loadBackendData();
+      renderAll();
+    });
+  }
 }
 
 init();

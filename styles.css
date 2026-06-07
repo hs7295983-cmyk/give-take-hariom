@@ -649,6 +649,13 @@ textarea {
   max-width: 680px;
 }
 
+.auth-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 420px));
+  gap: 18px;
+  align-items: start;
+}
+
 .panel-form label {
   display: grid;
   gap: 7px;
@@ -863,6 +870,7 @@ textarea {
   .product-detail,
   .sell-layout,
   .wallet-layout,
+  .auth-layout,
   .partner-layout {
     grid-template-columns: 1fr;
   }

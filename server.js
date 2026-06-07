@@ -177,6 +177,7 @@ async function handleApi(req, res) {
     const rechargeRequest = {
       id: id("GT-UPI"),
       userId,
+      userEmail: body.userEmail || "",
       amount,
       method: "UPI",
       upiId: db.integrations.payments.upi.upiId,
@@ -205,6 +206,7 @@ async function handleApi(req, res) {
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",
+      userEmail: body.userEmail || "",
       city: body.city,
       category: body.category,
       title: body.title,
@@ -242,6 +244,7 @@ async function handleApi(req, res) {
     const order = {
       id: id("GT-O"),
       userId,
+      userEmail: body.userEmail || "",
       productIds,
       totalCoins,
       status: "coins-confirmed",
