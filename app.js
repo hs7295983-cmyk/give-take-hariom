@@ -814,16 +814,27 @@ function wireEvents() {
         alert("Customer login is not configured yet. Add Supabase URL and anon key in config.js.");
         return;
       }
+      const submitButton = event.target.querySelector("button[type='submit']");
       const form = new FormData(event.target);
       pendingLoginEmail = String(form.get("email") || "").trim();
+      if (submitButton?.disabled) return;
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+      }
       try {
         const { error } = await authClient.auth.signInWithOtp({
           email: pendingLoginEmail,
           options: { shouldCreateUser: true },
         });
         if (error) throw error;
+        if (submitButton) submitButton.textContent = "Link Sent";
         alert("Sign-in link sent. Check your email inbox/spam and open the link.");
       } catch (error) {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Send Sign-in Link";
+        }
         alert(error.message);
       }
       return;

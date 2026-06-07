@@ -159,6 +159,11 @@ h3 {
   white-space: nowrap;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .coin-symbol {
   display: inline-grid;
   place-items: center;
@@ -897,6 +902,10 @@ textarea {
     padding-bottom: 4px;
   }
 
+  .main-nav a {
+    min-width: max-content;
+  }
+
   .hero,
   .product-detail,
   .sell-layout,
@@ -934,6 +943,20 @@ textarea {
 
   .hero h1 {
     font-size: 46px;
+  }
+
+  .main-nav {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .main-nav a {
+    font-size: 0;
+  }
+
+  .main-nav a::after {
+    content: attr(data-short);
+    font-size: 15px;
   }
 
   .product-grid,
