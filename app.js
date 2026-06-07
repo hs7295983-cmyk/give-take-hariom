@@ -35,8 +35,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -65,8 +63,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -95,8 +91,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -125,8 +119,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -155,8 +147,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -185,8 +175,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -215,8 +203,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -245,8 +231,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -275,8 +259,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -305,8 +287,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -335,8 +315,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -365,8 +343,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -395,8 +371,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -425,8 +399,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -455,8 +427,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -485,8 +455,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -515,8 +483,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -545,8 +511,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -575,8 +539,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -605,8 +567,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -635,8 +595,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -665,8 +623,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -695,8 +651,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -725,8 +679,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -755,8 +707,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -785,8 +735,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -815,8 +763,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -845,8 +791,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -875,8 +819,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -905,8 +847,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -935,8 +875,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -965,8 +903,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -995,8 +931,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1025,8 +959,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1055,8 +987,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1085,8 +1015,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1115,8 +1043,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1145,8 +1071,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1175,8 +1099,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1205,8 +1127,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1235,8 +1155,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1265,8 +1183,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1295,8 +1211,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1325,8 +1239,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1355,8 +1267,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1385,8 +1295,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1415,8 +1323,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1445,8 +1351,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1475,8 +1379,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1505,8 +1407,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1535,8 +1435,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1565,8 +1463,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1595,8 +1491,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1625,8 +1519,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1655,8 +1547,6 @@ const fallbackProducts = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1937,7 +1827,6 @@ function renderProductDetail() {
       <p>${product.city} • Product price is coin-only. Delivery charge can be paid by coins online or cash on delivery.</p>
       <div class="checklist">
         ${product.checks.map(check => `<span>${check}</span>`).join("")}
-        <span>Return window: 24-48 hours only if not as described.</span>
       </div>
       <button class="primary-button full" data-add="${product.id}" type="button">Add to Cart</button>
     </article>

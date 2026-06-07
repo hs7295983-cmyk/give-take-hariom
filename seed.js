@@ -26,8 +26,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -56,8 +54,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -86,8 +82,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -116,8 +110,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -146,8 +138,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -176,8 +166,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -206,8 +194,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -236,8 +222,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -266,8 +250,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -296,8 +278,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -326,8 +306,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -356,8 +334,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -386,8 +362,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -416,8 +390,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -446,8 +418,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -476,8 +446,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -506,8 +474,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -536,8 +502,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -566,8 +530,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -596,8 +558,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -626,8 +586,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -656,8 +614,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -686,8 +642,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -716,8 +670,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -746,8 +698,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -776,8 +726,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -806,8 +754,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -836,8 +782,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -866,8 +810,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -896,8 +838,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -926,8 +866,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -956,8 +894,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -986,8 +922,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1016,8 +950,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1046,8 +978,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1076,8 +1006,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1106,8 +1034,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1136,8 +1062,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1166,8 +1090,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1196,8 +1118,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1226,8 +1146,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1256,8 +1174,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1286,8 +1202,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1316,8 +1230,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1346,8 +1258,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1376,8 +1286,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1406,8 +1314,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1436,8 +1342,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1466,8 +1370,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1496,8 +1398,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1526,8 +1426,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1556,8 +1454,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1586,8 +1482,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1616,8 +1510,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
@@ -1646,8 +1538,6 @@ const products = [
     ],
     checks: [
       "GIVE & TAKE verified",
-      "Original price listed",
-      "Admin price editable"
     ],
     artA: "#d3f4e9",
     artB: "#3a6e63",
