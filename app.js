@@ -1784,17 +1784,23 @@ function isMaintenanceActive() {
   return Boolean(platformConfig.maintenance?.full);
 }
 
+function compactProductTitle(title, maxLength = 52) {
+  const cleanTitle = String(title || "").replace(/\s+/g, " ").trim();
+  if (cleanTitle.length <= maxLength) return cleanTitle;
+  return `${cleanTitle.slice(0, maxLength).trim()}...`;
+}
+
 function card(product) {
   return `
     <article class="product-card">
       ${productVisual(product)}
       <div class="product-body">
         <div class="badges">
-          <span class="badge">${product.source}</span>
+          <span class="badge">${escapeHtml(product.source)}</span>
         </div>
-        <h3>${product.title}</h3>
+        <h3 title="${escapeHtml(product.title)}">${escapeHtml(compactProductTitle(product.title))}</h3>
         <div class="coin-price">${formatCoins(product.price)}</div>
-        <p>${categories.find(c => c.id === product.category).name}</p>
+        <p>${escapeHtml(categories.find(c => c.id === product.category).name)}</p>
         <div class="card-actions">
           <button class="primary-button" data-product="${product.id}" type="button">View</button>
           <button class="secondary-button" data-add="${product.id}" type="button" title="Add to cart">+</button>

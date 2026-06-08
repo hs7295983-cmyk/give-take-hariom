@@ -561,7 +561,7 @@ main {
 
 .product-body h3 {
   display: -webkit-box;
-  min-height: 42px;
+  height: 40px;
   margin: 0 0 8px;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -1191,9 +1191,10 @@ textarea {
   }
 
   .product-body h3 {
-    min-height: 40px;
-    font-size: 14px;
-    line-height: 1.22;
+    height: 34px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.28;
   }
 
   .product-card p {
