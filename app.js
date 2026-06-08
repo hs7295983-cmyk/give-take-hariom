@@ -2224,7 +2224,7 @@ function renderPartnerTasks() {
 function renderCart() {
   if (!state.cart.length) {
     state.checkoutStep = "cart";
-    els.cartView.innerHTML = `<p>Your cart is empty. Product is reserved only during checkout for a short time.</p><a class="primary-button" href="#market">Browse Products</a>`;
+    els.cartView.innerHTML = `<section class="empty-cart"><h1 class="cart-title">My Cart</h1><p>Your cart is empty.</p><a class="primary-button" href="#market">Browse Products</a></section>`;
     return;
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
@@ -2283,7 +2283,7 @@ function renderCart() {
   }
   els.cartView.innerHTML = `
     <section class="checkout-flow">
-      <h2>My Cart</h2>
+      <h1 class="cart-title">My Cart</h1>
       <div class="cart-items">
         ${items.map(product => {
           const qty = Number(state.cartQuantities[product.id] || 1);
@@ -2291,13 +2291,16 @@ function renderCart() {
             <article class="cart-item">
               ${productVisual(product, "cart-item-image")}
               <div class="cart-item-body">
-                <strong>${escapeHtml(product.title)}</strong>
-                <span>${formatCoins(product.price)}</span>
-                <label>Qty:
-                  <select data-cart-qty="${product.id}">
-                    ${[1, 2, 3, 4, 5].map(value => `<option value="${value}" ${qty === value ? "selected" : ""}>${value}</option>`).join("")}
-                  </select>
-                </label>
+                <strong>${escapeHtml(compactProductTitle(product.title, 64))}</strong>
+                <span>${escapeHtml(displayCategoryName(product.category))}</span>
+                <div class="cart-price-row">
+                  <label>Qty:
+                    <select data-cart-qty="${product.id}">
+                      ${[1, 2, 3, 4, 5].map(value => `<option value="${value}" ${qty === value ? "selected" : ""}>${value}</option>`).join("")}
+                    </select>
+                  </label>
+                  <strong class="cart-line-price">${formatCoins(product.price * qty)}</strong>
+                </div>
               </div>
               <div class="cart-item-actions">
                 <button class="secondary-button" data-remove-cart="${product.id}" type="button">Remove</button>
