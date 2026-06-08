@@ -2598,7 +2598,13 @@ function wireEvents() {
           method: "POST",
           body: JSON.stringify({ email: pendingLoginEmail }),
         });
-        if (submitButton) submitButton.textContent = "OTP Sent";
+        if (submitButton) {
+          submitButton.textContent = "OTP Sent";
+          setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = "Resend OTP";
+          }, 60_000);
+        }
         alert("OTP sent. Check your email inbox/spam.");
       } catch (error) {
         if (submitButton) {
@@ -2611,6 +2617,12 @@ function wireEvents() {
     }
     if (event.target.id === "loginOtpForm") {
       event.preventDefault();
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Verifying...";
+      }
       const form = new FormData(event.target);
       try {
         const data = await api("/api/auth/verify-otp", {
@@ -2629,6 +2641,10 @@ function wireEvents() {
         location.hash = "wallet";
         alert("Login successful.");
       } catch (error) {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Verify OTP";
+        }
         alert(error.message);
       }
       return;
