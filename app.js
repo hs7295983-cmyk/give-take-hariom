@@ -1708,7 +1708,7 @@ function renderAuthStatus() {
   }
   if (cartNavLink) {
     const count = state.cart.reduce((sum, id) => sum + Number(state.cartQuantities[id] || 1), 0);
-    cartNavLink.textContent = `Cart ${count}`;
+    cartNavLink.innerHTML = `Cart <span class="cart-count-badge">${count}</span>`;
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
@@ -1810,6 +1810,16 @@ function showToast(message) {
   }, 1700);
 }
 
+function animateCartBadge() {
+  const cartNavLink = document.getElementById("cartNavLink");
+  if (!cartNavLink) return;
+  cartNavLink.classList.remove("cart-bounce");
+  requestAnimationFrame(() => {
+    cartNavLink.classList.add("cart-bounce");
+    setTimeout(() => cartNavLink.classList.remove("cart-bounce"), 520);
+  });
+}
+
 function addProductToCart(productId) {
   if (!state.cart.includes(productId)) {
     state.cart.push(productId);
@@ -1820,6 +1830,7 @@ function addProductToCart(productId) {
   state.checkoutStep = "cart";
   renderAuthStatus();
   if (state.route === "cart") renderCart();
+  animateCartBadge();
   showToast("Item added to cart");
 }
 
