@@ -2333,7 +2333,7 @@ function renderAll() {
   renderAuthStatus();
 }
 
-function navigate(rawHash) {
+function navigate(rawHash, shouldScroll = true) {
   const hash = (rawHash || location.hash || "#home").replace("#", "");
   const [route, value] = hash.split("/");
   state.route = route || "home";
@@ -2362,7 +2362,7 @@ function navigate(rawHash) {
   renderAdmin();
   renderPartnerTasks();
   renderAuthStatus();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (shouldScroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function wireEvents() {
@@ -2956,7 +2956,6 @@ async function init() {
   navigate();
   await loadBackendData();
   renderAll();
-  navigate();
 }
 
 init();
