@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
@@ -11,6 +12,10 @@ const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "p
 const adminToken = adminPassword
   ? crypto.createHash("sha256").update(`give-and-take-admin:${adminPassword}`).digest("hex")
   : "";
+const brevoApiKey = process.env.BREVO_API_KEY || "";
+const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
+const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
+const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -111,6 +116,55 @@ function addLedger(db, userId, type, amount, reason) {
   return entry;
 }
 
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
+function hashOtp(email, otp) {
+  return crypto.createHash("sha256").update(`${sessionSecret}:${normalizeEmail(email)}:${otp}`).digest("hex");
+}
+
+function hashSession(token) {
+  return crypto.createHash("sha256").update(`${sessionSecret}:${token}`).digest("hex");
+}
+
+function publicUser(user) {
+  return user ? { id: user.id, email: user.email } : null;
+}
+
+async function sendOtpEmail(email, otp) {
+  if (!brevoApiKey) throw new Error("Brevo API key is not configured");
+  const payload = JSON.stringify({
+    sender: { name: otpFromName, email: otpFromEmail },
+    to: [{ email }],
+    subject: "Your GIVE & TAKE login OTP",
+    htmlContent: `<p>Your GIVE & TAKE login OTP is <strong>${otp}</strong>.</p><p>This OTP expires in 5 minutes.</p>`,
+    textContent: `Your GIVE & TAKE login OTP is ${otp}. This OTP expires in 5 minutes.`
+  });
+  await new Promise((resolve, reject) => {
+    const request = https.request({
+      hostname: "api.brevo.com",
+      path: "/v3/smtp/email",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(payload),
+        "api-key": brevoApiKey
+      }
+    }, response => {
+      let body = "";
+      response.on("data", chunk => { body += chunk; });
+      response.on("end", () => {
+        if (response.statusCode >= 200 && response.statusCode < 300) return resolve();
+        reject(new Error(`Brevo email failed: ${body || response.statusCode}`));
+      });
+    });
+    request.on("error", reject);
+    request.write(payload);
+    request.end();
+  });
+}
+
 async function handleApi(req, res) {
   const db = await readDb();
   const { url, parts } = parsePath(req);
@@ -120,6 +174,102 @@ async function handleApi(req, res) {
 
   if (method === "GET" && parts[1] === "health") {
     return sendJson(res, 200, { ok: true, phase: db.meta.phase, updatedAt: db.meta.updatedAt, storage: getStorageInfo() });
+  }
+
+  if (method === "POST" && parts[1] === "auth" && parts[2] === "request-otp") {
+    const body = await readBody(req);
+    const email = normalizeEmail(body.email);
+    if (!email || !email.includes("@")) return sendError(res, 400, "Enter a valid email");
+    if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
+    db.authOtps = db.authOtps || [];
+    const now = Date.now();
+    const recent = db.authOtps.find(item => item.email === email && item.createdAtMs && now - item.createdAtMs < 60_000);
+    if (recent) return sendError(res, 429, "Please wait before requesting another OTP");
+    const otp = String(crypto.randomInt(100000, 1000000));
+    const otpRecord = {
+      id: id("OTP"),
+      email,
+      otpHash: hashOtp(email, otp),
+      expiresAt: new Date(now + 5 * 60_000).toISOString(),
+      createdAt: new Date(now).toISOString(),
+      createdAtMs: now,
+      attempts: 0,
+      used: false
+    };
+    db.authOtps = db.authOtps.filter(item => new Date(item.expiresAt).getTime() > now && !item.used).slice(0, 100);
+    db.authOtps.unshift(otpRecord);
+    await writeDb(db);
+    try {
+      await sendOtpEmail(email, otp);
+    } catch (error) {
+      otpRecord.used = true;
+      await writeDb(db);
+      return sendError(res, 503, error.message);
+    }
+    return sendJson(res, 200, { ok: true, expiresInSeconds: 300 });
+  }
+
+  if (method === "POST" && parts[1] === "auth" && parts[2] === "verify-otp") {
+    const body = await readBody(req);
+    const email = normalizeEmail(body.email);
+    const otp = String(body.otp || "").trim();
+    if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
+    if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
+    db.authOtps = db.authOtps || [];
+    db.authSessions = db.authSessions || [];
+    db.users = db.users || [];
+    const now = Date.now();
+    const record = db.authOtps.find(item => item.email === email && !item.used);
+    if (!record) return sendError(res, 400, "OTP not found. Please request a new OTP");
+    if (new Date(record.expiresAt).getTime() < now) return sendError(res, 400, "OTP expired. Please request a new OTP");
+    if (record.attempts >= 5) return sendError(res, 429, "Too many OTP attempts. Please request a new OTP");
+    record.attempts += 1;
+    if (record.otpHash !== hashOtp(email, otp)) {
+      await writeDb(db);
+      return sendError(res, 401, "Wrong OTP");
+    }
+    record.used = true;
+    let user = db.users.find(item => normalizeEmail(item.email) === email);
+    if (!user) {
+      user = { id: id("USER"), email, createdAt: new Date().toISOString() };
+      db.users.push(user);
+    }
+    const token = crypto.randomBytes(32).toString("hex");
+    const session = {
+      id: id("SESSION"),
+      userId: user.id,
+      email,
+      tokenHash: hashSession(token),
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(now + 30 * 24 * 60 * 60_000).toISOString()
+    };
+    db.authSessions = db.authSessions.filter(item => new Date(item.expiresAt).getTime() > now).slice(0, 200);
+    db.authSessions.unshift(session);
+    if (!db.wallets[user.id]) db.wallets[user.id] = { balance: 0, ledger: [] };
+    await writeDb(db);
+    return sendJson(res, 200, { token, user: publicUser(user), wallet: db.wallets[user.id] });
+  }
+
+  if (method === "GET" && parts[1] === "auth" && parts[2] === "me") {
+    const auth = req.headers.authorization || "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    if (!token || !sessionSecret) return sendError(res, 401, "Login required");
+    db.authSessions = db.authSessions || [];
+    const session = db.authSessions.find(item => item.tokenHash === hashSession(token) && new Date(item.expiresAt).getTime() > Date.now());
+    if (!session) return sendError(res, 401, "Session expired");
+    const user = (db.users || []).find(item => item.id === session.userId);
+    if (!user) return sendError(res, 401, "User not found");
+    return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets?.[user.id] || { balance: 0, ledger: [] } });
+  }
+
+  if (method === "POST" && parts[1] === "auth" && parts[2] === "logout") {
+    const auth = req.headers.authorization || "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    if (token && sessionSecret) {
+      db.authSessions = (db.authSessions || []).filter(item => item.tokenHash !== hashSession(token));
+      await writeDb(db);
+    }
+    return sendJson(res, 200, { ok: true });
   }
 
   if (method === "GET" && parts[1] === "config") {

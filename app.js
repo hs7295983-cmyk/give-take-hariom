@@ -1,6 +1,7 @@
 const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
 const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
+const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
 const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1571,6 +1572,7 @@ let sellRequests = [];
 let adminDashboard = null;
 let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = null;
 let pendingLoginEmail = "";
 let platformConfig = {
@@ -1623,6 +1625,7 @@ const els = {
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   if (options.admin && adminToken) headers.Authorization = `Bearer ${adminToken}`;
+  if (options.customer && customerToken) headers.Authorization = `Bearer ${customerToken}`;
   const response = await fetch(`${API_BASE}${path}`, {
     headers,
     ...options,
@@ -1679,9 +1682,16 @@ async function refreshCurrentWallet() {
 }
 
 async function loadAuthUser() {
-  if (!authClient) return;
-  const { data } = await authClient.auth.getUser();
-  currentUser = data.user || null;
+  if (!customerToken) return;
+  try {
+    const data = await api("/api/auth/me", { customer: true });
+    currentUser = data.user || null;
+    wallet = normalizeWallet(data.wallet);
+  } catch {
+    customerToken = "";
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+    currentUser = null;
+  }
 }
 
 function renderAuthStatus() {
@@ -2246,7 +2256,13 @@ function wireEvents() {
   document.body.addEventListener("click", async event => {
     const logout = event.target.closest("[data-logout]");
     if (logout) {
-      if (authClient) await authClient.auth.signOut();
+      if (customerToken) {
+        try {
+          await api("/api/auth/logout", { method: "POST", customer: true, body: JSON.stringify({}) });
+        } catch {}
+      }
+      customerToken = "";
+      localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       currentUser = null;
       pendingLoginEmail = "";
       wallet = { balance: 0, ledger: [] };
@@ -2569,10 +2585,6 @@ function wireEvents() {
   document.body.addEventListener("submit", async event => {
     if (event.target.id === "loginEmailForm") {
       event.preventDefault();
-      if (!authClient) {
-        alert("Customer login is not configured yet. Add Supabase URL and anon key in config.js.");
-        return;
-      }
       const submitButton = event.target.querySelector("button[type='submit']");
       const form = new FormData(event.target);
       pendingLoginEmail = String(form.get("email") || "").trim();
@@ -2582,17 +2594,16 @@ function wireEvents() {
         submitButton.textContent = "Sending...";
       }
       try {
-        const { error } = await authClient.auth.signInWithOtp({
-          email: pendingLoginEmail,
-          options: { shouldCreateUser: true },
+        await api("/api/auth/request-otp", {
+          method: "POST",
+          body: JSON.stringify({ email: pendingLoginEmail }),
         });
-        if (error) throw error;
-        if (submitButton) submitButton.textContent = "Link Sent";
-        alert("Sign-in link sent. Check your email inbox/spam and open the link.");
+        if (submitButton) submitButton.textContent = "OTP Sent";
+        alert("OTP sent. Check your email inbox/spam.");
       } catch (error) {
         if (submitButton) {
           submitButton.disabled = false;
-          submitButton.textContent = "Send Sign-in Link";
+          submitButton.textContent = "Send OTP";
         }
         alert(error.message);
       }
@@ -2600,19 +2611,19 @@ function wireEvents() {
     }
     if (event.target.id === "loginOtpForm") {
       event.preventDefault();
-      if (!authClient) {
-        alert("Customer login is not configured yet. Add Supabase URL and anon key in config.js.");
-        return;
-      }
       const form = new FormData(event.target);
       try {
-        const { data, error } = await authClient.auth.verifyOtp({
-          email: pendingLoginEmail,
-          token: String(form.get("otp") || "").trim(),
-          type: "email",
+        const data = await api("/api/auth/verify-otp", {
+          method: "POST",
+          body: JSON.stringify({
+            email: pendingLoginEmail,
+            otp: String(form.get("otp") || "").trim(),
+          }),
         });
-        if (error) throw error;
+        customerToken = data.token;
+        localStorage.setItem(CUSTOMER_TOKEN_KEY, customerToken);
         currentUser = data.user || null;
+        wallet = normalizeWallet(data.wallet);
         await loadBackendData();
         renderAll();
         location.hash = "wallet";
@@ -2773,13 +2784,6 @@ async function init() {
   renderAll();
   wireEvents();
   navigate();
-  if (authClient) {
-    authClient.auth.onAuthStateChange(async (_event, session) => {
-      currentUser = session?.user || null;
-      await loadBackendData();
-      renderAll();
-    });
-  }
 }
 
 init();
