@@ -2683,7 +2683,8 @@ function wireEvents() {
   document.getElementById("sellForm").addEventListener("submit", async event => {
     event.preventDefault();
     if (!requireCustomerLogin()) return;
-    const form = new FormData(event.currentTarget);
+    const sellForm = event.currentTarget;
+    const form = new FormData(sellForm);
     try {
       const data = await api("/api/sell-requests", {
         method: "POST",
@@ -2699,7 +2700,7 @@ function wireEvents() {
         }),
       });
       alert(`Upload submitted for review. Request ID: ${data.sellRequest.id}`);
-      event.currentTarget.reset();
+      sellForm.reset();
       renderFormFields();
     } catch (error) {
       alert(error.message);
@@ -2707,7 +2708,8 @@ function wireEvents() {
   });
   document.getElementById("joinForm").addEventListener("submit", async event => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const joinForm = event.currentTarget;
+    const form = new FormData(joinForm);
     try {
       const data = await api("/api/join-applications", {
         method: "POST",
@@ -2720,7 +2722,7 @@ function wireEvents() {
         }),
       });
       alert(`Application submitted. Application ID: ${data.application.id}`);
-      event.currentTarget.reset();
+      joinForm.reset();
     } catch (error) {
       alert(error.message);
     }
