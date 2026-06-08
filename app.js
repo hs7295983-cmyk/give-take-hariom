@@ -1790,6 +1790,39 @@ function compactProductTitle(title, maxLength = 52) {
   return `${cleanTitle.slice(0, maxLength).trim()}...`;
 }
 
+let toastTimer = null;
+
+function showToast(message) {
+  let toast = document.getElementById("appToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "appToast";
+    toast.className = "app-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1700);
+}
+
+function addProductToCart(productId) {
+  if (!state.cart.includes(productId)) {
+    state.cart.push(productId);
+    state.cartQuantities[productId] = 1;
+  } else {
+    state.cartQuantities[productId] = Math.min(Number(state.cartQuantities[productId] || 1) + 1, 5);
+  }
+  state.checkoutStep = "cart";
+  renderAuthStatus();
+  if (state.route === "cart") renderCart();
+  showToast("Item added to cart");
+}
+
 function card(product) {
   return `
     <article class="product-card">
@@ -2337,20 +2370,12 @@ function wireEvents() {
 
     const add = event.target.closest("[data-add]");
     if (add) {
-      if (!state.cart.includes(add.dataset.add)) state.cart.push(add.dataset.add);
-      state.cartQuantities[add.dataset.add] = Number(state.cartQuantities[add.dataset.add] || 1);
-      state.checkoutStep = "cart";
-      renderAuthStatus();
-      location.hash = "cart";
+      addProductToCart(add.dataset.add);
     }
 
     const addStay = event.target.closest("[data-add-stay]");
     if (addStay) {
-      if (!state.cart.includes(addStay.dataset.addStay)) state.cart.push(addStay.dataset.addStay);
-      state.cartQuantities[addStay.dataset.addStay] = Number(state.cartQuantities[addStay.dataset.addStay] || 1);
-      state.checkoutStep = "cart";
-      renderAuthStatus();
-      alert("Product added to cart.");
+      addProductToCart(addStay.dataset.addStay);
     }
 
     const buyNow = event.target.closest("[data-buy-now]");
