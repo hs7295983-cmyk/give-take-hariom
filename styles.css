@@ -579,6 +579,24 @@ main {
   align-self: center;
 }
 
+.products-divider {
+  display: grid;
+  gap: 10px;
+  margin: 24px 0 14px;
+}
+
+.products-divider span {
+  display: block;
+  height: 1px;
+  background: var(--line);
+}
+
+.products-divider h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1;
+}
+
 .category-card {
   display: grid;
   grid-template-columns: 48px 1fr;
