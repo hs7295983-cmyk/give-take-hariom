@@ -1594,6 +1594,9 @@ const state = {
   category: null,
   productId: null,
   cart: [],
+  cartQuantities: {},
+  checkoutStep: "cart",
+  deliveryDetails: {},
   query: "",
   rechargeAmount: null,
 };
@@ -1704,8 +1707,8 @@ function renderAuthStatus() {
     authLink.href = currentUser ? "#account" : "#auth";
   }
   if (cartNavLink) {
-    const count = state.cart.length;
-    cartNavLink.textContent = `Cart (${count})`;
+    const count = state.cart.reduce((sum, id) => sum + Number(state.cartQuantities[id] || 1), 0);
+    cartNavLink.textContent = `Cart ${count}`;
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
@@ -2159,50 +2162,96 @@ function renderPartnerTasks() {
 
 function renderCart() {
   if (!state.cart.length) {
+    state.checkoutStep = "cart";
     els.cartView.innerHTML = `<p>Your cart is empty. Product is reserved only during checkout for a short time.</p><a class="primary-button" href="#market">Browse Products</a>`;
     return;
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
-  const total = items.reduce((sum, product) => sum + product.price, 0);
+  const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
   const hasEnoughCoins = (wallet.balance || 0) >= total;
+  const delivery = state.deliveryDetails || {};
+  if (state.checkoutStep === "delivery") {
+    els.cartView.innerHTML = `
+      <form class="checkout-flow" id="deliveryDetailsForm">
+        <section class="checkout-step">
+          <h2>Delivery Details</h2>
+          <div class="checkout-fields">
+            <label>Full name <input name="name" value="${escapeHtml(delivery.name || "")}" placeholder="Customer name" required /></label>
+            <label>Phone number <input name="phone" value="${escapeHtml(delivery.phone || "")}" placeholder="Mobile number" required /></label>
+            <label>City
+              <select name="city" required>
+                ${["Lucknow", "Ayodhya", "Gonda"].map(city => `<option ${delivery.city === city ? "selected" : ""}>${city}</option>`).join("")}
+              </select>
+            </label>
+            <label>Pincode / locality <input name="pincode" value="${escapeHtml(delivery.pincode || "")}" placeholder="Pincode or locality" /></label>
+            <label class="span-2">Full address <textarea name="address" placeholder="House number, area, landmark" required>${escapeHtml(delivery.address || "")}</textarea></label>
+            <label class="span-2">Delivery note <textarea name="note" placeholder="Optional note for delivery">${escapeHtml(delivery.note || "")}</textarea></label>
+          </div>
+          <div class="checkout-nav">
+            <button class="secondary-button" data-checkout-step="cart" type="button">Back to Cart</button>
+            <button class="primary-button" type="submit">Continue</button>
+          </div>
+        </section>
+      </form>
+    `;
+    return;
+  }
+  if (state.checkoutStep === "review") {
+    els.cartView.innerHTML = `
+      <form class="checkout-flow" id="checkoutForm">
+        <section class="checkout-step">
+          <h2>Confirm Order</h2>
+          <div class="checkout-summary">
+            <span>Items <strong>${items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0)}</strong></span>
+            <span>Wallet balance <strong>${formatCoins(wallet.balance || 0)}</strong></span>
+            <span>Order total <strong>${formatCoins(total)}</strong></span>
+            <span>Delivery charge <strong>Cash on delivery</strong></span>
+            <span>Deliver to <strong>${escapeHtml(delivery.name || "")} • ${escapeHtml(delivery.city || "")}</strong></span>
+          </div>
+          <div class="checkout-items">
+            ${items.map(product => `<p><strong>${escapeHtml(product.title)}</strong><span>${Number(state.cartQuantities[product.id] || 1)} x ${formatCoins(product.price)}</span></p>`).join("")}
+          </div>
+          <div class="checkout-nav">
+            <button class="secondary-button" data-checkout-step="delivery" type="button">Back</button>
+            ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : `<a class="primary-button" href="#wallet">Recharge Coins</a>`}
+          </div>
+        </section>
+      </form>
+    `;
+    return;
+  }
   els.cartView.innerHTML = `
-    <form class="checkout-flow" id="checkoutForm">
-      <section class="checkout-step">
-        <p class="kicker">Step 1</p>
-        <h2>Review cart</h2>
-        <div class="checkout-items">
-          ${items.map(product => `<p><strong>${escapeHtml(product.title)}</strong><span>${formatCoins(product.price)}</span></p>`).join("")}
-        </div>
-      </section>
-      <section class="checkout-step">
-        <p class="kicker">Step 2</p>
-        <h2>Delivery details</h2>
-        <div class="checkout-fields">
-          <label>Full name <input name="name" placeholder="Customer name" required /></label>
-          <label>Phone number <input name="phone" placeholder="Mobile number" required /></label>
-          <label>City
-            <select name="city" required>
-              <option>Lucknow</option>
-              <option>Ayodhya</option>
-              <option>Gonda</option>
-            </select>
-          </label>
-          <label>Pincode / locality <input name="pincode" placeholder="Pincode or locality" /></label>
-          <label class="span-2">Full address <textarea name="address" placeholder="House number, area, landmark" required></textarea></label>
-          <label class="span-2">Delivery note <textarea name="note" placeholder="Optional note for delivery"></textarea></label>
-        </div>
-      </section>
-      <section class="checkout-step">
-        <p class="kicker">Step 3</p>
-        <h2>Payment review</h2>
-        <div class="checkout-summary">
-          <span>Wallet balance <strong>${formatCoins(wallet.balance || 0)}</strong></span>
-          <span>Order total <strong>${formatCoins(total)}</strong></span>
-          <span>Delivery charge <strong>Cash on delivery</strong></span>
-        </div>
-        ${hasEnoughCoins ? `<button class="primary-button full" type="submit">Confirm Order</button>` : `<a class="primary-button full" href="#wallet">Recharge Coins</a>`}
-      </section>
-    </form>
+    <section class="checkout-flow">
+      <h2>My Cart</h2>
+      <div class="cart-items">
+        ${items.map(product => {
+          const qty = Number(state.cartQuantities[product.id] || 1);
+          return `
+            <article class="cart-item">
+              ${productVisual(product, "cart-item-image")}
+              <div class="cart-item-body">
+                <strong>${escapeHtml(product.title)}</strong>
+                <span>${formatCoins(product.price)}</span>
+                <label>Qty:
+                  <select data-cart-qty="${product.id}">
+                    ${[1, 2, 3, 4, 5].map(value => `<option value="${value}" ${qty === value ? "selected" : ""}>${value}</option>`).join("")}
+                  </select>
+                </label>
+              </div>
+              <div class="cart-item-actions">
+                <button class="secondary-button" data-remove-cart="${product.id}" type="button">Remove</button>
+                <button class="primary-button" data-cart-buy-now="${product.id}" type="button">Buy this now</button>
+              </div>
+            </article>
+          `;
+        }).join("")}
+      </div>
+      <div class="cart-total-bar">
+        <span>Total</span>
+        <strong>${formatCoins(total)}</strong>
+        <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
+      </div>
+    </section>
   `;
 }
 
@@ -2283,6 +2332,8 @@ function wireEvents() {
     const add = event.target.closest("[data-add]");
     if (add) {
       if (!state.cart.includes(add.dataset.add)) state.cart.push(add.dataset.add);
+      state.cartQuantities[add.dataset.add] = Number(state.cartQuantities[add.dataset.add] || 1);
+      state.checkoutStep = "cart";
       renderAuthStatus();
       location.hash = "cart";
     }
@@ -2290,6 +2341,8 @@ function wireEvents() {
     const addStay = event.target.closest("[data-add-stay]");
     if (addStay) {
       if (!state.cart.includes(addStay.dataset.addStay)) state.cart.push(addStay.dataset.addStay);
+      state.cartQuantities[addStay.dataset.addStay] = Number(state.cartQuantities[addStay.dataset.addStay] || 1);
+      state.checkoutStep = "cart";
       renderAuthStatus();
       alert("Product added to cart.");
     }
@@ -2297,8 +2350,34 @@ function wireEvents() {
     const buyNow = event.target.closest("[data-buy-now]");
     if (buyNow) {
       state.cart = [buyNow.dataset.buyNow];
+      state.cartQuantities = { [buyNow.dataset.buyNow]: 1 };
+      state.checkoutStep = "cart";
       renderAuthStatus();
       location.hash = "cart";
+    }
+
+    const removeCart = event.target.closest("[data-remove-cart]");
+    if (removeCart) {
+      state.cart = state.cart.filter(id => id !== removeCart.dataset.removeCart);
+      delete state.cartQuantities[removeCart.dataset.removeCart];
+      state.checkoutStep = "cart";
+      renderCart();
+      renderAuthStatus();
+    }
+
+    const cartBuyNow = event.target.closest("[data-cart-buy-now]");
+    if (cartBuyNow) {
+      state.cart = [cartBuyNow.dataset.cartBuyNow];
+      state.cartQuantities = { [cartBuyNow.dataset.cartBuyNow]: 1 };
+      state.checkoutStep = "delivery";
+      renderCart();
+      renderAuthStatus();
+    }
+
+    const checkoutStep = event.target.closest("[data-checkout-step]");
+    if (checkoutStep) {
+      state.checkoutStep = checkoutStep.dataset.checkoutStep;
+      renderCart();
     }
 
     const route = event.target.closest("[data-route]");
@@ -2530,6 +2609,14 @@ function wireEvents() {
   });
 
   window.addEventListener("hashchange", () => navigate());
+  document.body.addEventListener("change", event => {
+    const qtySelect = event.target.closest("[data-cart-qty]");
+    if (qtySelect) {
+      state.cartQuantities[qtySelect.dataset.cartQty] = Number(qtySelect.value || 1);
+      renderCart();
+      renderAuthStatus();
+    }
+  });
   [els.categoryFilter, els.cityFilter, els.sortFilter].forEach(el => el.addEventListener("change", renderProducts));
   els.searchInput.addEventListener("input", event => {
     state.query = event.target.value;
@@ -2668,39 +2755,51 @@ function wireEvents() {
       }
       return;
     }
+    if (event.target.id === "deliveryDetailsForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      state.deliveryDetails = {
+        name: form.get("name"),
+        phone: form.get("phone"),
+        address: form.get("address"),
+        city: form.get("city"),
+        pincode: form.get("pincode"),
+        note: form.get("note"),
+      };
+      state.checkoutStep = "review";
+      renderCart();
+      return;
+    }
     if (event.target.id === "checkoutForm") {
       event.preventDefault();
       if (!requireCustomerLogin()) return;
       const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
-      const total = items.reduce((sum, product) => sum + product.price, 0);
+      const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
       if ((wallet.balance || 0) < total) {
         alert("Wallet has insufficient coins. Please recharge before confirming order.");
         location.hash = "wallet";
         return;
       }
-      const form = new FormData(event.target);
+      const deliveryDetails = state.deliveryDetails || {};
+      const productIds = state.cart.flatMap(id => Array(Number(state.cartQuantities[id] || 1)).fill(id));
       try {
         const data = await api("/api/orders", {
           method: "POST",
           body: JSON.stringify({
             userId: getCurrentUserId(),
             userEmail: currentUser?.email || "",
-            productIds: state.cart,
-            city: form.get("city"),
+            productIds,
+            city: deliveryDetails.city,
             deliveryChargeMode: "cod-rupees",
-            deliveryDetails: {
-              name: form.get("name"),
-              phone: form.get("phone"),
-              address: form.get("address"),
-              city: form.get("city"),
-              pincode: form.get("pincode"),
-              note: form.get("note"),
-            },
+            deliveryDetails,
           }),
         });
         wallet = normalizeWallet(data.wallet);
         orders.unshift(data.order);
         state.cart = [];
+        state.cartQuantities = {};
+        state.checkoutStep = "cart";
+        state.deliveryDetails = {};
         await refreshCurrentWallet();
         renderAll();
         location.hash = "orders";
