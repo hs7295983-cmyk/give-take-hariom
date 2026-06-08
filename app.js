@@ -1772,7 +1772,6 @@ function card(product) {
       <div class="product-body">
         <div class="badges">
           <span class="badge">${product.source}</span>
-          <span class="badge">${product.condition}</span>
         </div>
         <h3>${product.title}</h3>
         <div class="coin-price">${formatCoins(product.price)}</div>
@@ -1854,7 +1853,10 @@ function renderProductDetail() {
       <div class="checklist">
         ${visibleChecks.map(check => `<span>${check}</span>`).join("")}
       </div>
-      <button class="primary-button full" data-add="${product.id}" type="button">Add to Cart</button>
+      <div class="detail-actions">
+        <button class="primary-button" data-buy-now="${product.id}" type="button">Buy with Coins</button>
+        <button class="secondary-button" data-add-stay="${product.id}" type="button">Add to Cart</button>
+      </div>
     </article>
   `;
 }
@@ -2259,6 +2261,18 @@ function wireEvents() {
     const add = event.target.closest("[data-add]");
     if (add) {
       if (!state.cart.includes(add.dataset.add)) state.cart.push(add.dataset.add);
+      location.hash = "cart";
+    }
+
+    const addStay = event.target.closest("[data-add-stay]");
+    if (addStay) {
+      if (!state.cart.includes(addStay.dataset.addStay)) state.cart.push(addStay.dataset.addStay);
+      alert("Product added to cart.");
+    }
+
+    const buyNow = event.target.closest("[data-buy-now]");
+    if (buyNow) {
+      state.cart = [buyNow.dataset.buyNow];
       location.hash = "cart";
     }
 

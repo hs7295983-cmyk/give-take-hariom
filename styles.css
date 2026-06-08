@@ -528,7 +528,8 @@ main {
 }
 
 .product-visual {
-  height: 170px;
+  aspect-ratio: 1 / 1;
+  height: auto;
   background: linear-gradient(135deg, var(--art-a), var(--art-b));
   position: relative;
 }
@@ -555,17 +556,22 @@ main {
 }
 
 .product-body {
-  padding: 14px;
+  padding: 12px;
 }
 
 .product-body h3 {
-  min-height: 48px;
+  display: -webkit-box;
+  min-height: 42px;
   margin: 0 0 8px;
-  font-size: 18px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 16px;
+  line-height: 1.25;
 }
 
 .coin-price {
-  font-size: 22px;
+  font-size: 21px;
   font-family: "Outfit", sans-serif;
   font-weight: 800;
   color: #6a4c0c;
@@ -575,7 +581,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 10px 0;
+  margin: 0 0 8px;
 }
 
 .badge {
@@ -591,7 +597,7 @@ main {
   display: grid;
   grid-template-columns: 1fr 44px;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .card-actions button {
@@ -647,6 +653,13 @@ textarea {
   margin: 0 0 10px;
   font-size: 44px;
   line-height: 1;
+}
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .checklist {
@@ -1030,7 +1043,6 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .product-grid,
   .quick-grid,
   .category-grid,
   .profile-grid,
@@ -1088,6 +1100,51 @@ textarea {
   .admin-grid,
   .orders-grid,
   .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .product-body {
+    padding: 9px;
+  }
+
+  .product-body h3 {
+    min-height: 38px;
+    font-size: 13px;
+  }
+
+  .product-card p {
+    font-size: 12px;
+  }
+
+  .product-card .badge {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .product-card .coin-price {
+    font-size: 17px;
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr 36px;
+    gap: 6px;
+  }
+
+  .card-actions button {
+    min-height: 34px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .detail-actions {
     grid-template-columns: 1fr;
   }
 
