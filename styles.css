@@ -568,15 +568,16 @@ main {
 
 .category-card {
   display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 14px;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
   align-items: center;
-  padding: 14px;
+  min-height: 74px;
+  padding: 12px;
   cursor: pointer;
 }
 
 .category-icon {
-  height: 64px;
+  height: 48px;
   border-radius: 8px;
   background: linear-gradient(135deg, #f6c85f, #76c7a2);
 }
@@ -1259,7 +1260,6 @@ textarea {
 
   .product-grid,
   .quick-grid,
-  .category-grid,
   .profile-grid,
   .support-grid,
   .policy-grid,
@@ -1272,6 +1272,27 @@ textarea {
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .category-card {
+    grid-template-columns: 34px minmax(0, 1fr);
+    min-height: 58px;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .category-icon {
+    height: 34px;
+  }
+
+  .category-card h3 {
+    font-size: 15px;
+    line-height: 1.1;
   }
 
   .product-visual {

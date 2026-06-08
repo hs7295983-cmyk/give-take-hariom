@@ -20,6 +20,7 @@ const fallbackCategories = [
 ];
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
+const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
 
 const fallbackProducts = [
   {
@@ -1790,6 +1791,11 @@ function compactProductTitle(title, maxLength = 52) {
   return `${cleanTitle.slice(0, maxLength).trim()}...`;
 }
 
+function displayCategoryName(categoryId) {
+  const displayId = categoryId === "mobiles" ? "electronics" : categoryId;
+  return categories.find(category => category.id === displayId)?.name || "Product";
+}
+
 let toastTimer = null;
 
 function showToast(message) {
@@ -1844,7 +1850,7 @@ function card(product) {
         </div>
         <h3 title="${escapeHtml(product.title)}">${escapeHtml(compactProductTitle(product.title))}</h3>
         <div class="coin-price">${formatCoins(product.price)}</div>
-        <p>${escapeHtml(categories.find(c => c.id === product.category).name)}</p>
+        <p>${escapeHtml(displayCategoryName(product.category))}</p>
         <div class="card-actions">
           <button class="primary-button" data-product="${product.id}" type="button">View</button>
           <button class="secondary-button" data-add="${product.id}" type="button" title="Add to cart">+</button>
@@ -1855,20 +1861,23 @@ function card(product) {
 }
 
 function renderCategories() {
-  els.categoryGrid.innerHTML = categories.map((category, index) => `
+  const homeCategories = homeCategoryIds
+    .map(id => categories.find(category => category.id === id))
+    .filter(Boolean);
+  els.categoryGrid.innerHTML = homeCategories.map((category, index) => `
     <article class="category-card" data-category="${category.id}">
       <div class="category-icon" style="filter:hue-rotate(${index * 26}deg)"></div>
       <div>
-        <h3>${category.name}</h3>
-        <p>${category.text}</p>
+        <h3>${escapeHtml(category.name)}</h3>
       </div>
     </article>
   `).join("");
 }
 
 function renderSelectors() {
-  els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-  els.sellCategory.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  const selectableCategories = categories.filter(category => category.id !== "mobiles");
+  els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  els.sellCategory.innerHTML = selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
 function getFilteredProducts() {
@@ -1877,7 +1886,9 @@ function getFilteredProducts() {
   const sort = els.sortFilter?.value || "trending";
   const query = state.query.toLowerCase();
   let list = [...products].filter(product => {
-    const matchesCategory = category === "all" || product.category === category;
+    const matchesCategory = category === "all"
+      || product.category === category
+      || (category === "electronics" && product.category === "mobiles");
     const matchesCity = city === "all" || SERVICE_CITIES_TEXT.includes(city);
     const matchesQuery = !query || `${product.title} ${SERVICE_CITIES_TEXT} ${product.source}`.toLowerCase().includes(query);
     return matchesCategory && matchesCity && matchesQuery;
@@ -1900,7 +1911,7 @@ function renderProducts() {
   if (state.category) {
     const category = categories.find(item => item.id === state.category);
     els.categoryTitle.textContent = category.name;
-    els.categoryProducts.innerHTML = products.filter(product => product.category === state.category).map(card).join("");
+    els.categoryProducts.innerHTML = products.filter(product => product.category === state.category || (state.category === "electronics" && product.category === "mobiles")).map(card).join("");
   }
 }
 
@@ -2139,7 +2150,7 @@ function renderAdmin() {
       <form class="admin-product-form" id="adminProductForm">
         <input name="title" placeholder="Product name" required />
         <select name="category" required>
-          ${categories.map(category => `<option value="${category.id}">${category.name}</option>`).join("")}
+          ${categories.filter(category => category.id !== "mobiles").map(category => `<option value="${category.id}">${category.name}</option>`).join("")}
         </select>
         <input name="price" type="number" min="1" step="1" placeholder="Coin price" required />
         <select name="condition" required>
@@ -2323,7 +2334,7 @@ function navigate(rawHash) {
   const hash = (rawHash || location.hash || "#home").replace("#", "");
   const [route, value] = hash.split("/");
   state.route = route || "home";
-  if (route === "category") state.category = value || "mobiles";
+  if (route === "category") state.category = value === "mobiles" ? "electronics" : value || "electronics";
   if (route === "product") state.productId = value || products[0].id;
   if (["account", "wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId()) {
     state.route = "auth";
