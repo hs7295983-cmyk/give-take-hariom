@@ -478,6 +478,10 @@ main {
   margin: 22px 0 34px;
 }
 
+.how-it-works-grid {
+  margin-bottom: 10px;
+}
+
 .quick-grid article,
 .category-card,
 .product-card,
