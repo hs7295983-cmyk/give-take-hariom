@@ -1208,7 +1208,54 @@ textarea {
 
 @media (max-width: 640px) {
   .site-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 8px;
     padding: 12px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand strong {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    gap: 6px;
+  }
+
+  .icon-button,
+  .wallet-pill {
+    min-height: 38px;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .wallet-pill {
+    padding: 0 10px;
+  }
+
+  .search-shell {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .main-nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 
   .page {
