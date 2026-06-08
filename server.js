@@ -527,6 +527,7 @@ async function handleApi(req, res) {
       integrations: db.integrations,
       products: db.products || [],
       orders: db.orders || [],
+      sellRequests: db.sellRequests || [],
       rechargeRequests: db.rechargeRequests || [],
       joinApplications: db.joinApplications || []
     });
@@ -582,6 +583,42 @@ async function handleApi(req, res) {
     application.reviewDecision = application.status;
     await writeDb(db);
     return sendJson(res, 200, { application });
+  }
+
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "sell-requests" && parts[3] && ["schedule", "accept", "reject"].includes(parts[4])) {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const request = (db.sellRequests || []).find(item => item.id === parts[3]);
+    if (!request) return sendError(res, 404, "Sell request not found");
+    if (["accepted", "rejected"].includes(request.status)) return sendError(res, 400, "Sell request already closed");
+
+    if (parts[4] === "schedule") {
+      request.status = "pickup-scheduled";
+      request.pickupScheduledAt = new Date().toISOString();
+      request.timeline = [...new Set([...(request.timeline || []), "pickup-scheduled"])];
+    }
+
+    if (parts[4] === "reject") {
+      request.status = "rejected";
+      request.rejectedAt = new Date().toISOString();
+      request.reviewNote = String(body.note || "").trim();
+      request.timeline = [...new Set([...(request.timeline || []), "rejected"])];
+    }
+
+    if (parts[4] === "accept") {
+      const finalCoins = Number(body.finalCoins || request.expectedCoins || 0);
+      if (!Number.isFinite(finalCoins) || finalCoins < 0) return sendError(res, 400, "Final coin value is invalid");
+      const entry = addLedger(db, request.userId, "credit", finalCoins, `Item accepted after warehouse check: ${request.id}`);
+      request.status = "accepted";
+      request.finalCoins = finalCoins;
+      request.acceptedAt = new Date().toISOString();
+      request.ledgerId = entry.id;
+      request.reviewNote = String(body.note || "").trim();
+      request.timeline = [...new Set([...(request.timeline || []), "warehouse-final-check", "coins-credited"])];
+    }
+
+    await writeDb(db);
+    return sendJson(res, 200, { sellRequest: request, wallet: db.wallets[request.userId] });
   }
 
   if (method === "PATCH" && parts[1] === "admin" && parts[2] === "maintenance") {

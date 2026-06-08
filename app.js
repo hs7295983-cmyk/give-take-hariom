@@ -2058,6 +2058,7 @@ function renderAdmin() {
   }
   const counts = adminDashboard.counts;
   const upi = adminDashboard.integrations.payments.upi || {};
+  const adminSellRequests = adminDashboard.sellRequests || [];
   const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
   const joinApplications = adminDashboard.joinApplications || [];
   const adminOrders = adminDashboard.orders || [];
@@ -2077,6 +2078,26 @@ function renderAdmin() {
       </button>
     </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
+    <article class="wide-card">
+      <strong>Sell Item Requests</strong>
+      <span>${adminSellRequests.length ? "Review seller uploads, schedule pickup, and credit coins after final check." : "No sell item requests yet."}</span>
+      <div class="admin-list">
+        ${adminSellRequests.map(item => `
+          <div class="admin-row stacked">
+            <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
+            <span>${formatCoins(item.expectedCoins || 0)} expected • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.userEmail || item.userId || "User")}</span>
+            <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
+            ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
+              <div class="admin-actions">
+                <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
+                <button class="primary-button" data-sell-request-action="${item.id}" data-action="accept" data-expected="${item.expectedCoins || 0}" type="button">Accept + Credit Coins</button>
+                <button class="danger-button" data-sell-request-action="${item.id}" data-action="reject" type="button">Reject</button>
+              </div>
+            ` : ""}
+          </div>
+        `).join("")}
+      </div>
+    </article>
     <article class="wide-card">
       <strong>Pending UPI Recharges</strong>
       <span>${pendingRecharges.length ? "Verify payment in your UPI account before approving." : "No pending recharge requests."}</span>
@@ -2522,6 +2543,32 @@ function wireEvents() {
         adminDashboard = adminData;
         renderAdmin();
         alert(`Rejected recharge request: ${data.rechargeRequest.id}.`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const sellRequestAction = event.target.closest("[data-sell-request-action]");
+    if (sellRequestAction) {
+      const action = sellRequestAction.dataset.action;
+      const requestId = sellRequestAction.dataset.sellRequestAction;
+      let finalCoins = sellRequestAction.dataset.expected || "0";
+      if (action === "accept") {
+        finalCoins = prompt("Enter final coins to credit after verification:", finalCoins);
+        if (finalCoins === null) return;
+      }
+      if (action === "reject" && !confirm("Reject this sell item request?")) return;
+      try {
+        const data = await api(`/api/admin/sell-requests/${requestId}/${action}`, {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({ finalCoins }),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        await refreshCurrentWallet();
+        renderAll();
+        alert(`Sell request updated: ${data.sellRequest.id}`);
       } catch (error) {
         alert(error.message);
       }
