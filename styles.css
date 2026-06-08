@@ -566,6 +566,7 @@ main {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
   font-size: 16px;
   line-height: 1.25;
 }
@@ -651,8 +652,8 @@ textarea {
 
 .detail-panel h1 {
   margin: 0 0 10px;
-  font-size: 44px;
-  line-height: 1;
+  font-size: 34px;
+  line-height: 1.12;
 }
 
 .detail-actions {
@@ -1074,7 +1075,7 @@ textarea {
 
   .main-nav {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     width: 100%;
     gap: 6px;
     overflow: visible;
@@ -1105,19 +1106,25 @@ textarea {
 
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .product-visual {
+    aspect-ratio: 1.05 / 1;
   }
 
   .product-body {
-    padding: 9px;
+    padding: 8px;
   }
 
   .product-body h3 {
-    min-height: 38px;
-    font-size: 13px;
+    min-height: 40px;
+    font-size: 14px;
+    line-height: 1.22;
   }
 
   .product-card p {
+    margin: 6px 0 0;
     font-size: 12px;
   }
 
@@ -1130,18 +1137,27 @@ textarea {
   }
 
   .product-card .coin-price {
-    font-size: 17px;
+    font-size: 18px;
   }
 
   .card-actions {
-    grid-template-columns: 1fr 36px;
+    grid-template-columns: 1fr 34px;
     gap: 6px;
   }
 
   .card-actions button {
-    min-height: 34px;
-    padding: 8px;
+    min-height: 36px;
+    padding: 7px;
     font-size: 12px;
+  }
+
+  .detail-panel h1 {
+    font-size: 24px;
+    line-height: 1.18;
+  }
+
+  .detail-image {
+    min-height: 260px;
   }
 
   .detail-actions {

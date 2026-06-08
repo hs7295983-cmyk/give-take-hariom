@@ -1687,10 +1687,16 @@ async function loadAuthUser() {
 function renderAuthStatus() {
   const authLink = document.getElementById("authNavLink");
   const heroLoginLink = document.getElementById("heroLoginLink");
+  const cartNavLink = document.getElementById("cartNavLink");
   if (authLink) {
     authLink.textContent = currentUser ? "My Account" : "Login";
     authLink.dataset.short = currentUser ? "Account" : "Login";
     authLink.href = currentUser ? "#account" : "#auth";
+  }
+  if (cartNavLink) {
+    const count = state.cart.length;
+    cartNavLink.textContent = `Cart (${count})`;
+    cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
     heroLoginLink.textContent = currentUser ? "My Account" : "Login";
@@ -2261,18 +2267,21 @@ function wireEvents() {
     const add = event.target.closest("[data-add]");
     if (add) {
       if (!state.cart.includes(add.dataset.add)) state.cart.push(add.dataset.add);
+      renderAuthStatus();
       location.hash = "cart";
     }
 
     const addStay = event.target.closest("[data-add-stay]");
     if (addStay) {
       if (!state.cart.includes(addStay.dataset.addStay)) state.cart.push(addStay.dataset.addStay);
+      renderAuthStatus();
       alert("Product added to cart.");
     }
 
     const buyNow = event.target.closest("[data-buy-now]");
     if (buyNow) {
       state.cart = [buyNow.dataset.buyNow];
+      renderAuthStatus();
       location.hash = "cart";
     }
 
