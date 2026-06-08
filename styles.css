@@ -789,6 +789,11 @@ textarea {
   word-break: break-word;
 }
 
+.upi-open-button {
+  justify-self: start;
+  text-decoration: none;
+}
+
 .upi-reference-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -815,6 +820,54 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
+}
+
+.checkout-flow,
+.checkout-step {
+  display: grid;
+  gap: 16px;
+}
+
+.checkout-step {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.checkout-items,
+.checkout-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.checkout-items p,
+.checkout-summary span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+}
+
+.checkout-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.checkout-fields label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.checkout-fields .span-2 {
+  grid-column: span 2;
 }
 
 .mini-steps {
@@ -1044,6 +1097,7 @@ textarea {
 
   .inline-form,
   .admin-product-form,
+  .checkout-fields,
   .upi-reference-form,
   .admin-row,
   .admin-product-row {
@@ -1054,7 +1108,8 @@ textarea {
     justify-content: flex-start;
   }
 
-  .admin-product-form .span-2 {
+  .admin-product-form .span-2,
+  .checkout-fields .span-2 {
     grid-column: span 1;
   }
 

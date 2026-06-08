@@ -5,7 +5,7 @@ const { URL } = require("url");
 const fs = require("fs");
 const { ensureDb, readDb, writeDb, getStorageInfo } = require("./stateStore");
 
-const rootDir = path.resolve(__dirname, "..");
+const rootDir = path.resolve(__dirname);
 const port = Number(process.env.PORT || 4173);
 const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : "local-admin-1234");
 const adminToken = adminPassword
@@ -235,7 +235,12 @@ async function handleApi(req, res) {
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
     const selected = productIds.map(productId => db.products.find(product => product.id === productId)).filter(Boolean);
     if (!selected.length) return sendError(res, 400, "No valid products selected");
-    if (!serviceableCity(db, body.city)) return sendError(res, 400, "Delivery city is not serviceable yet");
+    const deliveryDetails = body.deliveryDetails || {};
+    const deliveryCity = deliveryDetails.city || body.city;
+    if (!serviceableCity(db, deliveryCity)) return sendError(res, 400, "Delivery city is not serviceable yet");
+    if (!String(deliveryDetails.name || "").trim()) return sendError(res, 400, "Customer name is required");
+    if (!String(deliveryDetails.phone || "").trim()) return sendError(res, 400, "Customer phone is required");
+    if (!String(deliveryDetails.address || "").trim()) return sendError(res, 400, "Delivery address is required");
     const totalCoins = selected.reduce((sum, product) => sum + product.price, 0);
     const wallet = db.wallets[userId] || { balance: 0, ledger: [] };
     if (wallet.balance < totalCoins) return sendError(res, 400, "Wallet has insufficient coins");
@@ -249,11 +254,26 @@ async function handleApi(req, res) {
       userId,
       userEmail: body.userEmail || "",
       productIds,
+      products: selected.map(product => ({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        condition: product.condition,
+        category: product.category
+      })),
       totalCoins,
-      status: "coins-confirmed",
-      deliveryCity: body.city,
+      status: "new-order",
+      deliveryCity,
+      deliveryDetails: {
+        name: String(deliveryDetails.name || "").trim(),
+        phone: String(deliveryDetails.phone || "").trim(),
+        address: String(deliveryDetails.address || "").trim(),
+        city: deliveryCity,
+        pincode: String(deliveryDetails.pincode || "").trim(),
+        note: String(deliveryDetails.note || "").trim()
+      },
       deliveryChargeMode: body.deliveryChargeMode || "cod-rupees",
-      timeline: ["order-placed", "coins-confirmed"],
+      timeline: ["order-placed", "coins-deducted", "new-order"],
       createdAt: new Date().toISOString()
     };
     db.orders.unshift(order);
@@ -265,6 +285,21 @@ async function handleApi(req, res) {
     const userId = url.searchParams.get("userId");
     const orders = userId ? db.orders.filter(order => order.userId === userId) : db.orders;
     return sendJson(res, 200, { orders });
+  }
+
+  if (method === "PATCH" && parts[1] === "admin" && parts[2] === "orders" && parts[3]) {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const order = db.orders.find(item => item.id === parts[3]);
+    if (!order) return sendError(res, 404, "Order not found");
+    const allowedStatuses = ["new-order", "confirmed", "packed", "out-for-delivery", "delivered", "cancelled"];
+    if (!allowedStatuses.includes(body.status)) return sendError(res, 400, "Invalid order status");
+    order.status = body.status;
+    order.timeline = Array.isArray(order.timeline) ? order.timeline : [];
+    if (!order.timeline.includes(body.status)) order.timeline.push(body.status);
+    order.updatedAt = new Date().toISOString();
+    await writeDb(db);
+    return sendJson(res, 200, { order });
   }
 
   if (method === "POST" && parts[1] === "returns") {
@@ -341,6 +376,7 @@ async function handleApi(req, res) {
       maintenance: db.maintenance,
       integrations: db.integrations,
       products: db.products || [],
+      orders: db.orders || [],
       rechargeRequests: db.rechargeRequests || [],
       joinApplications: db.joinApplications || []
     });

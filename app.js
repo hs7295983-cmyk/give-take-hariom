@@ -1668,6 +1668,16 @@ function requireCustomerLogin() {
   return false;
 }
 
+async function refreshCurrentWallet() {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    wallet = { balance: 0, ledger: [] };
+    return;
+  }
+  const data = await api(`/api/wallet/${encodeURIComponent(userId)}`);
+  wallet = normalizeWallet(data.wallet);
+}
+
 async function loadAuthUser() {
   if (!authClient) return;
   const { data } = await authClient.auth.getUser();
@@ -1715,6 +1725,18 @@ function formatCoins(value) {
 
 function coinMarkup() {
   return `<span class="coin-symbol" aria-label="coins"></span>`;
+}
+
+function buildUpiPayUrl(amount) {
+  const upi = platformConfig.integrations?.payments?.upi || {};
+  const params = new URLSearchParams({
+    pa: upi.upiId || "",
+    pn: upi.merchantName || "GIVE & TAKE",
+    am: String(amount || ""),
+    cu: "INR",
+    tn: `GIVE & TAKE coin recharge ${amount || ""}`.trim()
+  });
+  return `upi://pay?${params.toString()}`;
 }
 
 function productVisual(product, className = "product-visual") {
@@ -1868,6 +1890,7 @@ function renderWallet() {
         <span>Pay using any UPI app</span>
         <strong>${upi.upiId ? escapeHtml(upi.upiId) : "UPI ID not configured"}</strong>
         <small>After payment, enter your UPI transaction/reference ID below.</small>
+        <a class="primary-button upi-open-button" href="${escapeHtml(buildUpiPayUrl(state.rechargeAmount))}">Open UPI App</a>
       </div>
       <form class="upi-reference-form" id="upiReferenceForm">
         <input name="upiReference" placeholder="Enter UPI transaction/reference ID" required />
@@ -1955,6 +1978,7 @@ function renderAdmin() {
   const upi = adminDashboard.integrations.payments.upi || {};
   const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
   const joinApplications = adminDashboard.joinApplications || [];
+  const adminOrders = adminDashboard.orders || [];
   const maintenance = adminDashboard.maintenance || {};
   const adminProducts = adminDashboard.products || [];
   els.adminGrid.innerHTML = `
@@ -1971,6 +1995,64 @@ function renderAdmin() {
       </button>
     </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
+    <article class="wide-card">
+      <strong>Pending UPI Recharges</strong>
+      <span>${pendingRecharges.length ? "Verify payment in your UPI account before approving." : "No pending recharge requests."}</span>
+      <div class="admin-list">
+        ${pendingRecharges.map(item => `
+          <div class="admin-row">
+            <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
+            <div class="admin-actions">
+              <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
+              <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </article>
+    <article class="wide-card">
+      <strong>New Orders</strong>
+      <span>${adminOrders.length ? "Customer and delivery details for placed orders." : "No order records yet."}</span>
+      <div class="admin-list">
+        ${adminOrders.map(order => {
+          const details = order.deliveryDetails || {};
+          const orderProducts = order.products || order.productIds || [];
+          return `
+            <div class="admin-row stacked">
+              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)}</span>
+              <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
+              <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
+              <span>${Array.isArray(orderProducts) ? orderProducts.map(item => escapeHtml(item.title || item)).join(", ") : ""}</span>
+              <div class="admin-actions">
+                <button class="secondary-button" data-order-status="${order.id}" data-next-status="confirmed" type="button">Confirm</button>
+                <button class="secondary-button" data-order-status="${order.id}" data-next-status="packed" type="button">Packed</button>
+                <button class="secondary-button" data-order-status="${order.id}" data-next-status="out-for-delivery" type="button">Out for Delivery</button>
+                <button class="primary-button" data-order-status="${order.id}" data-next-status="delivered" type="button">Delivered</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </article>
+    <article class="wide-card">
+      <strong>Join Us Applications</strong>
+      <span>${joinApplications.length ? "New applicants from the Join Us page." : "No Join Us applications yet."}</span>
+      <div class="admin-list">
+        ${joinApplications.map(item => `
+          <div class="admin-row stacked">
+            <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
+            <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
+            <span>${escapeHtml(item.experience || "No experience note entered")}</span>
+            ${item.status === "submitted" ? `
+              <div class="admin-actions">
+                <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
+                <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
+              </div>
+            ` : ""}
+          </div>
+        `).join("")}
+      </div>
+    </article>
     <article class="wide-card">
       <strong>UPI Settings</strong>
       <form class="inline-form" id="upiSettingsForm">
@@ -2025,40 +2107,6 @@ function renderAdmin() {
         `).join("") || `<p>No products available yet.</p>`}
       </div>
     </article>
-    <article class="wide-card">
-      <strong>Pending UPI Recharges</strong>
-      <span>${pendingRecharges.length ? "Verify payment in your UPI account before approving." : "No pending recharge requests."}</span>
-      <div class="admin-list">
-        ${pendingRecharges.map(item => `
-          <div class="admin-row">
-            <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
-            <div class="admin-actions">
-              <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
-              <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </article>
-    <article class="wide-card">
-      <strong>Join Us Applications</strong>
-      <span>${joinApplications.length ? "New applicants from the Join Us page." : "No Join Us applications yet."}</span>
-      <div class="admin-list">
-        ${joinApplications.map(item => `
-          <div class="admin-row stacked">
-            <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
-            <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
-            <span>${escapeHtml(item.experience || "No experience note entered")}</span>
-            ${item.status === "submitted" ? `
-              <div class="admin-actions">
-                <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
-                <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
-              </div>
-            ` : ""}
-          </div>
-        `).join("")}
-      </div>
-    </article>
   `;
 }
 
@@ -2096,21 +2144,47 @@ function renderCart() {
     els.cartView.innerHTML = `<p>Your cart is empty. Product is reserved only during checkout for a short time.</p><a class="primary-button" href="#market">Browse Products</a>`;
     return;
   }
-  const items = state.cart.map(id => products.find(product => product.id === id));
+  const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
   const total = items.reduce((sum, product) => sum + product.price, 0);
+  const hasEnoughCoins = (wallet.balance || 0) >= total;
   els.cartView.innerHTML = `
-    ${items.map(product => `<p><strong>${product.title}</strong> • ${formatCoins(product.price)}</p>`).join("")}
-    <hr />
-    <h2>Total: ${formatCoins(total)}</h2>
-    <p>Checkout happens with coins only. If wallet is short, recharge the next multiple of 50 coins.</p>
-    <label>Delivery city
-      <select id="checkoutCity">
-        <option>Lucknow</option>
-        <option>Ayodhya</option>
-        <option>Gonda</option>
-      </select>
-    </label>
-    <button class="primary-button" data-checkout type="button">Proceed to Coin Checkout</button>
+    <form class="checkout-flow" id="checkoutForm">
+      <section class="checkout-step">
+        <p class="kicker">Step 1</p>
+        <h2>Review cart</h2>
+        <div class="checkout-items">
+          ${items.map(product => `<p><strong>${escapeHtml(product.title)}</strong><span>${formatCoins(product.price)}</span></p>`).join("")}
+        </div>
+      </section>
+      <section class="checkout-step">
+        <p class="kicker">Step 2</p>
+        <h2>Delivery details</h2>
+        <div class="checkout-fields">
+          <label>Full name <input name="name" placeholder="Customer name" required /></label>
+          <label>Phone number <input name="phone" placeholder="Mobile number" required /></label>
+          <label>City
+            <select name="city" required>
+              <option>Lucknow</option>
+              <option>Ayodhya</option>
+              <option>Gonda</option>
+            </select>
+          </label>
+          <label>Pincode / locality <input name="pincode" placeholder="Pincode or locality" /></label>
+          <label class="span-2">Full address <textarea name="address" placeholder="House number, area, landmark" required></textarea></label>
+          <label class="span-2">Delivery note <textarea name="note" placeholder="Optional note for delivery"></textarea></label>
+        </div>
+      </section>
+      <section class="checkout-step">
+        <p class="kicker">Step 3</p>
+        <h2>Payment review</h2>
+        <div class="checkout-summary">
+          <span>Wallet balance <strong>${formatCoins(wallet.balance || 0)}</strong></span>
+          <span>Order total <strong>${formatCoins(total)}</strong></span>
+          <span>Delivery charge <strong>Cash on delivery</strong></span>
+        </div>
+        ${hasEnoughCoins ? `<button class="primary-button full" type="submit">Confirm Order</button>` : `<a class="primary-button full" href="#wallet">Recharge Coins</a>`}
+      </section>
+    </form>
   `;
 }
 
@@ -2210,23 +2284,18 @@ function wireEvents() {
       renderWallet();
     }
 
-    const checkout = event.target.closest("[data-checkout]");
-    if (checkout) {
-      if (!requireCustomerLogin()) return;
+    const orderStatus = event.target.closest("[data-order-status]");
+    if (orderStatus) {
       try {
-        const city = document.getElementById("checkoutCity")?.value || "Lucknow";
-        const data = await api("/api/orders", {
-          method: "POST",
-          body: JSON.stringify({ userId: getCurrentUserId(), userEmail: currentUser?.email || "", productIds: state.cart, city, deliveryChargeMode: "cod-rupees" }),
+        await api(`/api/admin/orders/${orderStatus.dataset.orderStatus}`, {
+          method: "PATCH",
+          admin: true,
+          body: JSON.stringify({ status: orderStatus.dataset.nextStatus }),
         });
-        wallet = normalizeWallet(data.wallet);
-        orders.unshift(data.order);
-        state.cart = [];
-        renderWallet();
-        renderProducts();
-        renderCart();
-        renderOrders();
-        location.hash = "orders";
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert("Order status updated.");
       } catch (error) {
         alert(error.message);
       }
@@ -2258,8 +2327,8 @@ function wireEvents() {
         wallet = normalizeWallet(data.wallet);
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
-        renderWallet();
-        renderAdmin();
+        await refreshCurrentWallet();
+        renderAll();
         alert(`Approved ${data.rechargeRequest.amount} coins for ${data.rechargeRequest.userId}.`);
       } catch (error) {
         alert(error.message);
@@ -2549,6 +2618,48 @@ function wireEvents() {
       }
       return;
     }
+    if (event.target.id === "checkoutForm") {
+      event.preventDefault();
+      if (!requireCustomerLogin()) return;
+      const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
+      const total = items.reduce((sum, product) => sum + product.price, 0);
+      if ((wallet.balance || 0) < total) {
+        alert("Wallet has insufficient coins. Please recharge before confirming order.");
+        location.hash = "wallet";
+        return;
+      }
+      const form = new FormData(event.target);
+      try {
+        const data = await api("/api/orders", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: getCurrentUserId(),
+            userEmail: currentUser?.email || "",
+            productIds: state.cart,
+            city: form.get("city"),
+            deliveryChargeMode: "cod-rupees",
+            deliveryDetails: {
+              name: form.get("name"),
+              phone: form.get("phone"),
+              address: form.get("address"),
+              city: form.get("city"),
+              pincode: form.get("pincode"),
+              note: form.get("note"),
+            },
+          }),
+        });
+        wallet = normalizeWallet(data.wallet);
+        orders.unshift(data.order);
+        state.cart = [];
+        await refreshCurrentWallet();
+        renderAll();
+        location.hash = "orders";
+        alert(`Order confirmed: ${data.order.id}`);
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
     if (event.target.id === "adminProductForm") {
       event.preventDefault();
       const form = new FormData(event.target);
@@ -2597,7 +2708,8 @@ function wireEvents() {
         });
         wallet = normalizeWallet(data.wallet);
         state.rechargeAmount = null;
-        renderWallet();
+        await refreshCurrentWallet();
+        renderAll();
         alert(`Recharge request submitted: ${data.rechargeRequest.id}. Coins will be credited after admin verifies payment.`);
       } catch (error) {
         alert(error.message);
