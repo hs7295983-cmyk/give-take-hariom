@@ -2050,6 +2050,55 @@ function renderWallet() {
 
 function renderOrders() {
   const list = orders || [];
+  const activeOrders = list.filter(order => !["delivered", "cancelled", "completed"].includes(String(order.status || "").toLowerCase())).length;
+  const completedOrders = list.length - activeOrders;
+  const summary = document.querySelector("#page-orders .orders-summary");
+  if (summary) summary.textContent = `${list.length} Orders • ${activeOrders} Active • ${completedOrders} Completed`;
+  if (!list.length) {
+    const recommended = products
+      .filter(product => product.status === "listed")
+      .slice(0, 4);
+    const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
+      <article class="empty-cart-product">
+        ${productVisual(product, "empty-cart-product-image")}
+        <div>
+          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
+          <span>${formatCoins(product.price || 0)}</span>
+        </div>
+        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
+      </article>
+    `).join("");
+    els.ordersGrid.innerHTML = `
+      <section class="empty-orders">
+        <div class="empty-orders-card">
+          <div class="empty-orders-icon" aria-hidden="true">
+            <svg viewBox="0 0 96 96" role="img">
+              <path d="M22 34 48 20l26 14v28L48 76 22 62V34Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+              <path d="m22 34 26 14 26-14M48 48v28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+              <path d="M36 27 62 41" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+            </svg>
+          </div>
+          <h2>No orders yet</h2>
+          <p>When you buy items using G Coins, your orders will appear here.</p>
+          <a class="primary-button" href="#market">Browse Products</a>
+        </div>
+        <div class="orders-info-grid">
+          <article><strong>Track your purchases</strong><span>Follow every order from placed to delivered.</span></article>
+          <article><strong>View delivery status</strong><span>See packing, dispatch, and delivery updates.</span></article>
+          <article><strong>Manage order history</strong><span>Keep your G Coin purchases in one place.</span></article>
+        </div>
+        <section class="cart-recommendations" aria-label="Start exploring">
+          <div class="cart-recommendations-head">
+            <h2>Start exploring</h2>
+          </div>
+          <div class="empty-cart-products">
+            ${cards}
+          </div>
+        </section>
+      </section>
+    `;
+    return;
+  }
   els.ordersGrid.innerHTML = list.map(order => `
     <article class="order-card">
       <strong>${order.id}</strong>
@@ -2059,7 +2108,7 @@ function renderOrders() {
         ${(order.timeline || []).slice(0, 4).map(step => `<span>${String(step).replaceAll("-", " ")}</span>`).join("")}
       </div>
     </article>
-  `).join("") || `<p>No orders yet.</p>`;
+  `).join("");
 }
 
 function renderAccount() {
