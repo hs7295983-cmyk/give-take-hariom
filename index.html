@@ -7,6 +7,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet" />
+    <script>
+      try {
+        if (localStorage.getItem("give_take_customer_token")) {
+          document.documentElement.classList.add("has-customer-token");
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -74,7 +81,14 @@
             </p>
             <div class="hero-actions">
               <a class="primary-button" href="#sell">Sell an Item</a>
-              <a class="secondary-button" href="#auth" id="heroLoginLink">Login</a>
+              <a class="secondary-button" href="#auth" id="heroLoginLink"><span class="login-label">Login</span><span class="account-label">My Account</span></a>
+              <script>
+                try {
+                  if (localStorage.getItem("give_take_customer_token")) {
+                    document.getElementById("heroLoginLink").href = "#account";
+                  }
+                } catch {}
+              </script>
             </div>
           </div>
           <div class="hero-panel" aria-label="Marketplace status">

@@ -21,6 +21,8 @@ const fallbackCategories = [
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
+const DELIVERY_CHARGE = 50;
+const DELIVERY_FREE_THRESHOLD = 499;
 
 const fallbackProducts = [
   {
@@ -1575,6 +1577,7 @@ let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = null;
+let authRestorePending = Boolean(customerToken);
 let pendingLoginEmail = "";
 let platformConfig = {
   integrations: {
@@ -1686,15 +1689,23 @@ async function refreshCurrentWallet() {
 }
 
 async function loadAuthUser() {
-  if (!customerToken) return;
+  if (!customerToken) {
+    authRestorePending = false;
+    document.documentElement.classList.remove("has-customer-token");
+    return;
+  }
   try {
     const data = await api("/api/auth/me", { customer: true });
     currentUser = data.user || null;
     wallet = normalizeWallet(data.wallet);
+    document.documentElement.classList.toggle("has-customer-token", Boolean(currentUser));
   } catch {
     customerToken = "";
     localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     currentUser = null;
+    document.documentElement.classList.remove("has-customer-token");
+  } finally {
+    authRestorePending = false;
   }
 }
 
@@ -1702,10 +1713,11 @@ function renderAuthStatus() {
   const authLink = document.getElementById("authNavLink");
   const heroLoginLink = document.getElementById("heroLoginLink");
   const cartNavLink = document.getElementById("cartNavLink");
+  const hasCustomerSession = Boolean(currentUser) || authRestorePending;
   if (authLink) {
-    authLink.textContent = currentUser ? "My Account" : "Login";
-    authLink.dataset.short = currentUser ? "Account" : "Login";
-    authLink.href = currentUser ? "#account" : "#auth";
+    authLink.textContent = hasCustomerSession ? "My Account" : "Login";
+    authLink.dataset.short = hasCustomerSession ? "Account" : "Login";
+    authLink.href = hasCustomerSession ? "#account" : "#auth";
   }
   if (cartNavLink) {
     const count = state.cart.reduce((sum, id) => sum + Number(state.cartQuantities[id] || 1), 0);
@@ -1713,8 +1725,8 @@ function renderAuthStatus() {
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
-    heroLoginLink.textContent = currentUser ? "My Account" : "Login";
-    heroLoginLink.href = currentUser ? "#account" : "#auth";
+    heroLoginLink.textContent = hasCustomerSession ? "My Account" : "Login";
+    heroLoginLink.href = hasCustomerSession ? "#account" : "#auth";
   }
 }
 
@@ -1794,6 +1806,15 @@ function compactProductTitle(title, maxLength = 52) {
 function displayCategoryName(categoryId) {
   const displayId = categoryId === "mobiles" ? "electronics" : categoryId;
   return categories.find(category => category.id === displayId)?.name || "Product";
+}
+
+function getDeliveryCharge(productTotal) {
+  return productTotal > DELIVERY_FREE_THRESHOLD ? 0 : DELIVERY_CHARGE;
+}
+
+function formatDeliveryCharge(productTotal) {
+  const charge = getDeliveryCharge(productTotal);
+  return charge === 0 ? "Free delivery" : `Rs.${charge} cash on delivery`;
 }
 
 let toastTimer = null;
@@ -2002,6 +2023,7 @@ function renderOrders() {
     <article class="order-card">
       <strong>${order.id}</strong>
       <span>${String(order.status || "").replaceAll("-", " ")}</span>
+      <span>Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
       <div class="mini-steps">
         ${(order.timeline || []).slice(0, 4).map(step => `<span>${String(step).replaceAll("-", " ")}</span>`).join("")}
       </div>
@@ -2122,7 +2144,7 @@ function renderAdmin() {
           const orderProducts = order.products || order.productIds || [];
           return `
             <div class="admin-row stacked">
-              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)}</span>
+              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
               <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
               <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
               <span>${Array.isArray(orderProducts) ? orderProducts.map(item => escapeHtml(item.title || item)).join(", ") : ""}</span>
@@ -2250,6 +2272,7 @@ function renderCart() {
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
   const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
+  const deliveryCharge = getDeliveryCharge(total);
   const hasEnoughCoins = (wallet.balance || 0) >= total;
   const delivery = state.deliveryDetails || {};
   if (state.checkoutStep === "delivery") {
@@ -2287,7 +2310,7 @@ function renderCart() {
             <span>Items <strong>${items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0)}</strong></span>
             <span>Wallet balance <strong>${formatCoins(wallet.balance || 0)}</strong></span>
             <span>Order total <strong>${formatCoins(total)}</strong></span>
-            <span>Delivery charge <strong>Cash on delivery</strong></span>
+            <span>Delivery charge <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} COD`}</strong></span>
             <span>Deliver to <strong>${escapeHtml(delivery.name || "")} • ${escapeHtml(delivery.city || "")}</strong></span>
           </div>
           <div class="checkout-items">
@@ -2334,6 +2357,7 @@ function renderCart() {
       <div class="cart-total-bar">
         <span>Total</span>
         <strong>${formatCoins(total)}</strong>
+        <small>Delivery: ${formatDeliveryCharge(total)}</small>
         <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
       </div>
     </section>
@@ -2398,6 +2422,8 @@ function wireEvents() {
       customerToken = "";
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       currentUser = null;
+      authRestorePending = false;
+      document.documentElement.classList.remove("has-customer-token");
       pendingLoginEmail = "";
       wallet = { balance: 0, ledger: [] };
       orders = [];
@@ -2827,6 +2853,8 @@ function wireEvents() {
         customerToken = data.token;
         localStorage.setItem(CUSTOMER_TOKEN_KEY, customerToken);
         currentUser = data.user || null;
+        authRestorePending = false;
+        document.documentElement.classList.add("has-customer-token");
         wallet = normalizeWallet(data.wallet);
         await loadBackendData();
         renderAll();
@@ -2886,6 +2914,7 @@ function wireEvents() {
         return;
       }
       const deliveryDetails = state.deliveryDetails || {};
+      const deliveryCharge = getDeliveryCharge(total);
       const productIds = state.cart.flatMap(id => Array(Number(state.cartQuantities[id] || 1)).fill(id));
       try {
         const data = await api("/api/orders", {
@@ -2896,6 +2925,7 @@ function wireEvents() {
             productIds,
             city: deliveryDetails.city,
             deliveryChargeMode: "cod-rupees",
+            deliveryCharge,
             deliveryDetails,
           }),
         });
