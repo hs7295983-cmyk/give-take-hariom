@@ -66,7 +66,7 @@ function readBody(req) {
     let body = "";
     req.on("data", chunk => {
       body += chunk;
-      if (body.length > 1_000_000) {
+      if (body.length > 2_500_000) {
         req.destroy();
         reject(new Error("Request body too large"));
       }
@@ -358,6 +358,9 @@ async function handleApi(req, res) {
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
     const sellerPhone = String(body.sellerPhone || "").trim();
     if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
+    const photos = Array.isArray(body.photos)
+      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/")).slice(0, 6)
+      : [];
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",
@@ -371,6 +374,7 @@ async function handleApi(req, res) {
       expectedCoins: Number(body.expectedCoins || 0),
       condition: body.condition,
       details: body.details || {},
+      photos,
       status: "upload-submitted",
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()

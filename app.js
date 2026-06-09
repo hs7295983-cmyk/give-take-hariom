@@ -1968,7 +1968,7 @@ function renderFormFields() {
     mobiles: ["Brand and model", "Storage/RAM", "IMEI available?", "Bill/warranty", "Battery/display issues"],
     electronics: ["Brand/model/serial", "Power and charging status", "Accessories included", "Known defects"],
     books: ["Class/course/subject", "Edition/year", "Pages missing?", "Writing/highlighting condition"],
-    furniture: ["Material", "Dimensions", "Lift/floor pickup details", "Cracks/scratches"],
+    furniture: ["Material", "Cracks/scratches"],
     fashion: ["Size", "Brand", "Cleanliness", "Stains/tears"],
     home: ["Brand if any", "Working condition", "Missing parts", "Hygiene/safety condition"],
     bags: ["Size/type", "Zip/handle condition", "Tears or stains", "Brand if any"],
@@ -1977,6 +1977,36 @@ function renderFormFields() {
   els.dynamicFields.innerHTML = (fieldMap[category] || []).map(field => `
     <label>${field}<input placeholder="${field}" /></label>
   `).join("");
+}
+
+function fileToCompressedDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSide = 900;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      };
+      image.onerror = () => reject(new Error("Could not read one selected photo"));
+      image.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error("Could not read one selected photo"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function collectSellPhotos(fileList) {
+  const files = [...(fileList || [])].filter(file => file.type.startsWith("image/")).slice(0, 6);
+  return Promise.all(files.map(fileToCompressedDataUrl));
 }
 
 function renderWallet() {
@@ -2169,6 +2199,13 @@ function renderAdmin() {
             <span>Seller contact: ${escapeHtml(item.sellerName || "Name not entered")} • ${escapeHtml(item.sellerPhone || "Phone not entered")}</span>
             <span>Pickup: ${escapeHtml(item.pickupAddress || "Address/landmark not entered")}</span>
             <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
+            <div class="admin-photo-grid">
+              ${(item.photos || []).map((photo, index) => `
+                <a href="${escapeHtml(photo)}" target="_blank" rel="noopener" aria-label="Open seller photo ${index + 1}">
+                  <img src="${escapeHtml(photo)}" alt="Seller uploaded product photo ${index + 1}" loading="lazy" />
+                </a>
+              `).join("") || `<span>No photos uploaded</span>`}
+            </div>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
               <div class="admin-actions">
                 <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
@@ -2827,6 +2864,7 @@ function wireEvents() {
     const sellForm = event.currentTarget;
     const form = new FormData(sellForm);
     try {
+      const photos = await collectSellPhotos(sellForm.elements.photos?.files);
       const data = await api("/api/sell-requests", {
         method: "POST",
         body: JSON.stringify({
@@ -2841,6 +2879,7 @@ function wireEvents() {
           expectedCoins: Number(form.get("expectedCoins") || 0),
           condition: form.get("condition"),
           details: { note: form.get("details") },
+          photos,
         }),
       });
       alert(`Upload submitted for review. Request ID: ${data.sellRequest.id}`);
