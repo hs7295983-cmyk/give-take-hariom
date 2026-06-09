@@ -1753,11 +1753,11 @@ async function refreshAdminProducts() {
 }
 
 function formatCoins(value) {
-  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="coins"></span>`;
+  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
 }
 
 function coinMarkup() {
-  return `<span class="coin-symbol" aria-label="coins"></span>`;
+  return `<span class="coin-symbol" aria-label="G&T coins"></span>`;
 }
 
 function buildUpiPayUrl(amount) {
@@ -2035,12 +2035,12 @@ function renderWallet() {
   } else {
     els.rechargeGrid.classList.remove("payment-step");
     els.rechargeGrid.innerHTML = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
-      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="coins"></span></button>
+      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="G&T coins"></span></button>
     `).join("");
   }
   els.walletBalance.textContent = new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
-  if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="coins"></span> available.`;
+  if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="G&T coins"></span> available.`;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
@@ -2079,13 +2079,13 @@ function renderOrders() {
             </svg>
           </div>
           <h2>No orders yet</h2>
-          <p>When you buy items using G Coins, your orders will appear here.</p>
+          <p>When you buy items using G&T Coins, your orders will appear here.</p>
           <a class="primary-button" href="#market">Browse Products</a>
         </div>
         <div class="orders-info-grid">
           <article><strong>Track your purchases</strong><span>Follow every order from placed to delivered.</span></article>
           <article><strong>View delivery status</strong><span>See packing, dispatch, and delivery updates.</span></article>
-          <article><strong>Manage order history</strong><span>Keep your G Coin purchases in one place.</span></article>
+          <article><strong>Manage order history</strong><span>Keep your G&T Coin purchases in one place.</span></article>
         </div>
         <section class="cart-recommendations" aria-label="Start exploring">
           <div class="cart-recommendations-head">
@@ -2176,7 +2176,7 @@ function renderAccount() {
     <article class="account-wallet-card">
       <div>
         <span>Current Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G Coins"></span> Coins</strong>
+        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G&T Coins"></span> G&T Coins</strong>
       </div>
       <a class="primary-button" href="#wallet">Open Wallet</a>
     </article>
@@ -2434,7 +2434,7 @@ function renderCart() {
             <span class="cart-title-icon" aria-hidden="true">🛒</span>
             <h1 class="cart-title">My Cart</h1>
           </div>
-          <span class="cart-summary">0 Items • 0 G Coins</span>
+          <span class="cart-summary">0 Items • 0 G&T Coins</span>
         </div>
         <div class="empty-cart-panel">
           <div class="empty-cart-illustration" aria-hidden="true">
@@ -2445,7 +2445,7 @@ function renderCart() {
             </svg>
           </div>
           <h2>Your cart is empty</h2>
-          <p>Start exploring products and exchange unused items using G Coins.</p>
+          <p>Start exploring products and exchange unused items using G&T Coins.</p>
           <a class="primary-button" href="#market">Browse Products</a>
         </div>
         <section class="cart-recommendations" aria-label="Recommended For You">
