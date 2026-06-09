@@ -2364,7 +2364,49 @@ function renderPartnerTasks() {
 function renderCart() {
   if (!state.cart.length) {
     state.checkoutStep = "cart";
-    els.cartView.innerHTML = `<section class="empty-cart"><h1 class="cart-title">My Cart</h1><p>Your cart is empty.</p><a class="primary-button" href="#market">Browse Products</a></section>`;
+    const recommended = products
+      .filter(product => product.status === "listed")
+      .slice(0, 4);
+    const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
+      <article class="empty-cart-product">
+        ${productVisual(product, "empty-cart-product-image")}
+        <div>
+          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
+          <span>${formatCoins(product.price || 0)}</span>
+        </div>
+        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
+      </article>
+    `).join("");
+    els.cartView.innerHTML = `
+      <section class="empty-cart">
+        <div class="empty-cart-head">
+          <div>
+            <h1 class="cart-title">My Cart</h1>
+            <span class="cart-summary">0 Items • 0 G Coins</span>
+          </div>
+        </div>
+        <div class="empty-cart-panel">
+          <div class="empty-cart-illustration" aria-hidden="true">
+            <svg viewBox="0 0 96 96" role="img">
+              <path d="M24 27h9l6 34h32l7-24H39" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M43 73a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm25 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" fill="currentColor"/>
+              <path d="M29 19c5-5 13-6 19-1 6-5 15-4 20 1" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+            </svg>
+          </div>
+          <h2>Your cart is empty</h2>
+          <p>Start exploring products and exchange unused items using G Coins.</p>
+          <a class="primary-button" href="#market">Browse Products</a>
+        </div>
+        <section class="cart-recommendations" aria-label="Recommended For You">
+          <div class="cart-recommendations-head">
+            <h2>Recommended For You</h2>
+          </div>
+          <div class="empty-cart-products">
+            ${cards}
+          </div>
+        </section>
+      </section>
+    `;
     return;
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
