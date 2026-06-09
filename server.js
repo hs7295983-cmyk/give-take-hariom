@@ -356,10 +356,15 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
+    const sellerPhone = String(body.sellerPhone || "").trim();
+    if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",
       userEmail: body.userEmail || "",
+      sellerName: String(body.sellerName || "").trim(),
+      sellerPhone,
+      pickupAddress: String(body.pickupAddress || "").trim(),
       city: body.city,
       category: body.category,
       title: body.title,

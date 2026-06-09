@@ -209,6 +209,12 @@
             <label>Product title
               <input name="title" required placeholder="Example: Samsung phone, study table, book set" />
             </label>
+            <label>Your name
+              <input name="sellerName" placeholder="Seller name" />
+            </label>
+            <label>Mobile number for pickup
+              <input name="sellerPhone" inputmode="tel" placeholder="10-digit mobile number" required />
+            </label>
             <label>Expected coin value
               <input name="expectedCoins" type="number" min="0" placeholder="Example: 1200" />
             </label>
@@ -225,6 +231,9 @@
             </label>
             <label>Product details
               <textarea name="details" placeholder="Brand, age, bill, accessories, defects, reason for selling..."></textarea>
+            </label>
+            <label>Pickup address or landmark
+              <textarea name="pickupAddress" placeholder="Area, landmark, or address where pickup can be arranged"></textarea>
             </label>
             <div id="dynamicFields" class="dynamic-fields"></div>
             <label class="check-row">

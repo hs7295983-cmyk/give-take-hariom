@@ -2126,6 +2126,8 @@ function renderAdmin() {
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
             <span>${formatCoins(item.expectedCoins || 0)} expected • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.userEmail || item.userId || "User")}</span>
+            <span>Seller contact: ${escapeHtml(item.sellerName || "Name not entered")} • ${escapeHtml(item.sellerPhone || "Phone not entered")}</span>
+            <span>Pickup: ${escapeHtml(item.pickupAddress || "Address/landmark not entered")}</span>
             <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
               <div class="admin-actions">
@@ -2790,6 +2792,9 @@ function wireEvents() {
         body: JSON.stringify({
           userId: getCurrentUserId(),
           userEmail: currentUser?.email || "",
+          sellerName: form.get("sellerName"),
+          sellerPhone: form.get("sellerPhone"),
+          pickupAddress: form.get("pickupAddress"),
           city: form.get("city"),
           category: els.sellCategory.value,
           title: form.get("title"),
