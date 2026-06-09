@@ -372,6 +372,8 @@ async function handleApi(req, res) {
       sellerName: String(body.sellerName || "").trim(),
       sellerPhone,
       pickupAddress: String(body.pickupAddress || "").trim(),
+      pickupDate: String(body.pickupDate || "").trim(),
+      pickupTime: String(body.pickupTime || "").trim(),
       city: body.city,
       category: body.category,
       title: body.title,

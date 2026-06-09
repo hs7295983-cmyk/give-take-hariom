@@ -2249,6 +2249,7 @@ function renderAdmin() {
             <span>${formatCoins(item.expectedCoins || 0)} expected • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.userEmail || item.userId || "User")}</span>
             <span>Seller contact: ${escapeHtml(item.sellerName || "Name not entered")} • ${escapeHtml(item.sellerPhone || "Phone not entered")}</span>
             <span>Pickup: ${escapeHtml(item.pickupAddress || "Address/landmark not entered")}</span>
+            <span>Preferred pickup: ${escapeHtml(item.pickupDate || "Date not selected")} • ${escapeHtml(item.pickupTime || "Time not selected")}</span>
             <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
             <div class="admin-photo-grid">
               ${(item.photos || []).map((photo, index) => `
@@ -2971,6 +2972,8 @@ function wireEvents() {
           sellerName: form.get("sellerName"),
           sellerPhone: form.get("sellerPhone"),
           pickupAddress: form.get("pickupAddress"),
+          pickupDate: form.get("pickupDate"),
+          pickupTime: form.get("pickupTime"),
           city: form.get("city"),
           category: els.sellCategory.value,
           title: form.get("title"),
