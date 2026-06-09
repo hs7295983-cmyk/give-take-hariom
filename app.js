@@ -2404,6 +2404,22 @@ function renderAdmin() {
         ${adminOrders.map(order => {
           const details = order.deliveryDetails || {};
           const orderProducts = order.products || order.productIds || [];
+          const rawStatus = String(order.status || "new-order").toLowerCase();
+          const statusRank = {
+            "new-order": 0,
+            confirmed: 1,
+            packed: 2,
+            "out-for-delivery": 3,
+            delivered: 4,
+            cancelled: 5,
+          }[rawStatus] ?? 0;
+          const finalStatus = ["delivered", "cancelled"].includes(rawStatus);
+          const statusButton = (nextStatus, label, className, rank) => {
+            const completed = statusRank >= rank;
+            const disabled = completed || finalStatus;
+            const buttonText = completed && nextStatus !== "cancelled" ? `${label} ✓` : label;
+            return `<button class="${className} ${completed ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="${nextStatus}" type="button" ${disabled ? "disabled" : ""}>${buttonText}</button>`;
+          };
           return `
             <div class="admin-row stacked">
               <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
@@ -2412,11 +2428,11 @@ function renderAdmin() {
               ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
               <span>${Array.isArray(orderProducts) ? orderProducts.map(item => escapeHtml(item.title || item)).join(", ") : ""}</span>
               <div class="admin-actions">
-                <button class="secondary-button" data-order-status="${order.id}" data-next-status="confirmed" type="button">Confirm</button>
-                <button class="secondary-button" data-order-status="${order.id}" data-next-status="packed" type="button">Packed</button>
-                <button class="secondary-button" data-order-status="${order.id}" data-next-status="out-for-delivery" type="button">Out for Delivery</button>
-                <button class="primary-button" data-order-status="${order.id}" data-next-status="delivered" type="button">Delivered</button>
-                <button class="danger-button" data-order-status="${order.id}" data-next-status="cancelled" type="button">Cancel</button>
+                ${statusButton("confirmed", "Confirm", "secondary-button", 1)}
+                ${statusButton("packed", "Packed", "secondary-button", 2)}
+                ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
+                ${statusButton("delivered", "Delivered", "primary-button", 4)}
+                <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
               </div>
             </div>
           `;

@@ -2019,6 +2019,13 @@ textarea {
   margin-top: 4px;
 }
 
+.admin-actions .admin-status-done:disabled {
+  border-color: #bfe8c0;
+  background: #eef9e7;
+  color: var(--green);
+  opacity: 1;
+}
+
 .admin-photo-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(72px, 1fr));
