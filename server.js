@@ -66,7 +66,7 @@ function readBody(req) {
     let body = "";
     req.on("data", chunk => {
       body += chunk;
-      if (body.length > 1_000_000) {
+      if (body.length > 2_500_000) {
         req.destroy();
         reject(new Error("Request body too large"));
       }
@@ -131,7 +131,7 @@ function hashSession(token) {
 }
 
 function publicUser(user) {
-  return user ? { id: user.id, email: user.email } : null;
+  return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
 }
 
 async function sendOtpEmail(email, otp) {
@@ -215,6 +215,7 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const email = normalizeEmail(body.email);
     const otp = String(body.otp || "").trim();
+    const name = String(body.name || "").trim();
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     db.authOtps = db.authOtps || [];
@@ -233,8 +234,11 @@ async function handleApi(req, res) {
     record.used = true;
     let user = db.users.find(item => normalizeEmail(item.email) === email);
     if (!user) {
-      user = { id: id("USER"), email, createdAt: new Date().toISOString() };
+      user = { id: id("USER"), email, name, createdAt: new Date().toISOString() };
       db.users.push(user);
+    } else if (name) {
+      user.name = name;
+      user.updatedAt = new Date().toISOString();
     }
     const token = crypto.randomBytes(32).toString("hex");
     const session = {
@@ -272,6 +276,35 @@ async function handleApi(req, res) {
       await writeDb(db);
     }
     return sendJson(res, 200, { ok: true });
+  }
+
+  if (method === "PATCH" && parts[1] === "auth" && parts[2] === "address") {
+    const auth = req.headers.authorization || "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    if (!token || !sessionSecret) return sendError(res, 401, "Login required");
+    db.authSessions = db.authSessions || [];
+    const session = db.authSessions.find(item => item.tokenHash === hashSession(token) && new Date(item.expiresAt).getTime() > Date.now());
+    if (!session) return sendError(res, 401, "Session expired");
+    const user = (db.users || []).find(item => item.id === session.userId);
+    if (!user) return sendError(res, 401, "User not found");
+    const body = await readBody(req);
+    const addressBook = {
+      name: String(body.name || "").trim(),
+      phone: String(body.phone || "").trim(),
+      houseArea: String(body.houseArea || "").trim(),
+      city: String(body.city || "").trim(),
+      pincode: String(body.pincode || "").trim(),
+      landmark: String(body.landmark || "").trim(),
+    };
+    if (!addressBook.name) return sendError(res, 400, "Name is required");
+    if (!addressBook.phone) return sendError(res, 400, "Phone number is required");
+    if (!addressBook.houseArea) return sendError(res, 400, "House/area is required");
+    if (!serviceableCity(db, addressBook.city)) return sendError(res, 400, "City is not serviceable yet");
+    if (!addressBook.pincode) return sendError(res, 400, "Pincode is required");
+    user.addressBook = addressBook;
+    user.updatedAt = new Date().toISOString();
+    await writeDb(db);
+    return sendJson(res, 200, { user: publicUser(user) });
   }
 
   if (method === "GET" && parts[1] === "config") {
@@ -356,16 +389,28 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
+    const sellerPhone = String(body.sellerPhone || "").trim();
+    if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
+    const photos = Array.isArray(body.photos)
+      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/"))
+      : [];
+    if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",
       userEmail: body.userEmail || "",
+      sellerName: String(body.sellerName || "").trim(),
+      sellerPhone,
+      pickupAddress: String(body.pickupAddress || "").trim(),
+      pickupDate: String(body.pickupDate || "").trim(),
+      pickupTime: String(body.pickupTime || "").trim(),
       city: body.city,
       category: body.category,
       title: body.title,
       expectedCoins: Number(body.expectedCoins || 0),
       condition: body.condition,
       details: body.details || {},
+      photos,
       status: "upload-submitted",
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()
@@ -423,6 +468,7 @@ async function handleApi(req, res) {
         address: String(deliveryDetails.address || "").trim(),
         city: deliveryCity,
         pincode: String(deliveryDetails.pincode || "").trim(),
+        landmark: String(deliveryDetails.landmark || "").trim(),
         note: String(deliveryDetails.note || "").trim()
       },
       deliveryCharge: orderDeliveryCharge,
