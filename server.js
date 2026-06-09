@@ -131,7 +131,7 @@ function hashSession(token) {
 }
 
 function publicUser(user) {
-  return user ? { id: user.id, email: user.email } : null;
+  return user ? { id: user.id, email: user.email, name: user.name || "" } : null;
 }
 
 async function sendOtpEmail(email, otp) {
@@ -215,6 +215,7 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const email = normalizeEmail(body.email);
     const otp = String(body.otp || "").trim();
+    const name = String(body.name || "").trim();
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     db.authOtps = db.authOtps || [];
@@ -233,8 +234,11 @@ async function handleApi(req, res) {
     record.used = true;
     let user = db.users.find(item => normalizeEmail(item.email) === email);
     if (!user) {
-      user = { id: id("USER"), email, createdAt: new Date().toISOString() };
+      user = { id: id("USER"), email, name, createdAt: new Date().toISOString() };
       db.users.push(user);
+    } else if (name) {
+      user.name = name;
+      user.updatedAt = new Date().toISOString();
     }
     const token = crypto.randomBytes(32).toString("hex");
     const session = {

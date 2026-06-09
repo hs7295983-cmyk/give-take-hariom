@@ -1579,6 +1579,7 @@ let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = null;
 let authRestorePending = Boolean(customerToken);
 let pendingLoginEmail = "";
+let pendingLoginName = "";
 let platformConfig = {
   integrations: {
     payments: {
@@ -2071,7 +2072,7 @@ function renderAccount() {
   }
   const latestOrders = orders.slice(0, 3);
   const latestSellRequests = sellRequests.slice(0, 3);
-  const displayName = sellRequests.find(request => request.sellerName)?.sellerName || "User";
+  const displayName = currentUser.name || sellRequests.find(request => request.sellerName)?.sellerName || "User";
   const email = currentUser.email || "";
   const avatarLetter = (displayName !== "User" ? displayName : email || "U").trim().charAt(0).toUpperCase() || "U";
   const balance = Number(wallet.balance || 0);
@@ -2564,6 +2565,7 @@ function wireEvents() {
       authRestorePending = false;
       document.documentElement.classList.remove("has-customer-token");
       pendingLoginEmail = "";
+      pendingLoginName = "";
       wallet = { balance: 0, ledger: [] };
       orders = [];
       state.rechargeAmount = null;
@@ -2957,7 +2959,12 @@ function wireEvents() {
       event.preventDefault();
       const submitButton = event.target.querySelector("button[type='submit']");
       const form = new FormData(event.target);
+      pendingLoginName = String(form.get("name") || "").trim();
       pendingLoginEmail = String(form.get("email") || "").trim();
+      if (!pendingLoginName) {
+        alert("Please enter your name.");
+        return;
+      }
       if (submitButton?.disabled) return;
       if (submitButton) {
         submitButton.disabled = true;
@@ -2998,6 +3005,7 @@ function wireEvents() {
         const data = await api("/api/auth/verify-otp", {
           method: "POST",
           body: JSON.stringify({
+            name: pendingLoginName,
             email: pendingLoginEmail,
             otp: String(form.get("otp") || "").trim(),
           }),
