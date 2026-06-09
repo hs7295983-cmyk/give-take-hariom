@@ -1722,7 +1722,8 @@ function renderAuthStatus() {
   }
   if (cartNavLink) {
     const count = state.cart.reduce((sum, id) => sum + Number(state.cartQuantities[id] || 1), 0);
-    cartNavLink.innerHTML = `Cart <span class="cart-count-badge">${count}</span>`;
+    const badge = cartNavLink.querySelector(".cart-count-badge");
+    if (badge) badge.textContent = count;
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
@@ -2589,6 +2590,9 @@ function navigate(rawHash, shouldScroll = true) {
     state.route = "home";
     els.pages.forEach(page => page.classList.toggle("active", page.dataset.page === "home"));
   }
+  document.querySelectorAll("[data-route-link]").forEach(link => {
+    link.classList.toggle("active", link.dataset.routeLink === state.route);
+  });
   renderProducts();
   renderProductDetail();
   renderCart();
