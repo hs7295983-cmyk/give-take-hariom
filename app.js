@@ -1717,7 +1717,7 @@ function renderAuthStatus() {
   const cartNavLink = document.getElementById("cartNavLink");
   const hasCustomerSession = Boolean(currentUser) || authRestorePending;
   if (authLink) {
-    authLink.textContent = hasCustomerSession ? "My Account" : "Login";
+    authLink.innerHTML = `<span class="login-label">Login</span><span class="account-label">My Account</span>`;
     authLink.dataset.short = hasCustomerSession ? "Account" : "Login";
     authLink.href = hasCustomerSession ? "#account" : "#auth";
   }
@@ -1728,9 +1728,22 @@ function renderAuthStatus() {
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
-    heroLoginLink.textContent = hasCustomerSession ? "My Account" : "Login";
+    heroLoginLink.innerHTML = `<span class="login-label">Login</span><span class="account-label">My Account</span>`;
     heroLoginLink.href = hasCustomerSession ? "#account" : "#auth";
   }
+}
+
+function setSubmitState(form, isSubmitting, label = "Submitting...") {
+  const button = form?.querySelector("button[type='submit']");
+  if (!button) return;
+  if (isSubmitting) {
+    if (!button.dataset.originalText) button.dataset.originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = label;
+    return;
+  }
+  button.disabled = false;
+  button.textContent = button.dataset.originalText || button.textContent;
 }
 
 async function loadProtectedData() {
@@ -2403,7 +2416,15 @@ function renderAdmin() {
       <div class="admin-list">
         ${adminOrders.map(order => {
           const details = order.deliveryDetails || {};
-          const orderProducts = order.products || order.productIds || [];
+          const orderProducts = (order.products || order.productIds || []).map(item => {
+            const productId = typeof item === "string" ? item : item.id;
+            const product = products.find(next => next.id === productId) || {};
+            return typeof item === "string" ? { id: item, ...product } : { ...product, ...item };
+          });
+          const orderProductImages = orderProducts.map(item => {
+            const images = Array.isArray(item.images) ? item.images : [];
+            return item.imageUrl || images[0] || "";
+          }).filter(Boolean);
           const rawStatus = String(order.status || "new-order").toLowerCase();
           const statusRank = {
             "new-order": 0,
@@ -2426,7 +2447,14 @@ function renderAdmin() {
               <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
               <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
               ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
-              <span>${Array.isArray(orderProducts) ? orderProducts.map(item => escapeHtml(item.title || item)).join(", ") : ""}</span>
+              <span>${orderProducts.map(item => escapeHtml(item.title || item.id || "Product")).join(", ")}</span>
+              <div class="admin-order-images">
+                ${orderProductImages.map((image, index) => `
+                  <a href="${escapeHtml(image)}" target="_blank" rel="noopener" title="Open product image ${index + 1}">
+                    <img src="${escapeHtml(image)}" alt="Ordered product image ${index + 1}" loading="lazy" />
+                  </a>
+                `).join("") || `<span>No product image available</span>`}
+              </div>
               <div class="admin-actions">
                 ${statusButton("confirmed", "Confirm", "secondary-button", 1)}
                 ${statusButton("packed", "Packed", "secondary-button", 2)}
@@ -2717,7 +2745,7 @@ function navigate(rawHash, shouldScroll = true) {
   state.route = route || "home";
   if (route === "category") state.category = value === "mobiles" ? "electronics" : value || "electronics";
   if (route === "product") state.productId = value || products[0].id;
-  if (["account", "wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId()) {
+  if (["account", "wallet", "orders", "cart", "sell"].includes(state.route) && !getCurrentUserId() && !authRestorePending) {
     state.route = "auth";
   }
   if (isMaintenanceActive() && state.route !== "admin") {
@@ -2852,11 +2880,15 @@ function wireEvents() {
     const orderStatus = event.target.closest("[data-order-status]");
     if (orderStatus) {
       try {
+        orderStatus.disabled = true;
         const nextStatus = orderStatus.dataset.nextStatus;
         const payload = { status: nextStatus };
         if (nextStatus === "cancelled") {
           const cancellationReason = prompt("Why are you cancelling this order? This reason will be shown to the user.");
-          if (!cancellationReason || !cancellationReason.trim()) return;
+          if (!cancellationReason || !cancellationReason.trim()) {
+            orderStatus.disabled = false;
+            return;
+          }
           payload.cancellationReason = cancellationReason.trim();
         }
         await api(`/api/admin/orders/${orderStatus.dataset.orderStatus}`, {
@@ -2869,6 +2901,7 @@ function wireEvents() {
         renderAdmin();
         alert("Order status updated.");
       } catch (error) {
+        orderStatus.disabled = false;
         alert(error.message);
       }
     }
@@ -2876,6 +2909,7 @@ function wireEvents() {
     const taskComplete = event.target.closest("[data-task-complete]");
     if (taskComplete) {
       try {
+        taskComplete.disabled = true;
         const data = await api(`/api/partner/tasks/${taskComplete.dataset.taskComplete}`, {
           method: "PATCH",
           admin: true,
@@ -2884,6 +2918,7 @@ function wireEvents() {
         partnerTasks = partnerTasks.map(task => task.id === data.task.id ? data.task : task);
         renderPartnerTasks();
       } catch (error) {
+        taskComplete.disabled = false;
         alert(error.message);
       }
     }
@@ -2891,6 +2926,7 @@ function wireEvents() {
     const approveRecharge = event.target.closest("[data-approve-recharge]");
     if (approveRecharge) {
       try {
+        approveRecharge.disabled = true;
         const data = await api(`/api/admin/recharges/${approveRecharge.dataset.approveRecharge}/approve`, {
           method: "POST",
           admin: true,
@@ -2903,6 +2939,7 @@ function wireEvents() {
         renderAll();
         alert(`Approved ${data.rechargeRequest.amount} coins for ${data.rechargeRequest.userId}.`);
       } catch (error) {
+        approveRecharge.disabled = false;
         alert(error.message);
       }
     }
@@ -2911,6 +2948,7 @@ function wireEvents() {
     if (rejectRecharge) {
       if (!confirm("Reject this recharge request? Coins will not be credited.")) return;
       try {
+        rejectRecharge.disabled = true;
         const data = await api(`/api/admin/recharges/${rejectRecharge.dataset.rejectRecharge}/reject`, {
           method: "POST",
           admin: true,
@@ -2921,6 +2959,7 @@ function wireEvents() {
         renderAdmin();
         alert(`Rejected recharge request: ${data.rechargeRequest.id}.`);
       } catch (error) {
+        rejectRecharge.disabled = false;
         alert(error.message);
       }
     }
@@ -2944,6 +2983,7 @@ function wireEvents() {
       }
       if (action === "reject" && !confirm("Reject this sell item request?")) return;
       try {
+        sellRequestAction.disabled = true;
         const data = await api(`/api/admin/sell-requests/${requestId}/${action}`, {
           method: "POST",
           admin: true,
@@ -2955,6 +2995,7 @@ function wireEvents() {
         renderAll();
         alert(`Sell request updated: ${data.sellRequest.id}`);
       } catch (error) {
+        sellRequestAction.disabled = false;
         alert(error.message);
       }
     }
@@ -2962,6 +3003,7 @@ function wireEvents() {
     const acceptApplication = event.target.closest("[data-accept-application]");
     if (acceptApplication) {
       try {
+        acceptApplication.disabled = true;
         const data = await api(`/api/admin/join-applications/${acceptApplication.dataset.acceptApplication}/accept`, {
           method: "POST",
           admin: true,
@@ -2972,6 +3014,7 @@ function wireEvents() {
         renderAdmin();
         alert(`Accepted application: ${data.application.id}`);
       } catch (error) {
+        acceptApplication.disabled = false;
         alert(error.message);
       }
     }
@@ -2979,6 +3022,7 @@ function wireEvents() {
     const rejectApplication = event.target.closest("[data-reject-application]");
     if (rejectApplication) {
       try {
+        rejectApplication.disabled = true;
         const data = await api(`/api/admin/join-applications/${rejectApplication.dataset.rejectApplication}/reject`, {
           method: "POST",
           admin: true,
@@ -2989,6 +3033,7 @@ function wireEvents() {
         renderAdmin();
         alert(`Rejected application: ${data.application.id}`);
       } catch (error) {
+        rejectApplication.disabled = false;
         alert(error.message);
       }
     }
@@ -2996,6 +3041,7 @@ function wireEvents() {
     const maintenanceToggle = event.target.closest("[data-maintenance-toggle]");
     if (maintenanceToggle) {
       try {
+        maintenanceToggle.disabled = true;
         const nextFull = maintenanceToggle.dataset.maintenanceToggle === "on";
         const data = await api("/api/admin/maintenance", {
           method: "PATCH",
@@ -3007,9 +3053,11 @@ function wireEvents() {
         });
         adminDashboard.maintenance = data.maintenance;
         platformConfig.maintenance = data.maintenance;
+        navigate(location.hash, false);
         renderAdmin();
         alert(nextFull ? "Maintenance mode is ON." : "Maintenance mode is OFF.");
       } catch (error) {
+        maintenanceToggle.disabled = false;
         alert(error.message);
       }
     }
@@ -3116,6 +3164,8 @@ function wireEvents() {
     event.preventDefault();
     if (!requireCustomerLogin()) return;
     const sellForm = event.currentTarget;
+    const submitButton = sellForm.querySelector("button[type='submit']");
+    if (submitButton?.disabled) return;
     const form = new FormData(sellForm);
     const photoError = document.getElementById("sellPhotoError");
     if (photoError) {
@@ -3123,6 +3173,7 @@ function wireEvents() {
       photoError.textContent = "";
     }
     try {
+      setSubmitState(sellForm, true, "Submitting...");
       const photos = await collectSellPhotos(sellForm.elements.photos?.files);
       const data = await api("/api/sell-requests", {
         method: "POST",
@@ -3146,21 +3197,29 @@ function wireEvents() {
       alert(`Upload submitted for review. Request ID: ${data.sellRequest.id}`);
       sellForm.reset();
       renderFormFields();
+      await loadBackendData();
+      renderAll();
     } catch (error) {
       if (error.message.includes("product photos") && photoError) {
         photoError.textContent = error.message;
         photoError.hidden = false;
         sellForm.elements.photos?.focus();
+        setSubmitState(sellForm, false);
         return;
       }
       alert(error.message);
+    } finally {
+      setSubmitState(sellForm, false);
     }
   });
   document.getElementById("joinForm").addEventListener("submit", async event => {
     event.preventDefault();
     const joinForm = event.currentTarget;
+    const submitButton = joinForm.querySelector("button[type='submit']");
+    if (submitButton?.disabled) return;
     const form = new FormData(joinForm);
     try {
+      setSubmitState(joinForm, true, "Submitting...");
       const data = await api("/api/join-applications", {
         method: "POST",
         body: JSON.stringify({
@@ -3175,6 +3234,8 @@ function wireEvents() {
       joinForm.reset();
     } catch (error) {
       alert(error.message);
+    } finally {
+      setSubmitState(joinForm, false);
     }
   });
   document.body.addEventListener("submit", async event => {
@@ -3254,8 +3315,11 @@ function wireEvents() {
     }
     if (event.target.id === "adminLoginForm") {
       event.preventDefault();
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
       const form = new FormData(event.target);
       try {
+        setSubmitState(event.target, true, "Logging in...");
         const data = await api("/api/admin/login", {
           method: "POST",
           body: JSON.stringify({ password: form.get("password") }),
@@ -3268,11 +3332,16 @@ function wireEvents() {
         alert("Admin login successful.");
       } catch (error) {
         alert(error.message);
+      } finally {
+        setSubmitState(event.target, false);
       }
       return;
     }
     if (event.target.id === "deliveryDetailsForm") {
       event.preventDefault();
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
+      setSubmitState(event.target, true, "Continuing...");
       const form = new FormData(event.target);
       state.deliveryDetails = {
         name: form.get("name"),
@@ -3289,8 +3358,11 @@ function wireEvents() {
     }
     if (event.target.id === "addressBookForm") {
       event.preventDefault();
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
       const form = new FormData(event.target);
       try {
+        setSubmitState(event.target, true, "Saving...");
         const data = await api("/api/auth/address", {
           method: "PATCH",
           customer: true,
@@ -3308,12 +3380,16 @@ function wireEvents() {
         alert("Address saved.");
       } catch (error) {
         alert(error.message);
+      } finally {
+        setSubmitState(event.target, false);
       }
       return;
     }
     if (event.target.id === "checkoutForm") {
       event.preventDefault();
       if (!requireCustomerLogin()) return;
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
       const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
       const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
       if ((wallet.balance || 0) < total) {
@@ -3325,6 +3401,7 @@ function wireEvents() {
       const deliveryCharge = getDeliveryCharge(total);
       const productIds = state.cart.flatMap(id => Array(Number(state.cartQuantities[id] || 1)).fill(id));
       try {
+        setSubmitState(event.target, true, "Placing order...");
         const data = await api("/api/orders", {
           method: "POST",
           body: JSON.stringify({
@@ -3349,17 +3426,22 @@ function wireEvents() {
         alert(`Order confirmed: ${data.order.id}`);
       } catch (error) {
         alert(error.message);
+      } finally {
+        setSubmitState(event.target, false);
       }
       return;
     }
     if (event.target.id === "adminProductForm") {
       event.preventDefault();
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
       const form = new FormData(event.target);
       const checks = String(form.get("checks") || "")
         .split(",")
         .map(check => check.trim())
         .filter(Boolean);
       try {
+        setSubmitState(event.target, true, "Adding...");
         await api("/api/admin/products", {
           method: "POST",
           admin: true,
@@ -3374,20 +3456,25 @@ function wireEvents() {
           }),
         });
         event.target.reset();
-        await loadData();
+        await loadBackendData();
         await loadProtectedData();
         renderAll();
         alert("Product added to marketplace.");
       } catch (error) {
         alert(error.message);
+      } finally {
+        setSubmitState(event.target, false);
       }
       return;
     }
     if (event.target.id === "upiReferenceForm") {
       event.preventDefault();
       if (!requireCustomerLogin()) return;
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton?.disabled) return;
       const form = new FormData(event.target);
       try {
+        setSubmitState(event.target, true, "Submitting...");
         const data = await api("/api/wallet/recharge", {
           method: "POST",
           body: JSON.stringify({
@@ -3405,13 +3492,18 @@ function wireEvents() {
         alert(`Recharge request submitted: ${data.rechargeRequest.id}. Coins will be credited after admin verifies payment.`);
       } catch (error) {
         alert(error.message);
+      } finally {
+        setSubmitState(event.target, false);
       }
       return;
     }
     if (event.target.id !== "upiSettingsForm") return;
     event.preventDefault();
+    const submitButton = event.target.querySelector("button[type='submit']");
+    if (submitButton?.disabled) return;
     const form = new FormData(event.target);
     try {
+      setSubmitState(event.target, true, "Saving...");
       const data = await api("/api/admin/payments/upi", {
         method: "PATCH",
         admin: true,
@@ -3429,6 +3521,8 @@ function wireEvents() {
       alert("UPI details saved.");
     } catch (error) {
       alert(error.message);
+    } finally {
+      setSubmitState(event.target, false);
     }
   });
   document.getElementById("langToggle").addEventListener("click", () => {
@@ -3443,6 +3537,7 @@ async function init() {
   await loadAuthUser();
   renderAll();
   await loadBackendData();
+  navigate(location.hash, false);
   renderAll();
 }
 

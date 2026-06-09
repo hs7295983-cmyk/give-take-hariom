@@ -2026,6 +2026,34 @@ textarea {
   opacity: 1;
 }
 
+.admin-order-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-order-images a {
+  display: block;
+  overflow: hidden;
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.admin-order-images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-order-images span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .admin-photo-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(72px, 1fr));

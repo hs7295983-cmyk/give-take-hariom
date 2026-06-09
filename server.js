@@ -457,7 +457,9 @@ async function handleApi(req, res) {
         title: product.title,
         price: product.price,
         condition: product.condition,
-        category: product.category
+        category: product.category,
+        imageUrl: product.imageUrl || "",
+        images: Array.isArray(product.images) ? product.images : []
       })),
       totalCoins,
       status: "new-order",
