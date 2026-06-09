@@ -363,8 +363,9 @@ async function handleApi(req, res) {
     const sellerPhone = String(body.sellerPhone || "").trim();
     if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
     const photos = Array.isArray(body.photos)
-      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/")).slice(0, 6)
+      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/"))
       : [];
+    if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",

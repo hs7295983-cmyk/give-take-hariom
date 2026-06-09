@@ -2007,7 +2007,10 @@ function fileToCompressedDataUrl(file) {
 }
 
 async function collectSellPhotos(fileList) {
-  const files = [...(fileList || [])].filter(file => file.type.startsWith("image/")).slice(0, 6);
+  const files = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
+  if (files.length < 4 || files.length > 5) {
+    throw new Error("Please upload minimum 4 and maximum 5 product photos.");
+  }
   return Promise.all(files.map(fileToCompressedDataUrl));
 }
 
