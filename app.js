@@ -2381,10 +2381,11 @@ function renderCart() {
     els.cartView.innerHTML = `
       <section class="empty-cart">
         <div class="empty-cart-head">
-          <div>
+          <div class="cart-title-wrap">
+            <span class="cart-title-icon" aria-hidden="true">🛒</span>
             <h1 class="cart-title">My Cart</h1>
-            <span class="cart-summary">0 Items • 0 G Coins</span>
           </div>
+          <span class="cart-summary">0 Items • 0 G Coins</span>
         </div>
         <div class="empty-cart-panel">
           <div class="empty-cart-illustration" aria-hidden="true">
