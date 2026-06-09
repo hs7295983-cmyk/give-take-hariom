@@ -1535,6 +1535,198 @@ textarea {
   font-size: 13px;
 }
 
+.orders-shell {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 16px;
+}
+
+.orders-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.orders-tabs button {
+  min-height: 44px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.orders-tabs button.active {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.order-detail-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(23, 108, 79, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 36px rgba(23, 32, 27, 0.08);
+}
+
+.order-detail-top,
+.order-status-copy,
+.order-detail-footer,
+.order-item-row,
+.order-detail-section p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.order-detail-top > div:first-child {
+  display: grid;
+  gap: 8px;
+}
+
+.order-detail-top span,
+.order-detail-section span,
+.order-item-row span {
+  color: var(--muted);
+}
+
+.order-total-box {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.order-total-box strong {
+  color: var(--green);
+  font-size: 26px;
+}
+
+.order-total-box small {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef9e7;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.order-status-panel,
+.order-detail-section {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfcf8;
+}
+
+.order-status-copy {
+  margin-bottom: 14px;
+}
+
+.order-status-copy > div {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.order-status-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #e1f6dd;
+  color: var(--green);
+  font-size: 24px;
+}
+
+.order-status-copy em {
+  padding: 7px 11px;
+  border: 1px solid #7ad17a;
+  border-radius: 8px;
+  color: #1a8a2d;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.order-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.order-progress div {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.order-progress span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: white;
+  font-weight: 900;
+}
+
+.order-progress .done {
+  color: var(--green);
+}
+
+.order-progress .done span {
+  border-color: var(--green);
+  background: var(--green);
+  color: white;
+}
+
+.order-detail-section {
+  display: grid;
+  gap: 10px;
+}
+
+.order-detail-section h3 {
+  margin: 0;
+}
+
+.order-detail-section p {
+  margin: 0;
+}
+
+.order-item-image {
+  position: relative;
+  overflow: hidden;
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--art-a), var(--art-b));
+}
+
+.order-item-row > div {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.order-detail-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.order-detail-footer a {
+  color: var(--green);
+  font-weight: 900;
+}
+
 .checkout-step {
   padding: 16px;
   border: 1px solid var(--line);
@@ -2055,6 +2247,41 @@ textarea {
   .orders-info-grid {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .orders-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .order-detail-card {
+    padding: 12px;
+  }
+
+  .order-detail-top,
+  .order-detail-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-total-box {
+    justify-items: start;
+  }
+
+  .order-status-copy {
+    align-items: flex-start;
+  }
+
+  .order-progress {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .order-progress strong {
+    font-size: 11px;
+  }
+
+  .order-item-row {
+    align-items: flex-start;
   }
 
   .product-grid {

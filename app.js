@@ -2103,16 +2103,81 @@ function renderOrders() {
     `;
     return;
   }
-  els.ordersGrid.innerHTML = list.map(order => `
-    <article class="order-card">
-      <strong>${order.id}</strong>
-      <span>${String(order.status || "").replaceAll("-", " ")}</span>
-      <span>Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
-      <div class="mini-steps">
-        ${(order.timeline || []).slice(0, 4).map(step => `<span>${String(step).replaceAll("-", " ")}</span>`).join("")}
+  els.ordersGrid.innerHTML = `
+    <section class="orders-shell">
+      <div class="orders-tabs">
+        <button class="active" type="button">All Orders (${list.length})</button>
+        <button type="button">Active (${activeOrders})</button>
+        <button type="button">Completed (${completedOrders})</button>
+        <button type="button">Cancelled (0)</button>
       </div>
-    </article>
-  `).join("");
+      ${list.map(order => {
+        const details = order.deliveryDetails || {};
+        const orderItems = (order.products || order.productIds || []).map(item => {
+          const productId = typeof item === "string" ? item : item.id;
+          const product = products.find(next => next.id === productId) || item;
+          return product;
+        }).filter(Boolean);
+        const firstItem = { artA: "#d3f4e9", artB: "#3a6e63", ...(orderItems[0] || {}) };
+        const statusText = String(order.status || "order-placed").replaceAll("-", " ");
+        const placedDate = order.createdAt ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Recently";
+        return `
+          <article class="order-detail-card">
+            <div class="order-detail-top">
+              <div>
+                <strong>Order ID: ${escapeHtml(order.id)}</strong>
+                <span>Placed on: ${escapeHtml(placedDate)}</span>
+              </div>
+              <div class="order-total-box">
+                <span>Total Amount</span>
+                <strong>${formatCoins(order.totalCoins || 0)}</strong>
+                <small>${Number(order.deliveryCharge || 0) ? "COD" : "Coins"}</small>
+              </div>
+            </div>
+            <section class="order-status-panel">
+              <div class="order-status-copy">
+                <span class="order-status-icon">▧</span>
+                <div>
+                  <strong>${escapeHtml(statusText.charAt(0).toUpperCase() + statusText.slice(1))}</strong>
+                  <span>${statusText === "order placed" ? "Seller will confirm your order soon" : "Your order is being processed"}</span>
+                </div>
+                <em>ACTIVE</em>
+              </div>
+              <div class="order-progress">
+                ${["Order Placed", "Confirmed", "Shipped", "Delivered"].map((step, index) => `
+                  <div class="${index === 0 ? "done" : ""}">
+                    <span>${index === 0 ? "✓" : index + 1}</span>
+                    <strong>${step}</strong>
+                  </div>
+                `).join("")}
+              </div>
+            </section>
+            <section class="order-detail-section">
+              <h3>Delivery Details</h3>
+              <p><span>Delivery Method</span><strong>Cash on Delivery</strong></p>
+              <p><span>Delivery Charge</span><strong>${Number(order.deliveryCharge || 0) ? `Rs.${order.deliveryCharge}` : "Free"}</strong></p>
+              <p><span>Deliver to</span><strong>${escapeHtml(details.name || "Customer")} • ${escapeHtml(details.city || order.deliveryCity || "City")}</strong></p>
+            </section>
+            <section class="order-detail-section">
+              <h3>Order Items (${orderItems.length || 1})</h3>
+              <div class="order-item-row">
+                ${productVisual(firstItem, "order-item-image")}
+                <div>
+                  <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
+                  <span>Qty: ${(order.productIds || []).length || 1}</span>
+                </div>
+                <strong>${formatCoins(order.totalCoins || firstItem.price || 0)}</strong>
+              </div>
+            </section>
+            <div class="order-detail-footer">
+              <span>Need Help? <a href="#support">Contact Support</a></span>
+              <button class="secondary-button" type="button">View Order Details</button>
+            </div>
+          </article>
+        `;
+      }).join("")}
+    </section>
+  `;
 }
 
 function renderAccount() {
