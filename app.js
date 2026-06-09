@@ -2009,7 +2009,7 @@ function fileToCompressedDataUrl(file) {
 async function collectSellPhotos(fileList) {
   const files = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
   if (files.length < 4 || files.length > 5) {
-    throw new Error("Please upload minimum 4 and maximum 5 product photos.");
+    throw new Error("Please upload 4 to 5 product photos before submitting.");
   }
   return Promise.all(files.map(fileToCompressedDataUrl));
 }
@@ -2965,6 +2965,11 @@ function wireEvents() {
     if (!requireCustomerLogin()) return;
     const sellForm = event.currentTarget;
     const form = new FormData(sellForm);
+    const photoError = document.getElementById("sellPhotoError");
+    if (photoError) {
+      photoError.hidden = true;
+      photoError.textContent = "";
+    }
     try {
       const photos = await collectSellPhotos(sellForm.elements.photos?.files);
       const data = await api("/api/sell-requests", {
@@ -2990,6 +2995,12 @@ function wireEvents() {
       sellForm.reset();
       renderFormFields();
     } catch (error) {
+      if (error.message.includes("product photos") && photoError) {
+        photoError.textContent = error.message;
+        photoError.hidden = false;
+        sellForm.elements.photos?.focus();
+        return;
+      }
       alert(error.message);
     }
   });
