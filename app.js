@@ -3411,10 +3411,11 @@ function wireEvents() {
 }
 
 async function init() {
-  await loadAuthUser();
   renderAll();
   wireEvents();
   navigate();
+  await loadAuthUser();
+  renderAll();
   await loadBackendData();
   renderAll();
 }
