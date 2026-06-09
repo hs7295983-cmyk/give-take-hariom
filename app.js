@@ -1579,7 +1579,6 @@ let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = null;
 let authRestorePending = Boolean(customerToken);
 let pendingLoginEmail = "";
-let pendingLoginName = "";
 let platformConfig = {
   integrations: {
     payments: {
@@ -1722,8 +1721,7 @@ function renderAuthStatus() {
   }
   if (cartNavLink) {
     const count = state.cart.reduce((sum, id) => sum + Number(state.cartQuantities[id] || 1), 0);
-    const badge = cartNavLink.querySelector(".cart-count-badge");
-    if (badge) badge.textContent = count;
+    cartNavLink.innerHTML = `Cart <span class="cart-count-badge">${count}</span>`;
     cartNavLink.dataset.short = `Cart ${count}`;
   }
   if (heroLoginLink) {
@@ -1754,11 +1752,11 @@ async function refreshAdminProducts() {
 }
 
 function formatCoins(value) {
-  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
+  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="coins"></span>`;
 }
 
 function coinMarkup() {
-  return `<span class="coin-symbol" aria-label="G&T coins"></span>`;
+  return `<span class="coin-symbol" aria-label="coins"></span>`;
 }
 
 function buildUpiPayUrl(amount) {
@@ -1970,7 +1968,7 @@ function renderFormFields() {
     mobiles: ["Brand and model", "Storage/RAM", "IMEI available?", "Bill/warranty", "Battery/display issues"],
     electronics: ["Brand/model/serial", "Power and charging status", "Accessories included", "Known defects"],
     books: ["Class/course/subject", "Edition/year", "Pages missing?", "Writing/highlighting condition"],
-    furniture: ["Material", "Cracks/scratches"],
+    furniture: ["Material", "Dimensions", "Lift/floor pickup details", "Cracks/scratches"],
     fashion: ["Size", "Brand", "Cleanliness", "Stains/tears"],
     home: ["Brand if any", "Working condition", "Missing parts", "Hygiene/safety condition"],
     bags: ["Size/type", "Zip/handle condition", "Tears or stains", "Brand if any"],
@@ -1979,39 +1977,6 @@ function renderFormFields() {
   els.dynamicFields.innerHTML = (fieldMap[category] || []).map(field => `
     <label>${field}<input placeholder="${field}" /></label>
   `).join("");
-}
-
-function fileToCompressedDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const image = new Image();
-      image.onload = () => {
-        const maxSide = 900;
-        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.72));
-      };
-      image.onerror = () => reject(new Error("Could not read one selected photo"));
-      image.src = reader.result;
-    };
-    reader.onerror = () => reject(new Error("Could not read one selected photo"));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function collectSellPhotos(fileList) {
-  const files = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
-  if (files.length < 4 || files.length > 5) {
-    throw new Error("Please upload 4 to 5 product photos before submitting.");
-  }
-  return Promise.all(files.map(fileToCompressedDataUrl));
 }
 
 function renderWallet() {
@@ -2039,12 +2004,12 @@ function renderWallet() {
   } else {
     els.rechargeGrid.classList.remove("payment-step");
     els.rechargeGrid.innerHTML = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
-      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="G&T coins"></span></button>
+      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="coins"></span></button>
     `).join("");
   }
   els.walletBalance.textContent = new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
-  if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="G&T coins"></span> available.`;
+  if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="coins"></span> available.`;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
@@ -2054,55 +2019,6 @@ function renderWallet() {
 
 function renderOrders() {
   const list = orders || [];
-  const activeOrders = list.filter(order => !["delivered", "cancelled", "completed"].includes(String(order.status || "").toLowerCase())).length;
-  const completedOrders = list.length - activeOrders;
-  const summary = document.querySelector("#page-orders .orders-summary");
-  if (summary) summary.textContent = `${list.length} Orders • ${activeOrders} Active • ${completedOrders} Completed`;
-  if (!list.length) {
-    const recommended = products
-      .filter(product => product.status === "listed")
-      .slice(0, 4);
-    const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
-      <article class="empty-cart-product">
-        ${productVisual(product, "empty-cart-product-image")}
-        <div>
-          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
-          <span>${formatCoins(product.price || 0)}</span>
-        </div>
-        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
-      </article>
-    `).join("");
-    els.ordersGrid.innerHTML = `
-      <section class="empty-orders">
-        <div class="empty-orders-card">
-          <div class="empty-orders-icon" aria-hidden="true">
-            <svg viewBox="0 0 96 96" role="img">
-              <path d="M22 34 48 20l26 14v28L48 76 22 62V34Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-              <path d="m22 34 26 14 26-14M48 48v28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
-              <path d="M36 27 62 41" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/>
-            </svg>
-          </div>
-          <h2>No orders yet</h2>
-          <p>When you buy items using G&T Coins, your orders will appear here.</p>
-          <a class="primary-button" href="#market">Browse Products</a>
-        </div>
-        <div class="orders-info-grid">
-          <article><strong>Track your purchases</strong><span>Follow every order from placed to delivered.</span></article>
-          <article><strong>View delivery status</strong><span>See packing, dispatch, and delivery updates.</span></article>
-          <article><strong>Manage order history</strong><span>Keep your G&T Coin purchases in one place.</span></article>
-        </div>
-        <section class="cart-recommendations" aria-label="Start exploring">
-          <div class="cart-recommendations-head">
-            <h2>Start exploring</h2>
-          </div>
-          <div class="empty-cart-products">
-            ${cards}
-          </div>
-        </section>
-      </section>
-    `;
-    return;
-  }
   els.ordersGrid.innerHTML = list.map(order => `
     <article class="order-card">
       <strong>${order.id}</strong>
@@ -2112,7 +2028,7 @@ function renderOrders() {
         ${(order.timeline || []).slice(0, 4).map(step => `<span>${String(step).replaceAll("-", " ")}</span>`).join("")}
       </div>
     </article>
-  `).join("");
+  `).join("") || `<p>No orders yet.</p>`;
 }
 
 function renderAccount() {
@@ -2125,11 +2041,6 @@ function renderAccount() {
   }
   const latestOrders = orders.slice(0, 3);
   const latestSellRequests = sellRequests.slice(0, 3);
-  const displayName = currentUser.name || sellRequests.find(request => request.sellerName)?.sellerName || "User";
-  const email = currentUser.email || "";
-  const avatarLetter = (displayName !== "User" ? displayName : email || "U").trim().charAt(0).toUpperCase() || "U";
-  const balance = Number(wallet.balance || 0);
-  const sellRequestCount = sellRequests.length;
   const renderSellRequestMessage = request => {
     const status = String(request.status || "upload-submitted");
     const readableStatus = status.replaceAll("-", " ");
@@ -2149,56 +2060,21 @@ function renderAccount() {
     `;
   };
   els.accountGrid.innerHTML = `
-    <article class="account-profile-card">
-      <div class="account-avatar">${escapeHtml(avatarLetter)}</div>
-      <div class="account-profile-copy">
-        <h2>${escapeHtml(displayName)}</h2>
-        <p>${escapeHtml(email || "Email not available")}</p>
-        <span class="verified-badge"><span class="badge-icon">✓</span> Verified Account</span>
-      </div>
-    </article>
-    <section class="account-stats" aria-label="Account stats">
-      <article>
-        <span>Coins Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)}</strong>
-      </article>
-      <article>
-        <span>Total Orders</span>
-        <strong>${orders.length}</strong>
-      </article>
-      <article>
-        <span>Sell Requests</span>
-        <strong>${sellRequestCount}</strong>
-      </article>
-    </section>
-    <section class="account-quick-actions" aria-label="Quick actions">
-      <a href="#sell"><span class="quick-icon">↗</span><strong>Sell Item</strong></a>
-      <a href="#orders"><span class="quick-icon">▤</span><strong>My Orders</strong></a>
-      <a href="#wallet"><span class="quick-icon coin-action-icon">G</span><strong>Wallet</strong></a>
-      <a href="#support"><span class="quick-icon">?</span><strong>Support</strong></a>
-    </section>
-    <article class="account-wallet-card">
-      <div>
-        <span>Current Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G&T Coins"></span></strong>
-      </div>
-      <a class="primary-button" href="#wallet">Open Wallet</a>
-    </article>
-    <article class="wide-card account-panel"><h3>Recent Sell Requests</h3>
+    <article><h3>Email</h3><p>${escapeHtml(currentUser.email || "Logged in user")}</p><button class="secondary-button" data-logout type="button">Logout</button></article>
+    <article><h3>Wallet</h3><p>${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} ${coinMarkup()} available</p><a class="primary-button" href="#wallet">Open Wallet</a></article>
+    <article><h3>Orders</h3><p>${orders.length} order records</p><a class="secondary-button" href="#orders">View Orders</a></article>
+    <article class="wide-card"><h3>Recent Sell Requests</h3>
       <div class="account-list">
         ${latestSellRequests.map(renderSellRequestMessage).join("") || "<span>No sell requests yet.</span>"}
       </div>
       <a class="secondary-button" href="#sell">Sell an Item</a>
     </article>
-    <article class="wide-card account-panel"><h3>Recent Orders</h3>
+    <article class="wide-card"><h3>Recent Orders</h3>
       <div class="account-list">
         ${latestOrders.map(order => `<span>${escapeHtml(order.id)} • ${formatCoins(order.totalCoins || 0)} • ${escapeHtml(String(order.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No orders yet.</span>"}
       </div>
       <a class="secondary-button" href="#market">Browse Products</a>
     </article>
-    <div class="account-logout-row">
-      <button class="logout-outline-button" data-logout type="button">Logout</button>
-    </div>
   `;
 }
 
@@ -2250,17 +2126,7 @@ function renderAdmin() {
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
             <span>${formatCoins(item.expectedCoins || 0)} expected • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.userEmail || item.userId || "User")}</span>
-            <span>Seller contact: ${escapeHtml(item.sellerName || "Name not entered")} • ${escapeHtml(item.sellerPhone || "Phone not entered")}</span>
-            <span>Pickup: ${escapeHtml(item.pickupAddress || "Address/landmark not entered")}</span>
-            <span>Preferred pickup: ${escapeHtml(item.pickupDate || "Date not selected")} • ${escapeHtml(item.pickupTime || "Time not selected")}</span>
             <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
-            <div class="admin-photo-grid">
-              ${(item.photos || []).map((photo, index) => `
-                <a href="${escapeHtml(photo)}" target="_blank" rel="noopener" aria-label="Open seller photo ${index + 1}">
-                  <img src="${escapeHtml(photo)}" alt="Seller uploaded product photo ${index + 1}" loading="lazy" />
-                </a>
-              `).join("") || `<span>No photos uploaded</span>`}
-            </div>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
               <div class="admin-actions">
                 <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
@@ -2419,50 +2285,7 @@ function renderPartnerTasks() {
 function renderCart() {
   if (!state.cart.length) {
     state.checkoutStep = "cart";
-    const recommended = products
-      .filter(product => product.status === "listed")
-      .slice(0, 4);
-    const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
-      <article class="empty-cart-product">
-        ${productVisual(product, "empty-cart-product-image")}
-        <div>
-          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
-          <span>${formatCoins(product.price || 0)}</span>
-        </div>
-        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
-      </article>
-    `).join("");
-    els.cartView.innerHTML = `
-      <section class="empty-cart">
-        <div class="empty-cart-head">
-          <div class="cart-title-wrap">
-            <span class="cart-title-icon" aria-hidden="true">🛒</span>
-            <h1 class="cart-title">My Cart</h1>
-          </div>
-          <span class="cart-summary">0 Items • 0 G&T Coins</span>
-        </div>
-        <div class="empty-cart-panel">
-          <div class="empty-cart-illustration" aria-hidden="true">
-            <svg viewBox="0 0 96 96" role="img">
-              <path d="M24 27h9l6 34h32l7-24H39" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M43 73a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm25 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" fill="currentColor"/>
-              <path d="M29 19c5-5 13-6 19-1 6-5 15-4 20 1" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/>
-            </svg>
-          </div>
-          <h2>Your cart is empty</h2>
-          <p>Start exploring products and exchange unused items using G&T Coins.</p>
-          <a class="primary-button" href="#market">Browse Products</a>
-        </div>
-        <section class="cart-recommendations" aria-label="Recommended For You">
-          <div class="cart-recommendations-head">
-            <h2>Recommended For You</h2>
-          </div>
-          <div class="empty-cart-products">
-            ${cards}
-          </div>
-        </section>
-      </section>
-    `;
+    els.cartView.innerHTML = `<section class="empty-cart"><h1 class="cart-title">My Cart</h1><p>Your cart is empty.</p><a class="primary-button" href="#market">Browse Products</a></section>`;
     return;
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
@@ -2594,9 +2417,6 @@ function navigate(rawHash, shouldScroll = true) {
     state.route = "home";
     els.pages.forEach(page => page.classList.toggle("active", page.dataset.page === "home"));
   }
-  document.querySelectorAll("[data-route-link]").forEach(link => {
-    link.classList.toggle("active", link.dataset.routeLink === state.route);
-  });
   renderProducts();
   renderProductDetail();
   renderCart();
@@ -2623,7 +2443,6 @@ function wireEvents() {
       authRestorePending = false;
       document.documentElement.classList.remove("has-customer-token");
       pendingLoginEmail = "";
-      pendingLoginName = "";
       wallet = { balance: 0, ledger: [] };
       orders = [];
       state.rechargeAmount = null;
@@ -2965,42 +2784,24 @@ function wireEvents() {
     if (!requireCustomerLogin()) return;
     const sellForm = event.currentTarget;
     const form = new FormData(sellForm);
-    const photoError = document.getElementById("sellPhotoError");
-    if (photoError) {
-      photoError.hidden = true;
-      photoError.textContent = "";
-    }
     try {
-      const photos = await collectSellPhotos(sellForm.elements.photos?.files);
       const data = await api("/api/sell-requests", {
         method: "POST",
         body: JSON.stringify({
           userId: getCurrentUserId(),
           userEmail: currentUser?.email || "",
-          sellerName: form.get("sellerName"),
-          sellerPhone: form.get("sellerPhone"),
-          pickupAddress: form.get("pickupAddress"),
-          pickupDate: form.get("pickupDate"),
-          pickupTime: form.get("pickupTime"),
           city: form.get("city"),
           category: els.sellCategory.value,
           title: form.get("title"),
           expectedCoins: Number(form.get("expectedCoins") || 0),
           condition: form.get("condition"),
           details: { note: form.get("details") },
-          photos,
         }),
       });
       alert(`Upload submitted for review. Request ID: ${data.sellRequest.id}`);
       sellForm.reset();
       renderFormFields();
     } catch (error) {
-      if (error.message.includes("product photos") && photoError) {
-        photoError.textContent = error.message;
-        photoError.hidden = false;
-        sellForm.elements.photos?.focus();
-        return;
-      }
       alert(error.message);
     }
   });
@@ -3030,12 +2831,7 @@ function wireEvents() {
       event.preventDefault();
       const submitButton = event.target.querySelector("button[type='submit']");
       const form = new FormData(event.target);
-      pendingLoginName = String(form.get("name") || "").trim();
       pendingLoginEmail = String(form.get("email") || "").trim();
-      if (!pendingLoginName) {
-        alert("Please enter your name.");
-        return;
-      }
       if (submitButton?.disabled) return;
       if (submitButton) {
         submitButton.disabled = true;
@@ -3076,7 +2872,6 @@ function wireEvents() {
         const data = await api("/api/auth/verify-otp", {
           method: "POST",
           body: JSON.stringify({
-            name: pendingLoginName,
             email: pendingLoginEmail,
             otp: String(form.get("otp") || "").trim(),
           }),

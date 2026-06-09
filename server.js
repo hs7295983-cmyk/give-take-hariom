@@ -66,7 +66,7 @@ function readBody(req) {
     let body = "";
     req.on("data", chunk => {
       body += chunk;
-      if (body.length > 2_500_000) {
+      if (body.length > 1_000_000) {
         req.destroy();
         reject(new Error("Request body too large"));
       }
@@ -131,7 +131,7 @@ function hashSession(token) {
 }
 
 function publicUser(user) {
-  return user ? { id: user.id, email: user.email, name: user.name || "" } : null;
+  return user ? { id: user.id, email: user.email } : null;
 }
 
 async function sendOtpEmail(email, otp) {
@@ -215,7 +215,6 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const email = normalizeEmail(body.email);
     const otp = String(body.otp || "").trim();
-    const name = String(body.name || "").trim();
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     db.authOtps = db.authOtps || [];
@@ -234,11 +233,8 @@ async function handleApi(req, res) {
     record.used = true;
     let user = db.users.find(item => normalizeEmail(item.email) === email);
     if (!user) {
-      user = { id: id("USER"), email, name, createdAt: new Date().toISOString() };
+      user = { id: id("USER"), email, createdAt: new Date().toISOString() };
       db.users.push(user);
-    } else if (name) {
-      user.name = name;
-      user.updatedAt = new Date().toISOString();
     }
     const token = crypto.randomBytes(32).toString("hex");
     const session = {
@@ -360,28 +356,16 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
-    const sellerPhone = String(body.sellerPhone || "").trim();
-    if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
-    const photos = Array.isArray(body.photos)
-      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/"))
-      : [];
-    if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
       userId: body.userId || "user-demo",
       userEmail: body.userEmail || "",
-      sellerName: String(body.sellerName || "").trim(),
-      sellerPhone,
-      pickupAddress: String(body.pickupAddress || "").trim(),
-      pickupDate: String(body.pickupDate || "").trim(),
-      pickupTime: String(body.pickupTime || "").trim(),
       city: body.city,
       category: body.category,
       title: body.title,
       expectedCoins: Number(body.expectedCoins || 0),
       condition: body.condition,
       details: body.details || {},
-      photos,
       status: "upload-submitted",
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()

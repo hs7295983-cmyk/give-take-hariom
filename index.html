@@ -30,31 +30,15 @@
         <input id="searchInput" type="search" placeholder="Search phones, books, furniture..." />
       </label>
       <nav class="main-nav" aria-label="Main navigation">
-        <a href="#market" data-route-link="market" data-short="Market">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 1.4-5h13.2L20 10"/><path d="M5 10v9h14v-9"/><path d="M9 19v-5h6v5"/><path d="M4 10h16"/></svg>
-          <span>Market</span>
-        </a>
-        <a href="#wallet" data-route-link="wallet" data-short="Wallet">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2V7Z"/><path d="M16 13h4"/><path d="M4 7a2 2 0 0 1 2-2h11"/></svg>
-          <span>Wallet</span>
-        </a>
-        <a href="#orders" data-route-link="orders" data-short="Orders">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
-          <span>Orders</span>
-        </a>
-        <a href="#cart" id="cartNavLink" data-route-link="cart" data-short="Cart">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h2l2 10h10l2-7H8"/><path d="M10 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/><path d="M18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
-          <span>Cart</span>
-          <span class="cart-count-badge">0</span>
-        </a>
-        <a href="#join" data-route-link="join" data-short="Join Us">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M16 19c0-2.2-1.8-4-4-4H7c-2.2 0-4 1.8-4 4"/><path d="M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
-          <span>Join Us</span>
-        </a>
+        <a href="#market" data-short="Market">Market</a>
+        <a href="#wallet" data-short="Wallet">Wallet</a>
+        <a href="#orders" data-short="Orders">Orders</a>
+        <a href="#cart" id="cartNavLink" data-short="Cart">Cart (0)</a>
+        <a href="#join" data-short="Join Us">Join Us</a>
       </nav>
       <div class="header-actions">
         <button class="icon-button" id="langToggle" type="button" title="Language">EN</button>
-        <a class="wallet-pill" href="#wallet"><span id="walletBalance">0</span> <span class="coin-symbol" aria-label="G&T coins"></span></a>
+        <a class="wallet-pill" href="#wallet"><span id="walletBalance">0</span> <span class="coin-symbol" aria-label="coins"></span></a>
       </div>
     </header>
 
@@ -76,7 +60,6 @@
         </div>
         <div class="auth-layout">
           <form class="panel-form compact" id="loginEmailForm">
-            <label>Name <input name="name" placeholder="Your name" required /></label>
             <label>Email <input name="email" type="email" placeholder="you@example.com" required /></label>
             <button class="primary-button full" type="submit">Send OTP</button>
             <button class="secondary-button full" data-logout type="button">Logout</button>
@@ -226,18 +209,6 @@
             <label>Product title
               <input name="title" required placeholder="Example: Samsung phone, study table, book set" />
             </label>
-            <label>Your name
-              <input name="sellerName" placeholder="Seller name" />
-            </label>
-            <label>Mobile number for pickup
-              <input name="sellerPhone" inputmode="tel" placeholder="10-digit mobile number" required />
-            </label>
-            <label>Preferred pickup date
-              <input name="pickupDate" type="date" required />
-            </label>
-            <label>Preferred pickup time
-              <input name="pickupTime" type="time" required />
-            </label>
             <label>Expected coin value
               <input name="expectedCoins" type="number" min="0" placeholder="Example: 1200" />
             </label>
@@ -249,15 +220,11 @@
                 <option>Needs Repair</option>
               </select>
             </label>
-            <label>Product photos (minimum 4, maximum 5)
-              <input name="photos" type="file" accept="image/*" multiple />
-              <small class="form-error" id="sellPhotoError" hidden></small>
+            <label>Photos from 3-4 angles
+              <input type="file" accept="image/*" multiple />
             </label>
             <label>Product details
               <textarea name="details" placeholder="Brand, age, bill, accessories, defects, reason for selling..."></textarea>
-            </label>
-            <label>Pickup address or landmark
-              <textarea name="pickupAddress" placeholder="Area, landmark, or address where pickup can be arranged"></textarea>
             </label>
             <div id="dynamicFields" class="dynamic-fields"></div>
             <label class="check-row">
@@ -287,7 +254,7 @@
         <div class="page-title">
           <div>
             <p class="kicker">Coin wallet</p>
-            <h1>0 <span class="coin-symbol large" aria-label="G&T coins"></span> available.</h1>
+            <h1>0 <span class="coin-symbol large" aria-label="coins"></span> available.</h1>
           </div>
         </div>
         <div class="wallet-layout">
@@ -312,7 +279,6 @@
           <div>
             <p class="kicker">Orders</p>
             <h1>My Orders</h1>
-            <p class="orders-summary">0 Orders • 0 Active • 0 Completed</p>
           </div>
         </div>
         <div class="orders-grid" id="ordersGrid">
@@ -334,7 +300,6 @@
           <div>
             <p class="kicker">My account</p>
             <h1>Manage wallet, orders, and sell requests.</h1>
-            <p>Welcome back! Manage your coins, orders and listings in one place.</p>
           </div>
         </div>
         <div class="profile-grid" id="accountGrid">
