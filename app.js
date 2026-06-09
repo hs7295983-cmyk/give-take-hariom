@@ -1604,6 +1604,7 @@ const state = {
   deliveryDetails: {},
   query: "",
   rechargeAmount: null,
+  orderFilter: "all",
 };
 
 const els = {
@@ -2054,8 +2055,20 @@ function renderWallet() {
 
 function renderOrders() {
   const list = orders || [];
-  const activeOrders = list.filter(order => !["delivered", "cancelled", "completed"].includes(String(order.status || "").toLowerCase())).length;
-  const completedOrders = list.length - activeOrders;
+  const getOrderStatus = order => String(order.status || "new-order").toLowerCase();
+  const isCancelled = order => getOrderStatus(order) === "cancelled";
+  const isCompleted = order => ["delivered", "completed"].includes(getOrderStatus(order));
+  const isActive = order => !isCancelled(order) && !isCompleted(order);
+  const activeOrders = list.filter(isActive).length;
+  const completedOrders = list.filter(isCompleted).length;
+  const cancelledOrders = list.filter(isCancelled).length;
+  const filteredList = state.orderFilter === "active"
+    ? list.filter(isActive)
+    : state.orderFilter === "completed"
+      ? list.filter(isCompleted)
+      : state.orderFilter === "cancelled"
+        ? list.filter(isCancelled)
+        : list;
   const summary = document.querySelector("#page-orders .orders-summary");
   if (summary) summary.textContent = `${list.length} Orders • ${activeOrders} Active • ${completedOrders} Completed`;
   if (!list.length) {
@@ -2106,12 +2119,12 @@ function renderOrders() {
   els.ordersGrid.innerHTML = `
     <section class="orders-shell">
       <div class="orders-tabs">
-        <button class="active" type="button">All Orders (${list.length})</button>
-        <button type="button">Active (${activeOrders})</button>
-        <button type="button">Completed (${completedOrders})</button>
-        <button type="button">Cancelled (0)</button>
+        <button class="${state.orderFilter === "all" ? "active" : ""}" data-order-filter="all" type="button">All Orders (${list.length})</button>
+        <button class="${state.orderFilter === "active" ? "active" : ""}" data-order-filter="active" type="button">Active (${activeOrders})</button>
+        <button class="${state.orderFilter === "completed" ? "active" : ""}" data-order-filter="completed" type="button">Completed (${completedOrders})</button>
+        <button class="${state.orderFilter === "cancelled" ? "active" : ""}" data-order-filter="cancelled" type="button">Cancelled (${cancelledOrders})</button>
       </div>
-      ${list.map(order => {
+      ${filteredList.length ? filteredList.map(order => {
         const details = order.deliveryDetails || {};
         const orderItems = (order.products || order.productIds || []).map(item => {
           const productId = typeof item === "string" ? item : item.id;
@@ -2119,8 +2132,22 @@ function renderOrders() {
           return product;
         }).filter(Boolean);
         const firstItem = { artA: "#d3f4e9", artB: "#3a6e63", ...(orderItems[0] || {}) };
-        const statusText = String(order.status || "order-placed").replaceAll("-", " ");
+        const rawStatus = getOrderStatus(order);
+        const statusText = rawStatus.replaceAll("-", " ");
         const placedDate = order.createdAt ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Recently";
+        const progressIndexMap = {
+          "new-order": 0,
+          "order-placed": 0,
+          confirmed: 1,
+          packed: 1,
+          shipped: 2,
+          "out-for-delivery": 2,
+          delivered: 3,
+          completed: 3,
+        };
+        const progressIndex = progressIndexMap[rawStatus] ?? 0;
+        const badgeType = isCancelled(order) ? "cancelled" : isCompleted(order) ? "completed" : "";
+        const badgeText = isCancelled(order) ? "CANCELLED" : isCompleted(order) ? "COMPLETED" : "ACTIVE";
         return `
           <article class="order-detail-card">
             <div class="order-detail-top">
@@ -2141,12 +2168,12 @@ function renderOrders() {
                   <strong>${escapeHtml(statusText.charAt(0).toUpperCase() + statusText.slice(1))}</strong>
                   <span>${statusText === "order placed" ? "Seller will confirm your order soon" : "Your order is being processed"}</span>
                 </div>
-                <em>ACTIVE</em>
+                <em class="${badgeType}">${badgeText}</em>
               </div>
               <div class="order-progress">
                 ${["Order Placed", "Confirmed", "Shipped", "Delivered"].map((step, index) => `
-                  <div class="${index === 0 ? "done" : ""}">
-                    <span>${index === 0 ? "✓" : index + 1}</span>
+                  <div class="${!isCancelled(order) && index <= progressIndex ? "done" : ""}">
+                    <span>${!isCancelled(order) && index <= progressIndex ? "✓" : index + 1}</span>
                     <strong>${step}</strong>
                   </div>
                 `).join("")}
@@ -2175,7 +2202,7 @@ function renderOrders() {
             </div>
           </article>
         `;
-      }).join("")}
+      }).join("") : `<div class="orders-filter-empty">No ${escapeHtml(state.orderFilter)} orders yet.</div>`}
     </section>
   `;
 }
@@ -2722,6 +2749,13 @@ function wireEvents() {
       renderAll();
       location.hash = "auth";
       alert("Logged out.");
+      return;
+    }
+
+    const orderFilter = event.target.closest("[data-order-filter]");
+    if (orderFilter) {
+      state.orderFilter = orderFilter.dataset.orderFilter || "all";
+      renderOrders();
       return;
     }
 

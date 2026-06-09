@@ -1563,6 +1563,16 @@ textarea {
   color: var(--green);
 }
 
+.orders-filter-empty {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--muted);
+  font-weight: 900;
+  text-align: center;
+}
+
 .order-detail-card {
   display: grid;
   gap: 16px;
@@ -1650,6 +1660,18 @@ textarea {
   color: #1a8a2d;
   font-style: normal;
   font-weight: 900;
+}
+
+.order-status-copy em.completed {
+  border-color: var(--green);
+  background: #eef9e7;
+  color: var(--green);
+}
+
+.order-status-copy em.cancelled {
+  border-color: #f0b7ad;
+  background: #fff3f1;
+  color: var(--red);
 }
 
 .order-progress {
