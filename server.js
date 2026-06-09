@@ -495,6 +495,12 @@ async function handleApi(req, res) {
     if (!order) return sendError(res, 404, "Order not found");
     const allowedStatuses = ["new-order", "confirmed", "packed", "out-for-delivery", "delivered", "cancelled"];
     if (!allowedStatuses.includes(body.status)) return sendError(res, 400, "Invalid order status");
+    if (body.status === "cancelled") {
+      const cancellationReason = String(body.cancellationReason || "").trim();
+      if (!cancellationReason) return sendError(res, 400, "Cancellation reason is required");
+      order.cancellationReason = cancellationReason;
+      order.cancelledAt = new Date().toISOString();
+    }
     order.status = body.status;
     order.timeline = Array.isArray(order.timeline) ? order.timeline : [];
     if (!order.timeline.includes(body.status)) order.timeline.push(body.status);

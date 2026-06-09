@@ -1724,6 +1724,19 @@ textarea {
   margin: 0;
 }
 
+.order-detail-section .order-cancel-reason {
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid #f0b7ad;
+  border-radius: 8px;
+  background: #fff3f1;
+}
+
+.order-detail-section .order-cancel-reason strong {
+  color: var(--red);
+  text-align: right;
+}
+
 .order-item-image {
   position: relative;
   overflow: hidden;

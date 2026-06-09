@@ -2181,6 +2181,7 @@ function renderOrders() {
             </section>
             <section class="order-detail-section">
               <h3>Delivery Details</h3>
+              ${isCancelled(order) && order.cancellationReason ? `<p class="order-cancel-reason"><span>Cancellation Reason</span><strong>${escapeHtml(order.cancellationReason)}</strong></p>` : ""}
               <p><span>Delivery Method</span><strong>Cash on Delivery</strong></p>
               <p><span>Delivery Charge</span><strong>${Number(order.deliveryCharge || 0) ? `Rs.${order.deliveryCharge}` : "Free"}</strong></p>
               <p><span>Deliver to</span><strong>${escapeHtml(details.name || "Customer")} • ${escapeHtml(details.city || order.deliveryCity || "City")}</strong></p>
@@ -2408,12 +2409,14 @@ function renderAdmin() {
               <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
               <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
               <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
+              ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
               <span>${Array.isArray(orderProducts) ? orderProducts.map(item => escapeHtml(item.title || item)).join(", ") : ""}</span>
               <div class="admin-actions">
                 <button class="secondary-button" data-order-status="${order.id}" data-next-status="confirmed" type="button">Confirm</button>
                 <button class="secondary-button" data-order-status="${order.id}" data-next-status="packed" type="button">Packed</button>
                 <button class="secondary-button" data-order-status="${order.id}" data-next-status="out-for-delivery" type="button">Out for Delivery</button>
                 <button class="primary-button" data-order-status="${order.id}" data-next-status="delivered" type="button">Delivered</button>
+                <button class="danger-button" data-order-status="${order.id}" data-next-status="cancelled" type="button">Cancel</button>
               </div>
             </div>
           `;
@@ -2833,10 +2836,17 @@ function wireEvents() {
     const orderStatus = event.target.closest("[data-order-status]");
     if (orderStatus) {
       try {
+        const nextStatus = orderStatus.dataset.nextStatus;
+        const payload = { status: nextStatus };
+        if (nextStatus === "cancelled") {
+          const cancellationReason = prompt("Why are you cancelling this order? This reason will be shown to the user.");
+          if (!cancellationReason || !cancellationReason.trim()) return;
+          payload.cancellationReason = cancellationReason.trim();
+        }
         await api(`/api/admin/orders/${orderStatus.dataset.orderStatus}`, {
           method: "PATCH",
           admin: true,
-          body: JSON.stringify({ status: orderStatus.dataset.nextStatus }),
+          body: JSON.stringify(payload),
         });
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
