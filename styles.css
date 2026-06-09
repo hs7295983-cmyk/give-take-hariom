@@ -729,10 +729,19 @@ main {
 }
 
 .coin-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
   font-size: 21px;
   font-family: "Outfit", sans-serif;
   font-weight: 800;
   color: #6a4c0c;
+  white-space: nowrap;
+}
+
+.coin-price .coin-symbol {
+  flex: 0 0 auto;
 }
 
 .badges {
