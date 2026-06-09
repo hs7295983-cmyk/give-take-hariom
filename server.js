@@ -6,7 +6,7 @@ const { URL } = require("url");
 const fs = require("fs");
 const { ensureDb, readDb, writeDb, getStorageInfo } = require("./stateStore");
 
-const rootDir = path.resolve(__dirname);
+const rootDir = path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 4173);
 const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : "local-admin-1234");
 const adminToken = adminPassword
@@ -16,6 +16,8 @@ const brevoApiKey = process.env.BREVO_API_KEY || "";
 const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
 const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
 const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
+const deliveryCharge = 50;
+const deliveryFreeThreshold = 499;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -392,6 +394,7 @@ async function handleApi(req, res) {
     if (!String(deliveryDetails.phone || "").trim()) return sendError(res, 400, "Customer phone is required");
     if (!String(deliveryDetails.address || "").trim()) return sendError(res, 400, "Delivery address is required");
     const totalCoins = selected.reduce((sum, product) => sum + product.price, 0);
+    const orderDeliveryCharge = totalCoins > deliveryFreeThreshold ? 0 : deliveryCharge;
     const wallet = db.wallets[userId] || { balance: 0, ledger: [] };
     if (wallet.balance < totalCoins) return sendError(res, 400, "Wallet has insufficient coins");
     addLedger(db, userId, "debit", totalCoins, "Product purchase");
@@ -422,6 +425,8 @@ async function handleApi(req, res) {
         pincode: String(deliveryDetails.pincode || "").trim(),
         note: String(deliveryDetails.note || "").trim()
       },
+      deliveryCharge: orderDeliveryCharge,
+      deliveryFreeThreshold,
       deliveryChargeMode: body.deliveryChargeMode || "cod-rupees",
       timeline: ["order-placed", "coins-deducted", "new-order"],
       createdAt: new Date().toISOString()
@@ -593,8 +598,10 @@ async function handleApi(req, res) {
     if (["accepted", "rejected"].includes(request.status)) return sendError(res, 400, "Sell request already closed");
 
     if (parts[4] === "schedule") {
+      const pickupNote = String(body.pickupNote || "").trim();
       request.status = "pickup-scheduled";
       request.pickupScheduledAt = new Date().toISOString();
+      request.pickupNote = pickupNote || "Pickup has been scheduled. GIVE & TAKE team will contact you soon for pickup timing and verification.";
       request.timeline = [...new Set([...(request.timeline || []), "pickup-scheduled"])];
     }
 

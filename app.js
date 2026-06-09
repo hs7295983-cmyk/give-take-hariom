@@ -2041,13 +2041,31 @@ function renderAccount() {
   }
   const latestOrders = orders.slice(0, 3);
   const latestSellRequests = sellRequests.slice(0, 3);
+  const renderSellRequestMessage = request => {
+    const status = String(request.status || "upload-submitted");
+    const readableStatus = status.replaceAll("-", " ");
+    const pickupNote = request.pickupNote || "Pickup has been scheduled. GIVE & TAKE team will contact you soon for pickup timing and verification.";
+    const statusNotes = {
+      "upload-submitted": "Your item is waiting for admin review.",
+      "under-review": "Admin is reviewing your item details.",
+      "pickup-scheduled": pickupNote,
+      rejected: request.reviewNote || "This item request was rejected by admin.",
+      accepted: `${new Intl.NumberFormat("en-IN").format(request.finalCoins || request.expectedCoins || 0)} coins credited after final approval.`,
+    };
+    return `
+      <div class="account-status-item ${status === "pickup-scheduled" ? "highlight" : ""}">
+        <strong>${escapeHtml(request.title || "Item")} • ${escapeHtml(readableStatus)}</strong>
+        <span>${escapeHtml(statusNotes[status] || readableStatus)}</span>
+      </div>
+    `;
+  };
   els.accountGrid.innerHTML = `
     <article><h3>Email</h3><p>${escapeHtml(currentUser.email || "Logged in user")}</p><button class="secondary-button" data-logout type="button">Logout</button></article>
     <article><h3>Wallet</h3><p>${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} ${coinMarkup()} available</p><a class="primary-button" href="#wallet">Open Wallet</a></article>
     <article><h3>Orders</h3><p>${orders.length} order records</p><a class="secondary-button" href="#orders">View Orders</a></article>
     <article class="wide-card"><h3>Recent Sell Requests</h3>
       <div class="account-list">
-        ${latestSellRequests.map(request => `<span>${escapeHtml(request.id)} • ${escapeHtml(request.title || "Item")} • ${escapeHtml(String(request.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No sell requests yet.</span>"}
+        ${latestSellRequests.map(renderSellRequestMessage).join("") || "<span>No sell requests yet.</span>"}
       </div>
       <a class="secondary-button" href="#sell">Sell an Item</a>
     </article>
@@ -2579,6 +2597,14 @@ function wireEvents() {
       const action = sellRequestAction.dataset.action;
       const requestId = sellRequestAction.dataset.sellRequestAction;
       let finalCoins = sellRequestAction.dataset.expected || "0";
+      let pickupNote = "";
+      if (action === "schedule") {
+        pickupNote = prompt(
+          "Enter pickup message for seller:",
+          "Pickup has been scheduled. GIVE & TAKE team will call you soon to confirm date, time, address, and product verification."
+        );
+        if (pickupNote === null) return;
+      }
       if (action === "accept") {
         finalCoins = prompt("Enter final coins to credit after verification:", finalCoins);
         if (finalCoins === null) return;
@@ -2588,7 +2614,7 @@ function wireEvents() {
         const data = await api(`/api/admin/sell-requests/${requestId}/${action}`, {
           method: "POST",
           admin: true,
-          body: JSON.stringify({ finalCoins }),
+          body: JSON.stringify({ finalCoins, pickupNote }),
         });
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
