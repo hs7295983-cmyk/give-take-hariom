@@ -2177,7 +2177,7 @@ function renderAccount() {
     <article class="account-wallet-card">
       <div>
         <span>Current Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G&T Coins"></span> G&T Coins</strong>
+        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G&T Coins"></span></strong>
       </div>
       <a class="primary-button" href="#wallet">Open Wallet</a>
     </article>
