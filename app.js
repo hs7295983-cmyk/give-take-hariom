@@ -2041,6 +2041,11 @@ function renderAccount() {
   }
   const latestOrders = orders.slice(0, 3);
   const latestSellRequests = sellRequests.slice(0, 3);
+  const displayName = sellRequests.find(request => request.sellerName)?.sellerName || "User";
+  const email = currentUser.email || "";
+  const avatarLetter = (displayName !== "User" ? displayName : email || "U").trim().charAt(0).toUpperCase() || "U";
+  const balance = Number(wallet.balance || 0);
+  const sellRequestCount = sellRequests.length;
   const renderSellRequestMessage = request => {
     const status = String(request.status || "upload-submitted");
     const readableStatus = status.replaceAll("-", " ");
@@ -2060,21 +2065,56 @@ function renderAccount() {
     `;
   };
   els.accountGrid.innerHTML = `
-    <article><h3>Email</h3><p>${escapeHtml(currentUser.email || "Logged in user")}</p><button class="secondary-button" data-logout type="button">Logout</button></article>
-    <article><h3>Wallet</h3><p>${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} ${coinMarkup()} available</p><a class="primary-button" href="#wallet">Open Wallet</a></article>
-    <article><h3>Orders</h3><p>${orders.length} order records</p><a class="secondary-button" href="#orders">View Orders</a></article>
-    <article class="wide-card"><h3>Recent Sell Requests</h3>
+    <article class="account-profile-card">
+      <div class="account-avatar">${escapeHtml(avatarLetter)}</div>
+      <div class="account-profile-copy">
+        <h2>${escapeHtml(displayName)}</h2>
+        <p>${escapeHtml(email || "Email not available")}</p>
+        <span class="verified-badge"><span class="badge-icon">✓</span> Verified Account</span>
+      </div>
+    </article>
+    <section class="account-stats" aria-label="Account stats">
+      <article>
+        <span>Coins Balance</span>
+        <strong>${new Intl.NumberFormat("en-IN").format(balance)}</strong>
+      </article>
+      <article>
+        <span>Total Orders</span>
+        <strong>${orders.length}</strong>
+      </article>
+      <article>
+        <span>Sell Requests</span>
+        <strong>${sellRequestCount}</strong>
+      </article>
+    </section>
+    <section class="account-quick-actions" aria-label="Quick actions">
+      <a href="#sell"><span class="quick-icon">↗</span><strong>Sell Item</strong></a>
+      <a href="#orders"><span class="quick-icon">▤</span><strong>My Orders</strong></a>
+      <a href="#wallet"><span class="quick-icon coin-action-icon">G</span><strong>Wallet</strong></a>
+      <a href="#support"><span class="quick-icon">?</span><strong>Support</strong></a>
+    </section>
+    <article class="account-wallet-card">
+      <div>
+        <span>Current Balance</span>
+        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G Coins"></span> Coins</strong>
+      </div>
+      <a class="primary-button" href="#wallet">Open Wallet</a>
+    </article>
+    <article class="wide-card account-panel"><h3>Recent Sell Requests</h3>
       <div class="account-list">
         ${latestSellRequests.map(renderSellRequestMessage).join("") || "<span>No sell requests yet.</span>"}
       </div>
       <a class="secondary-button" href="#sell">Sell an Item</a>
     </article>
-    <article class="wide-card"><h3>Recent Orders</h3>
+    <article class="wide-card account-panel"><h3>Recent Orders</h3>
       <div class="account-list">
         ${latestOrders.map(order => `<span>${escapeHtml(order.id)} • ${formatCoins(order.totalCoins || 0)} • ${escapeHtml(String(order.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No orders yet.</span>"}
       </div>
       <a class="secondary-button" href="#market">Browse Products</a>
     </article>
+    <div class="account-logout-row">
+      <button class="logout-outline-button" data-logout type="button">Logout</button>
+    </div>
   `;
 }
 
