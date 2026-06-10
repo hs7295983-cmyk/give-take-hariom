@@ -3,6 +3,7 @@ const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : confi
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
 const CUSTOMER_USER_KEY = "give_take_customer_user";
+const CART_STATE_KEY = "give_take_cart_state";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
 const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1595,14 +1596,46 @@ function normalizeWallet(nextWallet) {
     : { balance: 0, ledger: [] };
 }
 
+function loadSavedCartState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CART_STATE_KEY) || "{}");
+    const cart = Array.isArray(saved.cart) ? saved.cart.filter(Boolean) : [];
+    return {
+      cart,
+      cartQuantities: saved.cartQuantities && typeof saved.cartQuantities === "object" ? saved.cartQuantities : {},
+      checkoutStep: cart.length && ["cart", "delivery", "review"].includes(saved.checkoutStep) ? saved.checkoutStep : "cart",
+      deliveryDetails: saved.deliveryDetails && typeof saved.deliveryDetails === "object" ? saved.deliveryDetails : {},
+    };
+  } catch {
+    return { cart: [], cartQuantities: {}, checkoutStep: "cart", deliveryDetails: {} };
+  }
+}
+
+function saveCartState() {
+  try {
+    if (!state.cart.length) {
+      localStorage.removeItem(CART_STATE_KEY);
+      return;
+    }
+    localStorage.setItem(CART_STATE_KEY, JSON.stringify({
+      cart: state.cart,
+      cartQuantities: state.cartQuantities,
+      checkoutStep: state.checkoutStep,
+      deliveryDetails: state.deliveryDetails,
+    }));
+  } catch {}
+}
+
+const savedCartState = loadSavedCartState();
+
 const state = {
   route: "home",
   category: null,
   productId: null,
-  cart: [],
-  cartQuantities: {},
-  checkoutStep: "cart",
-  deliveryDetails: {},
+  cart: savedCartState.cart,
+  cartQuantities: savedCartState.cartQuantities,
+  checkoutStep: savedCartState.checkoutStep,
+  deliveryDetails: savedCartState.deliveryDetails,
   query: "",
   rechargeAmount: null,
   orderFilter: "all",
@@ -1890,6 +1923,7 @@ function addProductToCart(productId) {
     state.cartQuantities[productId] = Math.min(Number(state.cartQuantities[productId] || 1) + 1, 5);
   }
   state.checkoutStep = "cart";
+  saveCartState();
   renderAuthStatus();
   if (state.route === "cart") renderCart();
   animateCartBadge();
@@ -2919,6 +2953,8 @@ function wireEvents() {
       state.cart = [buyNow.dataset.buyNow];
       state.cartQuantities = { [buyNow.dataset.buyNow]: 1 };
       state.checkoutStep = "cart";
+      state.deliveryDetails = {};
+      saveCartState();
       renderAuthStatus();
       location.hash = "cart";
     }
@@ -2928,6 +2964,8 @@ function wireEvents() {
       state.cart = state.cart.filter(id => id !== removeCart.dataset.removeCart);
       delete state.cartQuantities[removeCart.dataset.removeCart];
       state.checkoutStep = "cart";
+      if (!state.cart.length) state.deliveryDetails = {};
+      saveCartState();
       renderCart();
       renderAuthStatus();
     }
@@ -2937,6 +2975,7 @@ function wireEvents() {
       state.cart = [cartBuyNow.dataset.cartBuyNow];
       state.cartQuantities = { [cartBuyNow.dataset.cartBuyNow]: 1 };
       state.checkoutStep = "delivery";
+      saveCartState();
       renderCart();
       renderAuthStatus();
     }
@@ -2944,6 +2983,7 @@ function wireEvents() {
     const checkoutStep = event.target.closest("[data-checkout-step]");
     if (checkoutStep) {
       state.checkoutStep = checkoutStep.dataset.checkoutStep;
+      saveCartState();
       renderCart();
     }
 
@@ -3273,6 +3313,7 @@ function wireEvents() {
     const qtySelect = event.target.closest("[data-cart-qty]");
     if (qtySelect) {
       state.cartQuantities[qtySelect.dataset.cartQty] = Number(qtySelect.value || 1);
+      saveCartState();
       renderCart();
       renderAuthStatus();
     }
@@ -3478,6 +3519,7 @@ function wireEvents() {
         note: form.get("note"),
       };
       state.checkoutStep = "review";
+      saveCartState();
       renderCart();
       return;
     }
@@ -3546,6 +3588,7 @@ function wireEvents() {
         state.cartQuantities = {};
         state.checkoutStep = "cart";
         state.deliveryDetails = {};
+        saveCartState();
         await refreshCurrentWallet();
         renderAll();
         location.hash = "orders";
