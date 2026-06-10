@@ -398,6 +398,39 @@ main {
   font-size: 18px;
 }
 
+.hero-live-cities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hero-live-cities span,
+.hero-live-cities b {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-live-cities span {
+  padding: 0 11px;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.hero-live-cities b {
+  padding: 0 10px;
+  border: 1px solid rgba(200, 238, 98, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 .kicker {
   margin: 0;
   color: var(--green);
