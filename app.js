@@ -1580,6 +1580,7 @@ let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
 let authRestorePending = Boolean(customerToken && !currentUser);
+let customerDataReady = !customerToken;
 let pendingLoginEmail = "";
 let pendingLoginName = "";
 let platformConfig = {
@@ -1760,6 +1761,7 @@ async function loadAuthUser() {
     }
   } finally {
     authRestorePending = false;
+    customerDataReady = true;
   }
 }
 
@@ -2084,6 +2086,7 @@ async function collectSellPhotos(fileList) {
 
 function renderWallet() {
   const upi = platformConfig.integrations?.payments?.upi || {};
+  const walletIsLoading = customerToken && !customerDataReady;
   document.getElementById("walletUpiNotice")?.remove();
   if (state.rechargeAmount) {
     els.rechargeGrid.classList.add("payment-step");
@@ -2110,9 +2113,11 @@ function renderWallet() {
       <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="G&T coins"></span></button>
     `).join("");
   }
-  els.walletBalance.textContent = new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
+  els.walletBalance.textContent = walletIsLoading ? "..." : new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
-  if (walletHeading) walletHeading.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="G&T coins"></span> available.`;
+  if (walletHeading) walletHeading.innerHTML = walletIsLoading
+    ? `Loading wallet...`
+    : `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="G&T coins"></span> available.`;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
@@ -2290,6 +2295,7 @@ function renderAccount() {
   const address = currentUser.addressBook || {};
   const avatarLetter = (displayName !== "User" ? displayName : email || "U").trim().charAt(0).toUpperCase() || "U";
   const balance = Number(wallet.balance || 0);
+  const balanceText = customerToken && !customerDataReady ? "..." : new Intl.NumberFormat("en-IN").format(balance);
   const sellRequestCount = sellRequests.length;
   const activeOrdersCount = orders.filter(order => !["delivered", "cancelled", "completed"].includes(String(order.status || "").toLowerCase())).length;
   const formatAccountDate = value => {
@@ -2388,7 +2394,7 @@ function renderAccount() {
       </article>
       <article>
         <span>Wallet Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)}</strong>
+        <strong>${balanceText}</strong>
       </article>
     </section>
     <section class="account-quick-actions" aria-label="Quick actions">
@@ -2400,7 +2406,7 @@ function renderAccount() {
     <article class="account-wallet-card">
       <div>
         <span>Current Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)} <span class="coin-symbol large" aria-label="G&T Coins"></span></strong>
+        <strong>${balanceText} <span class="coin-symbol large" aria-label="G&T Coins"></span></strong>
       </div>
       <a class="primary-button" href="#wallet">Open Wallet</a>
     </article>
@@ -2960,6 +2966,7 @@ function wireEvents() {
       localStorage.removeItem(CUSTOMER_USER_KEY);
       currentUser = null;
       authRestorePending = false;
+      customerDataReady = true;
       document.documentElement.classList.remove("has-customer-token");
       pendingLoginEmail = "";
       pendingLoginName = "";
@@ -3511,6 +3518,7 @@ function wireEvents() {
         currentUser = data.user || null;
         if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
         authRestorePending = false;
+        customerDataReady = true;
         document.documentElement.classList.add("has-customer-token");
         wallet = normalizeWallet(data.wallet);
         await loadBackendData();
@@ -3747,7 +3755,6 @@ function wireEvents() {
 }
 
 async function init() {
-  renderAll();
   wireEvents();
   navigate();
   await loadAuthUser();
