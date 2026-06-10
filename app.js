@@ -2257,6 +2257,20 @@ function renderAccount() {
   const avatarLetter = (displayName !== "User" ? displayName : email || "U").trim().charAt(0).toUpperCase() || "U";
   const balance = Number(wallet.balance || 0);
   const sellRequestCount = sellRequests.length;
+  const activeOrdersCount = orders.filter(order => !["delivered", "cancelled", "completed"].includes(String(order.status || "").toLowerCase())).length;
+  const formatAccountDate = value => {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime())
+      ? date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+      : "Recent";
+  };
+  const getAccountStatusClass = status => {
+    const cleanStatus = String(status || "").toLowerCase();
+    if (["pickup-scheduled", "delivered", "accepted"].includes(cleanStatus)) return "success";
+    if (["rejected", "cancelled"].includes(cleanStatus)) return "danger";
+    if (["confirmed", "packed", "out-for-delivery", "approved"].includes(cleanStatus)) return "info";
+    return "warning";
+  };
   const renderSellRequestMessage = request => {
     const status = String(request.status || "upload-submitted");
     const readableStatus = status.replaceAll("-", " ");
@@ -2269,12 +2283,57 @@ function renderAccount() {
       accepted: `${new Intl.NumberFormat("en-IN").format(request.finalCoins || request.expectedCoins || 0)} coins credited after final approval.`,
     };
     return `
-      <div class="account-status-item ${status === "pickup-scheduled" ? "highlight" : ""}">
-        <strong>${escapeHtml(request.title || "Item")} • ${escapeHtml(readableStatus)}</strong>
-        <span>${escapeHtml(statusNotes[status] || readableStatus)}</span>
-      </div>
+      <article class="account-history-card">
+        <div class="account-history-top">
+          <div>
+            <strong>${escapeHtml(request.title || "Item")}</strong>
+            <small>${escapeHtml(formatAccountDate(request.createdAt))}</small>
+          </div>
+          <em class="account-status-badge ${getAccountStatusClass(status)}">${escapeHtml(readableStatus)}</em>
+        </div>
+        <p>${escapeHtml(statusNotes[status] || readableStatus)}</p>
+      </article>
     `;
   };
+  const renderOrderSummary = order => {
+    const status = String(order.status || "new-order");
+    const readableStatus = status.replaceAll("-", " ");
+    return `
+      <article class="account-history-card account-order-card" data-route="orders">
+        <div class="account-history-top">
+          <div>
+            <strong>Order ${escapeHtml(order.id || "")}</strong>
+            <small>${escapeHtml(formatAccountDate(order.createdAt))}</small>
+          </div>
+          <em class="account-status-badge ${getAccountStatusClass(status)}">${escapeHtml(readableStatus)}</em>
+        </div>
+        <div class="account-order-meta">
+          <span>${formatCoins(order.totalCoins || 0)}</span>
+          <b>View Details →</b>
+        </div>
+      </article>
+    `;
+  };
+  const hasDefaultAddress = Boolean(address.name && address.phone && address.houseArea && address.city && address.pincode);
+  const addressSummary = [
+    address.houseArea,
+    address.city,
+    address.pincode,
+    address.landmark ? `Near ${address.landmark}` : ""
+  ].filter(Boolean).join(" • ");
+  const addressHeader = `
+    <div class="account-panel-head">
+      <div class="account-panel-title">
+        <span class="account-panel-icon">⌖</span>
+        <div>
+          <h3>Address Book</h3>
+          <p>${escapeHtml(addressSummary || "Save your default pickup and delivery address.")}</p>
+        </div>
+      </div>
+      ${hasDefaultAddress ? `<span class="verified-badge address-default-badge">Default Address</span>` : ""}
+    </div>
+    `;
+  
   els.accountGrid.innerHTML = `
     <article class="account-profile-card">
       <div class="account-avatar">${escapeHtml(avatarLetter)}</div>
@@ -2286,16 +2345,16 @@ function renderAccount() {
     </article>
     <section class="account-stats" aria-label="Account stats">
       <article>
-        <span>Coins Balance</span>
-        <strong>${new Intl.NumberFormat("en-IN").format(balance)}</strong>
-      </article>
-      <article>
-        <span>Total Orders</span>
-        <strong>${orders.length}</strong>
+        <span>Active Orders</span>
+        <strong>${activeOrdersCount}</strong>
       </article>
       <article>
         <span>Sell Requests</span>
         <strong>${sellRequestCount}</strong>
+      </article>
+      <article>
+        <span>Wallet Balance</span>
+        <strong>${new Intl.NumberFormat("en-IN").format(balance)}</strong>
       </article>
     </section>
     <section class="account-quick-actions" aria-label="Quick actions">
@@ -2313,18 +2372,18 @@ function renderAccount() {
     </article>
     <article class="wide-card account-panel"><h3>Recent Sell Requests</h3>
       <div class="account-list">
-        ${latestSellRequests.map(renderSellRequestMessage).join("") || "<span>No sell requests yet.</span>"}
+        ${latestSellRequests.map(renderSellRequestMessage).join("") || `<span class="account-empty-note">No sell requests yet.</span>`}
       </div>
       <a class="secondary-button" href="#sell">Sell an Item</a>
     </article>
     <article class="wide-card account-panel"><h3>Recent Orders</h3>
       <div class="account-list">
-        ${latestOrders.map(order => `<span>${escapeHtml(order.id)} • ${formatCoins(order.totalCoins || 0)} • ${escapeHtml(String(order.status || "").replaceAll("-", " "))}</span>`).join("") || "<span>No orders yet.</span>"}
+        ${latestOrders.map(renderOrderSummary).join("") || `<span class="account-empty-note">No orders yet.</span>`}
       </div>
       <a class="secondary-button" href="#market">Browse Products</a>
     </article>
     <article class="wide-card account-panel">
-      <h3>Address Book</h3>
+      ${addressHeader}
       <form class="address-book-form" id="addressBookForm">
         <label>Name <input name="name" value="${escapeHtml(address.name || currentUser.name || "")}" placeholder="Full name" required /></label>
         <label>Phone <input name="phone" value="${escapeHtml(address.phone || "")}" inputmode="tel" placeholder="Mobile number" required /></label>
