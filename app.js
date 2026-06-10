@@ -2,6 +2,7 @@ const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
 const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
+const CUSTOMER_USER_KEY = "give_take_customer_user";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
 const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -1576,8 +1577,8 @@ let adminDashboard = null;
 let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
-let currentUser = null;
-let authRestorePending = Boolean(customerToken);
+let currentUser = loadCachedCustomerUser();
+let authRestorePending = Boolean(customerToken && !currentUser);
 let pendingLoginEmail = "";
 let pendingLoginName = "";
 let platformConfig = {
@@ -1640,8 +1641,20 @@ async function api(path, options = {}) {
     ...options,
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Request failed");
+  if (!response.ok) {
+    const error = new Error(data.error || "Request failed");
+    error.status = response.status;
+    throw error;
+  }
   return data;
+}
+
+function loadCachedCustomerUser() {
+  try {
+    return JSON.parse(localStorage.getItem(CUSTOMER_USER_KEY) || "null");
+  } catch {
+    return null;
+  }
 }
 
 async function loadBackendData() {
@@ -1693,6 +1706,7 @@ async function refreshCurrentWallet() {
 async function loadAuthUser() {
   if (!customerToken) {
     authRestorePending = false;
+    localStorage.removeItem(CUSTOMER_USER_KEY);
     document.documentElement.classList.remove("has-customer-token");
     return;
   }
@@ -1701,11 +1715,15 @@ async function loadAuthUser() {
     currentUser = data.user || null;
     wallet = normalizeWallet(data.wallet);
     document.documentElement.classList.toggle("has-customer-token", Boolean(currentUser));
-  } catch {
-    customerToken = "";
-    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
-    currentUser = null;
-    document.documentElement.classList.remove("has-customer-token");
+    if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
+  } catch (error) {
+    if (error.status === 401) {
+      customerToken = "";
+      localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+      localStorage.removeItem(CUSTOMER_USER_KEY);
+      currentUser = null;
+      document.documentElement.classList.remove("has-customer-token");
+    }
   } finally {
     authRestorePending = false;
   }
@@ -2790,6 +2808,7 @@ function wireEvents() {
       }
       customerToken = "";
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+      localStorage.removeItem(CUSTOMER_USER_KEY);
       currentUser = null;
       authRestorePending = false;
       document.documentElement.classList.remove("has-customer-token");
@@ -3326,6 +3345,7 @@ function wireEvents() {
         customerToken = data.token;
         localStorage.setItem(CUSTOMER_TOKEN_KEY, customerToken);
         currentUser = data.user || null;
+        if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
         authRestorePending = false;
         document.documentElement.classList.add("has-customer-token");
         wallet = normalizeWallet(data.wallet);
@@ -3405,6 +3425,7 @@ function wireEvents() {
           }),
         });
         currentUser = data.user || currentUser;
+        if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
         renderAccount();
         alert("Address saved.");
       } catch (error) {

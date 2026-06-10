@@ -16,6 +16,7 @@ const brevoApiKey = process.env.BREVO_API_KEY || "";
 const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
 const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
 const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
+const customerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 365);
 const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
 
@@ -241,13 +242,14 @@ async function handleApi(req, res) {
       user.updatedAt = new Date().toISOString();
     }
     const token = crypto.randomBytes(32).toString("hex");
+    const sessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
     const session = {
       id: id("SESSION"),
       userId: user.id,
       email,
       tokenHash: hashSession(token),
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(now + 30 * 24 * 60 * 60_000).toISOString()
+      expiresAt: new Date(now + sessionDurationMs).toISOString()
     };
     db.authSessions = db.authSessions.filter(item => new Date(item.expiresAt).getTime() > now).slice(0, 200);
     db.authSessions.unshift(session);
@@ -265,6 +267,14 @@ async function handleApi(req, res) {
     if (!session) return sendError(res, 401, "Session expired");
     const user = (db.users || []).find(item => item.id === session.userId);
     if (!user) return sendError(res, 401, "User not found");
+    const now = Date.now();
+    const sessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
+    const remainingMs = new Date(session.expiresAt).getTime() - now;
+    if (remainingMs < 30 * 24 * 60 * 60_000) {
+      session.expiresAt = new Date(now + sessionDurationMs).toISOString();
+      session.lastSeenAt = new Date(now).toISOString();
+      await writeDb(db);
+    }
     return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets?.[user.id] || { balance: 0, ledger: [] } });
   }
 
