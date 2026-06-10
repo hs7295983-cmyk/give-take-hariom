@@ -2805,7 +2805,7 @@ function renderCart() {
             </div>
           </div>
           ${additionalCoinsNeeded ? `
-            <div class="checkout-warning-card">You need ${formatCoins(additionalCoinsNeeded)} more to place this order.</div>
+            <div class="checkout-warning-card">You need ${new Intl.NumberFormat("en-IN").format(additionalCoinsNeeded)} G&T more to place this order.</div>
           ` : ""}
           <div class="checkout-address-card">
             <span class="checkout-address-icon">⌖</span>
@@ -2825,7 +2825,7 @@ function renderCart() {
                     <strong>${escapeHtml(product.title)}</strong>
                     <span>Qty: ${qty}</span>
                   </div>
-                  <strong>${formatCoins(product.price * qty)}</strong>
+                  <strong class="checkout-review-price">${formatCoins(product.price * qty)}</strong>
                 </article>
               `;
             }).join("")}
@@ -2837,11 +2837,11 @@ function renderCart() {
               <strong>${formatCoins(total)}</strong>
             </div>
             <div>
-              <span>Product Payment</span>
-              <strong>Done via G&T Coins</strong>
+              <span>Payment Method</span>
+              <strong>G&T Coins</strong>
             </div>
             <div>
-              <span>Delivery Payment</span>
+              <span>Delivery Charge</span>
               <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} Pay on Delivery`}</strong>
             </div>
             <div class="checkout-price-total">
