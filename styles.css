@@ -399,11 +399,16 @@ main {
 }
 
 .hero-live-cities {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  justify-items: start;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.hero-live-cities div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .hero-live-cities span,
