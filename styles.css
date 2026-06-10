@@ -1952,7 +1952,7 @@ textarea {
 .checkout-wallet-badge,
 .checkout-warning-card,
 .checkout-address-card,
-.checkout-review-summary span,
+.checkout-price-details,
 .checkout-review-item {
   border: 1px solid rgba(23, 108, 79, 0.12);
   border-radius: 12px;
@@ -1968,7 +1968,6 @@ textarea {
 }
 
 .checkout-wallet-badge span,
-.checkout-review-summary small,
 .checkout-address-card small,
 .checkout-review-item span {
   color: var(--muted);
@@ -1990,22 +1989,6 @@ textarea {
   background: #fff8dd;
   color: #7a5a10;
   font-weight: 900;
-}
-
-.checkout-review-summary {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.checkout-review-summary span {
-  display: grid;
-  align-items: start;
-  justify-content: stretch;
-  gap: 7px;
-  padding: 12px;
-}
-
-.checkout-review-summary strong {
-  color: var(--ink);
 }
 
 .checkout-address-card {
@@ -2059,6 +2042,43 @@ textarea {
   height: 58px;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--art-a), var(--art-b));
+}
+
+.checkout-price-details {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.checkout-price-details h3 {
+  margin: 0 0 2px;
+  font-size: 18px;
+}
+
+.checkout-price-details div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--muted);
+}
+
+.checkout-price-details strong {
+  color: var(--ink);
+  text-align: right;
+}
+
+.checkout-price-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.checkout-price-total span,
+.checkout-price-total strong {
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .checkout-items,
@@ -2878,10 +2898,6 @@ textarea {
 
   .checkout-wallet-badge {
     min-width: 0;
-  }
-
-  .checkout-review-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .checkout-review-item {

@@ -2807,12 +2807,6 @@ function renderCart() {
           ${additionalCoinsNeeded ? `
             <div class="checkout-warning-card">You need ${formatCoins(additionalCoinsNeeded)} more to place this order.</div>
           ` : ""}
-          <div class="checkout-summary checkout-review-summary">
-            <span><small>Coins Required</small><strong>${formatCoins(total)}</strong></span>
-            <span><small>Your Balance</small><strong>${formatCoins(balance)}</strong></span>
-            ${additionalCoinsNeeded ? `<span><small>Additional Coins Needed</small><strong>${formatCoins(additionalCoinsNeeded)}</strong></span>` : ""}
-            <span><small>Delivery Fee</small><strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} COD`}</strong></span>
-          </div>
           <div class="checkout-address-card">
             <span class="checkout-address-icon">⌖</span>
             <div>
@@ -2836,6 +2830,25 @@ function renderCart() {
               `;
             }).join("")}
           </div>
+          <section class="checkout-price-details" aria-label="Price details">
+            <h3>Price Details</h3>
+            <div>
+              <span>Items Total</span>
+              <strong>${formatCoins(total)}</strong>
+            </div>
+            <div>
+              <span>Product Payment</span>
+              <strong>Done via G&T Coins</strong>
+            </div>
+            <div>
+              <span>Delivery Payment</span>
+              <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} Pay on Delivery`}</strong>
+            </div>
+            <div class="checkout-price-total">
+              <span>Total Coins Required</span>
+              <strong>${formatCoins(total)}</strong>
+            </div>
+          </section>
           <div class="checkout-nav">
             <button class="secondary-button" data-checkout-step="delivery" type="button">Back</button>
             ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : `<a class="primary-button" href="#wallet">Add Coins</a>`}
