@@ -1880,7 +1880,9 @@ function addProductToCart(productId) {
 function card(product) {
   return `
     <article class="product-card">
-      ${productVisual(product)}
+      <button class="product-card-visual-button" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title)} details">
+        ${productVisual(product)}
+      </button>
       <div class="product-body">
         <div class="badges">
           <span class="badge">${escapeHtml(product.source)}</span>
@@ -1889,8 +1891,7 @@ function card(product) {
         <div class="coin-price">${formatCoins(product.price)}</div>
         <p>${escapeHtml(displayCategoryName(product.category))}</p>
         <div class="card-actions">
-          <button class="primary-button" data-product="${product.id}" type="button">View</button>
-          <button class="secondary-button" data-add="${product.id}" type="button" title="Add to cart">+</button>
+          <button class="primary-button" data-add="${product.id}" type="button">Add to Cart</button>
         </div>
       </div>
     </article>

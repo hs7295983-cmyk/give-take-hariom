@@ -691,6 +691,15 @@ main {
   position: relative;
 }
 
+.product-card-visual-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .product-visual::after,
 .detail-image::after {
   content: "";
@@ -762,7 +771,7 @@ main {
 
 .card-actions {
   display: grid;
-  grid-template-columns: 1fr 44px;
+  grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 10px;
 }
@@ -2495,7 +2504,7 @@ textarea {
   }
 
   .card-actions {
-    grid-template-columns: 1fr 34px;
+    grid-template-columns: 1fr;
     gap: 6px;
   }
 
