@@ -1606,6 +1606,7 @@ const state = {
   query: "",
   rechargeAmount: null,
   orderFilter: "all",
+  adminCollapsed: {},
 };
 
 const els = {
@@ -2370,6 +2371,18 @@ function renderAdmin() {
   const adminOrders = adminDashboard.orders || [];
   const maintenance = adminDashboard.maintenance || {};
   const adminProducts = adminDashboard.products || [];
+  const adminSectionHeader = (key, title, count, openText) => {
+    const collapsed = Boolean(state.adminCollapsed[key]);
+    return `
+      <div class="admin-section-head">
+        <div>
+          <strong>${title}</strong>
+          <span>${count ? openText : `No ${title.toLowerCase()} yet.`}</span>
+        </div>
+        <button class="secondary-button" data-admin-collapse="${key}" type="button">${collapsed ? "Show" : "Hide"}</button>
+      </div>
+    `;
+  };
   els.adminGrid.innerHTML = `
     <article><strong>Product Review</strong><span>${counts.sellRequests} sell requests in system</span></article>
     <article><strong>Inventory</strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
@@ -2385,9 +2398,8 @@ function renderAdmin() {
     </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
     <article class="wide-card">
-      <strong>Sell Item Requests</strong>
-      <span>${adminSellRequests.length ? "Review seller uploads, schedule pickup, and credit coins after final check." : "No sell item requests yet."}</span>
-      <div class="admin-list">
+      ${adminSectionHeader("sellRequests", "Sell Item Requests", adminSellRequests.length, "Review seller uploads, schedule pickup, and credit coins after final check.")}
+      <div class="admin-list" ${state.adminCollapsed.sellRequests ? "hidden" : ""}>
         ${adminSellRequests.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
@@ -2416,9 +2428,8 @@ function renderAdmin() {
       </div>
     </article>
     <article class="wide-card">
-      <strong>Pending UPI Recharges</strong>
-      <span>${pendingRecharges.length ? "Verify payment in your UPI account before approving." : "No pending recharge requests."}</span>
-      <div class="admin-list">
+      ${adminSectionHeader("recharges", "Pending UPI Recharges", pendingRecharges.length, "Verify payment in your UPI account before approving.")}
+      <div class="admin-list" ${state.adminCollapsed.recharges ? "hidden" : ""}>
         ${pendingRecharges.map(item => `
           <div class="admin-row">
             <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
@@ -2432,9 +2443,8 @@ function renderAdmin() {
       </div>
     </article>
     <article class="wide-card">
-      <strong>New Orders</strong>
-      <span>${adminOrders.length ? "Customer and delivery details for placed orders." : "No order records yet."}</span>
-      <div class="admin-list">
+      ${adminSectionHeader("orders", "New Orders", adminOrders.length, "Customer and delivery details for placed orders.")}
+      <div class="admin-list" ${state.adminCollapsed.orders ? "hidden" : ""}>
         ${adminOrders.map(order => {
           const details = order.deliveryDetails || {};
           const orderProducts = (order.products || order.productIds || []).map(item => {
@@ -2490,9 +2500,8 @@ function renderAdmin() {
       </div>
     </article>
     <article class="wide-card">
-      <strong>Join Us Applications</strong>
-      <span>${joinApplications.length ? "New applicants from the Join Us page." : "No Join Us applications yet."}</span>
-      <div class="admin-list">
+      ${adminSectionHeader("joinApplications", "Join Us Applications", joinApplications.length, "New applicants from the Join Us page.")}
+      <div class="admin-list" ${state.adminCollapsed.joinApplications ? "hidden" : ""}>
         ${joinApplications.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
@@ -2899,6 +2908,14 @@ function wireEvents() {
     if (cancelRecharge) {
       state.rechargeAmount = null;
       renderWallet();
+    }
+
+    const adminCollapse = event.target.closest("[data-admin-collapse]");
+    if (adminCollapse) {
+      const key = adminCollapse.dataset.adminCollapse;
+      state.adminCollapsed[key] = !state.adminCollapsed[key];
+      renderAdmin();
+      return;
     }
 
     const adminArchive = event.target.closest("[data-admin-archive]");

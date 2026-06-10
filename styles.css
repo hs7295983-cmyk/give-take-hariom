@@ -1937,6 +1937,23 @@ textarea {
   grid-column: span 3;
 }
 
+.admin-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-section-head > div {
+  display: grid;
+  gap: 5px;
+}
+
+.admin-section-head .secondary-button {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
 .inline-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
