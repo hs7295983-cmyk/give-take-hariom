@@ -3808,6 +3808,7 @@ function wireEvents() {
 async function init() {
   wireEvents();
   navigate();
+  renderAll();
   await loadAuthUser();
   renderAll();
   await loadBackendData();
