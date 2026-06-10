@@ -58,6 +58,19 @@ textarea {
   align-items: center;
 }
 
+.brand-home-hint {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgba(23, 108, 79, 0.16);
+  border-radius: 999px;
+  background: #eef9e7;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .brand-mark {
   display: grid;
   place-items: center;
@@ -2020,6 +2033,10 @@ textarea {
 .admin-list {
   display: grid;
   gap: 8px;
+}
+
+.admin-list.is-collapsed {
+  display: none;
 }
 
 .admin-row {

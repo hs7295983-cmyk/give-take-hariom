@@ -2399,7 +2399,7 @@ function renderAdmin() {
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
     <article class="wide-card">
       ${adminSectionHeader("sellRequests", "Sell Item Requests", adminSellRequests.length, "Review seller uploads, schedule pickup, and credit coins after final check.")}
-      <div class="admin-list" ${state.adminCollapsed.sellRequests ? "hidden" : ""}>
+      <div class="admin-list ${state.adminCollapsed.sellRequests ? "is-collapsed" : ""}">
         ${adminSellRequests.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
@@ -2429,7 +2429,7 @@ function renderAdmin() {
     </article>
     <article class="wide-card">
       ${adminSectionHeader("recharges", "Pending UPI Recharges", pendingRecharges.length, "Verify payment in your UPI account before approving.")}
-      <div class="admin-list" ${state.adminCollapsed.recharges ? "hidden" : ""}>
+      <div class="admin-list ${state.adminCollapsed.recharges ? "is-collapsed" : ""}">
         ${pendingRecharges.map(item => `
           <div class="admin-row">
             <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
@@ -2444,7 +2444,7 @@ function renderAdmin() {
     </article>
     <article class="wide-card">
       ${adminSectionHeader("orders", "New Orders", adminOrders.length, "Customer and delivery details for placed orders.")}
-      <div class="admin-list" ${state.adminCollapsed.orders ? "hidden" : ""}>
+      <div class="admin-list ${state.adminCollapsed.orders ? "is-collapsed" : ""}">
         ${adminOrders.map(order => {
           const details = order.deliveryDetails || {};
           const orderProducts = (order.products || order.productIds || []).map(item => {
@@ -2501,7 +2501,7 @@ function renderAdmin() {
     </article>
     <article class="wide-card">
       ${adminSectionHeader("joinApplications", "Join Us Applications", joinApplications.length, "New applicants from the Join Us page.")}
-      <div class="admin-list" ${state.adminCollapsed.joinApplications ? "hidden" : ""}>
+      <div class="admin-list ${state.adminCollapsed.joinApplications ? "is-collapsed" : ""}">
         ${joinApplications.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
