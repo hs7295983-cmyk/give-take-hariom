@@ -1917,6 +1917,150 @@ textarea {
   background: #fbfcf8;
 }
 
+.checkout-review-step {
+  display: grid;
+  gap: 14px;
+  border-color: rgba(23, 108, 79, 0.12);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f6faf5 0%, #eef8ee 100%);
+  box-shadow: 0 14px 36px rgba(23, 32, 27, 0.08);
+}
+
+.checkout-review-head,
+.checkout-address-card,
+.checkout-review-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkout-review-head {
+  justify-content: space-between;
+}
+
+.checkout-review-head h2,
+.checkout-review-head p,
+.checkout-address-card p {
+  margin: 0;
+}
+
+.checkout-review-head p {
+  margin-top: 5px;
+  color: var(--muted);
+}
+
+.checkout-wallet-badge,
+.checkout-warning-card,
+.checkout-address-card,
+.checkout-review-summary span,
+.checkout-review-item {
+  border: 1px solid rgba(23, 108, 79, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 22px rgba(23, 32, 27, 0.06);
+}
+
+.checkout-wallet-badge {
+  display: grid;
+  gap: 5px;
+  min-width: 170px;
+  padding: 12px;
+}
+
+.checkout-wallet-badge span,
+.checkout-review-summary small,
+.checkout-address-card small,
+.checkout-review-item span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.checkout-wallet-badge strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 20px;
+}
+
+.checkout-warning-card {
+  padding: 12px;
+  border-color: #f1db90;
+  background: #fff8dd;
+  color: #7a5a10;
+  font-weight: 900;
+}
+
+.checkout-review-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.checkout-review-summary span {
+  display: grid;
+  align-items: start;
+  justify-content: stretch;
+  gap: 7px;
+  padding: 12px;
+}
+
+.checkout-review-summary strong {
+  color: var(--ink);
+}
+
+.checkout-address-card {
+  align-items: flex-start;
+  padding: 14px;
+}
+
+.checkout-address-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #eef9e7;
+  color: var(--green);
+  font-weight: 900;
+}
+
+.checkout-address-card > div {
+  display: grid;
+  gap: 4px;
+}
+
+.checkout-address-card p {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.checkout-review-items {
+  gap: 10px;
+}
+
+.checkout-review-item {
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.checkout-review-item > div {
+  flex: 1;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.checkout-review-image {
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--art-a), var(--art-b));
+}
+
 .checkout-items,
 .checkout-summary {
   display: grid;
@@ -2725,6 +2869,23 @@ textarea {
 
   .cart-total-bar .primary-button {
     grid-column: 1 / -1;
+  }
+
+  .checkout-review-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .checkout-wallet-badge {
+    min-width: 0;
+  }
+
+  .checkout-review-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .checkout-review-item {
+    align-items: flex-start;
   }
 
   .wide-card {

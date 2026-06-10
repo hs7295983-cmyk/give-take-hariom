@@ -2788,23 +2788,57 @@ function renderCart() {
     return;
   }
   if (state.checkoutStep === "review") {
+    const itemCount = items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0);
+    const balance = Number(wallet.balance || 0);
+    const additionalCoinsNeeded = Math.max(0, total - balance);
     els.cartView.innerHTML = `
       <form class="checkout-flow" id="checkoutForm">
-        <section class="checkout-step">
-          <h2>Confirm Order</h2>
-          <div class="checkout-summary">
-            <span>Items <strong>${items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0)}</strong></span>
-            <span>Wallet balance <strong>${formatCoins(wallet.balance || 0)}</strong></span>
-            <span>Order total <strong>${formatCoins(total)}</strong></span>
-            <span>Delivery charge <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} COD`}</strong></span>
-            <span>Deliver to <strong>${escapeHtml(delivery.name || "")} • ${escapeHtml(delivery.city || "")}</strong></span>
+        <section class="checkout-step checkout-review-step">
+          <div class="checkout-review-head">
+            <div>
+              <h2>Confirm Order</h2>
+              <p>Review your order before placing it.</p>
+            </div>
+            <div class="checkout-wallet-badge">
+              <span>Your Balance</span>
+              <strong>${formatCoins(balance)}</strong>
+            </div>
           </div>
-          <div class="checkout-items">
-            ${items.map(product => `<p><strong>${escapeHtml(product.title)}</strong><span>${Number(state.cartQuantities[product.id] || 1)} x ${formatCoins(product.price)}</span></p>`).join("")}
+          ${additionalCoinsNeeded ? `
+            <div class="checkout-warning-card">You need ${formatCoins(additionalCoinsNeeded)} more to place this order.</div>
+          ` : ""}
+          <div class="checkout-summary checkout-review-summary">
+            <span><small>Coins Required</small><strong>${formatCoins(total)}</strong></span>
+            <span><small>Your Balance</small><strong>${formatCoins(balance)}</strong></span>
+            ${additionalCoinsNeeded ? `<span><small>Additional Coins Needed</small><strong>${formatCoins(additionalCoinsNeeded)}</strong></span>` : ""}
+            <span><small>Delivery Fee</small><strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} COD`}</strong></span>
+          </div>
+          <div class="checkout-address-card">
+            <span class="checkout-address-icon">⌖</span>
+            <div>
+              <small>Deliver To</small>
+              <strong>${escapeHtml(delivery.name || "Customer")}</strong>
+              <p>${escapeHtml([delivery.address, delivery.city, delivery.pincode, delivery.landmark ? `Near ${delivery.landmark}` : ""].filter(Boolean).join(" • ") || "Address not entered")}</p>
+            </div>
+          </div>
+          <div class="checkout-items checkout-review-items">
+            ${items.map(product => {
+              const qty = Number(state.cartQuantities[product.id] || 1);
+              return `
+                <article class="checkout-review-item">
+                  ${productVisual(product, "checkout-review-image")}
+                  <div>
+                    <strong>${escapeHtml(product.title)}</strong>
+                    <span>Qty: ${qty}</span>
+                  </div>
+                  <strong>${formatCoins(product.price * qty)}</strong>
+                </article>
+              `;
+            }).join("")}
           </div>
           <div class="checkout-nav">
             <button class="secondary-button" data-checkout-step="delivery" type="button">Back</button>
-            ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : `<a class="primary-button" href="#wallet">Recharge Coins</a>`}
+            ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : `<a class="primary-button" href="#wallet">Add Coins</a>`}
           </div>
         </section>
       </form>
