@@ -2389,8 +2389,9 @@ function renderAdmin() {
                 <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
                 <button class="primary-button" data-sell-request-action="${item.id}" data-action="accept" data-expected="${item.expectedCoins || 0}" type="button">Accept + Credit Coins</button>
                 <button class="danger-button" data-sell-request-action="${item.id}" data-action="reject" type="button">Reject</button>
+                <button class="secondary-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Archive</button>
               </div>
-            ` : ""}
+            ` : `<div class="admin-actions"><button class="secondary-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Archive</button></div>`}
           </div>
         `).join("")}
       </div>
@@ -2405,6 +2406,7 @@ function renderAdmin() {
             <div class="admin-actions">
               <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
               <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
+              <button class="secondary-button" data-admin-archive="rechargeRequests" data-archive-id="${item.id}" type="button">Archive</button>
             </div>
           </div>
         `).join("")}
@@ -2461,6 +2463,7 @@ function renderAdmin() {
                 ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
                 ${statusButton("delivered", "Delivered", "primary-button", 4)}
                 <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
+                <button class="secondary-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">Archive</button>
               </div>
             </div>
           `;
@@ -2480,8 +2483,9 @@ function renderAdmin() {
               <div class="admin-actions">
                 <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
                 <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
+                <button class="secondary-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Archive</button>
               </div>
-            ` : ""}
+            ` : `<div class="admin-actions"><button class="secondary-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Archive</button></div>`}
           </div>
         `).join("")}
       </div>
@@ -2875,6 +2879,30 @@ function wireEvents() {
     if (cancelRecharge) {
       state.rechargeAmount = null;
       renderWallet();
+    }
+
+    const adminArchive = event.target.closest("[data-admin-archive]");
+    if (adminArchive) {
+      if (!confirm("Archive this item from admin portal? It will be hidden from this admin list.")) return;
+      try {
+        adminArchive.disabled = true;
+        await api("/api/admin/archive", {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({
+            type: adminArchive.dataset.adminArchive,
+            id: adminArchive.dataset.archiveId,
+          }),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert("Archived.");
+      } catch (error) {
+        adminArchive.disabled = false;
+        alert(error.message);
+      }
+      return;
     }
 
     const orderStatus = event.target.closest("[data-order-status]");

@@ -570,26 +570,49 @@ async function handleApi(req, res) {
 
   if (method === "GET" && parts[1] === "admin" && parts[2] === "dashboard") {
     if (!requireAdmin(req, res)) return;
+    const visibleOrders = (db.orders || []).filter(item => !item.adminArchived);
+    const visibleSellRequests = (db.sellRequests || []).filter(item => !item.adminArchived);
+    const visibleRechargeRequests = (db.rechargeRequests || []).filter(item => !item.adminArchived);
+    const visibleJoinApplications = (db.joinApplications || []).filter(item => !item.adminArchived);
     return sendJson(res, 200, {
       counts: {
         users: db.users.length,
         products: db.products.length,
         listedProducts: db.products.filter(product => product.status === "listed").length,
-        sellRequests: db.sellRequests.length,
+        sellRequests: visibleSellRequests.length,
         partnerTasks: db.partnerTasks.length,
-        orders: db.orders.length,
+        orders: visibleOrders.length,
         returns: db.returns.length,
-        rechargeRequests: (db.rechargeRequests || []).length,
-        joinApplications: db.joinApplications.length
+        rechargeRequests: visibleRechargeRequests.length,
+        joinApplications: visibleJoinApplications.length
       },
       maintenance: db.maintenance,
       integrations: db.integrations,
       products: db.products || [],
+      orders: visibleOrders,
+      sellRequests: visibleSellRequests,
+      rechargeRequests: visibleRechargeRequests,
+      joinApplications: visibleJoinApplications
+    });
+  }
+
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "archive") {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const collections = {
       orders: db.orders || [],
       sellRequests: db.sellRequests || [],
       rechargeRequests: db.rechargeRequests || [],
       joinApplications: db.joinApplications || []
-    });
+    };
+    const collection = collections[body.type];
+    if (!collection) return sendError(res, 400, "Invalid archive type");
+    const item = collection.find(next => next.id === body.id);
+    if (!item) return sendError(res, 404, "Item not found");
+    item.adminArchived = true;
+    item.adminArchivedAt = new Date().toISOString();
+    await writeDb(db);
+    return sendJson(res, 200, { archived: true, type: body.type, id: body.id });
   }
 
   if (method === "PATCH" && parts[1] === "admin" && parts[2] === "payments" && parts[3] === "upi") {
