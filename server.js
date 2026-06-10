@@ -749,6 +749,7 @@ async function handleApi(req, res) {
       checks: body.checks || ["Warehouse checked"],
       artA: body.artA || "#d3f4e9",
       artB: body.artB || "#3a6e63",
+      imageUrl: String(body.imageUrl || "").trim(),
       status: "listed",
       quantity: Number(body.quantity || 1),
       newest: db.products.length + 1,
@@ -769,6 +770,7 @@ async function handleApi(req, res) {
     if (typeof body.title === "string" && body.title.trim()) product.title = body.title.trim();
     if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
     if (typeof body.condition === "string" && body.condition.trim()) product.condition = body.condition.trim();
+    if (typeof body.imageUrl === "string") product.imageUrl = body.imageUrl.trim();
     if (body.price !== undefined) {
       const price = Number(body.price);
       if (!Number.isFinite(price) || price < 0) return sendError(res, 400, "Product price is invalid");

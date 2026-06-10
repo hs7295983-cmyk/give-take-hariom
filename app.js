@@ -2663,6 +2663,7 @@ function renderAdmin() {
           <option>Needs repair</option>
         </select>
         <input name="quantity" type="number" min="1" step="1" value="1" placeholder="Quantity" />
+        <input name="imageUrl" class="span-2" type="url" placeholder="Product image URL" />
         <input name="checks" class="span-2" placeholder="Checks, comma separated: Warehouse checked, Cleaned, Tested" />
         <button class="primary-button" type="submit">Add Product</button>
       </form>
@@ -2673,6 +2674,7 @@ function renderAdmin() {
       <div class="admin-product-manager">
         ${adminProducts.map(product => `
           <div class="admin-product-row">
+            ${productVisual(product, "admin-product-thumb")}
             <div>
               <strong>${escapeHtml(product.title || "Untitled product")}</strong>
               <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
@@ -2681,6 +2683,7 @@ function renderAdmin() {
             <div class="admin-product-actions">
               <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="title" type="button">Edit Name</button>
               <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="price" type="button">Edit Price</button>
+              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="imageUrl" type="button">Edit Image</button>
               <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="condition" type="button">Edit Condition</button>
               <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${product.id}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
                 ${product.status === "listed" ? "Unlist Product" : "List Product"}
@@ -3337,6 +3340,7 @@ function wireEvents() {
       const labels = {
         title: "product name",
         price: "coin price",
+        imageUrl: "image URL",
         condition: "condition",
       };
       const currentValue = field === "price" ? product.price : product[field];
@@ -3351,6 +3355,8 @@ function wireEvents() {
           return;
         }
         payload.price = price;
+      } else if (field === "imageUrl") {
+        payload.imageUrl = String(nextValue).trim();
       } else {
         const text = String(nextValue).trim();
         if (!text) {
@@ -3720,6 +3726,7 @@ function wireEvents() {
             price: form.get("price"),
             condition: form.get("condition"),
             quantity: form.get("quantity"),
+            imageUrl: form.get("imageUrl"),
             checks: checks.length ? checks : ["Warehouse checked"],
           }),
         });

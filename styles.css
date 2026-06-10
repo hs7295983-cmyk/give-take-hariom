@@ -2134,6 +2134,21 @@ textarea {
   font-weight: 900;
 }
 
+.checkout-price-total strong,
+.checkout-review-price,
+.checkout-wallet-badge strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.checkout-price-total .coin-symbol {
+  flex: 0 0 auto;
+  vertical-align: 0;
+}
+
 .checkout-items,
 .checkout-summary {
   display: grid;
@@ -2333,7 +2348,7 @@ textarea {
 
 .admin-product-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
   padding: 14px;
@@ -2342,7 +2357,16 @@ textarea {
   background: #fbfcf8;
 }
 
-.admin-product-row > div:first-child {
+.admin-product-thumb {
+  position: relative;
+  overflow: hidden;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--art-a), var(--art-b));
+}
+
+.admin-product-row > div:not(.admin-product-thumb):first-of-type {
   display: grid;
   gap: 6px;
 }
