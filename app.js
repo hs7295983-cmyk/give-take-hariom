@@ -2470,6 +2470,13 @@ function renderAdmin() {
   const adminOrders = adminDashboard.orders || [];
   const maintenance = adminDashboard.maintenance || {};
   const adminProducts = adminDashboard.products || [];
+  const archived = adminDashboard.archived || {};
+  const archivedItems = [
+    ...(archived.orders || []).map(item => ({ type: "orders", label: "Order", id: item.id, title: item.id, meta: String(item.status || "order").replaceAll("-", " ") })),
+    ...(archived.sellRequests || []).map(item => ({ type: "sellRequests", label: "Sell Request", id: item.id, title: item.title || item.id, meta: String(item.status || "request").replaceAll("-", " ") })),
+    ...(archived.rechargeRequests || []).map(item => ({ type: "rechargeRequests", label: "Recharge", id: item.id, title: item.id, meta: `${item.amount || 0} coins • ${item.status || "request"}` })),
+    ...(archived.joinApplications || []).map(item => ({ type: "joinApplications", label: "Join", id: item.id, title: item.name || item.role || item.id, meta: String(item.status || "application").replaceAll("-", " ") })),
+  ];
   const adminSectionHeader = (key, title, count, openText) => {
     const collapsed = Boolean(state.adminCollapsed[key]);
     return `
@@ -2615,6 +2622,19 @@ function renderAdmin() {
             ` : `<div class="admin-actions"><button class="secondary-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Archive</button></div>`}
           </div>
         `).join("")}
+      </div>
+    </article>
+    <article class="wide-card">
+      ${adminSectionHeader("archivedItems", "Archived Items", archivedItems.length, "Archived admin records are hidden from the main dashboard.")}
+      <div class="admin-list ${state.adminCollapsed.archivedItems ? "is-collapsed" : ""}">
+        ${archivedItems.map(item => `
+          <div class="admin-row">
+            <span><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.title || item.id)} • ${escapeHtml(item.meta || "")}</span>
+            <div class="admin-actions">
+              <button class="secondary-button" data-admin-unarchive="${item.type}" data-archive-id="${item.id}" type="button">Unarchive</button>
+            </div>
+          </div>
+        `).join("") || `<p>No archived items yet.</p>`}
       </div>
     </article>
     <article class="wide-card">
@@ -3090,6 +3110,30 @@ function wireEvents() {
         alert("Archived.");
       } catch (error) {
         adminArchive.disabled = false;
+        alert(error.message);
+      }
+      return;
+    }
+
+    const adminUnarchive = event.target.closest("[data-admin-unarchive]");
+    if (adminUnarchive) {
+      try {
+        adminUnarchive.disabled = true;
+        await api("/api/admin/archive", {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({
+            type: adminUnarchive.dataset.adminUnarchive,
+            id: adminUnarchive.dataset.archiveId,
+            archived: false,
+          }),
+        });
+        const adminData = await api("/api/admin/dashboard", { admin: true });
+        adminDashboard = adminData;
+        renderAdmin();
+        alert("Unarchived.");
+      } catch (error) {
+        adminUnarchive.disabled = false;
         alert(error.message);
       }
       return;

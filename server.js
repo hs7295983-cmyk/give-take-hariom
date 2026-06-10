@@ -584,6 +584,12 @@ async function handleApi(req, res) {
     const visibleSellRequests = (db.sellRequests || []).filter(item => !item.adminArchived);
     const visibleRechargeRequests = (db.rechargeRequests || []).filter(item => !item.adminArchived);
     const visibleJoinApplications = (db.joinApplications || []).filter(item => !item.adminArchived);
+    const archived = {
+      orders: (db.orders || []).filter(item => item.adminArchived),
+      sellRequests: (db.sellRequests || []).filter(item => item.adminArchived),
+      rechargeRequests: (db.rechargeRequests || []).filter(item => item.adminArchived),
+      joinApplications: (db.joinApplications || []).filter(item => item.adminArchived)
+    };
     return sendJson(res, 200, {
       counts: {
         users: db.users.length,
@@ -602,7 +608,8 @@ async function handleApi(req, res) {
       orders: visibleOrders,
       sellRequests: visibleSellRequests,
       rechargeRequests: visibleRechargeRequests,
-      joinApplications: visibleJoinApplications
+      joinApplications: visibleJoinApplications,
+      archived
     });
   }
 
@@ -619,10 +626,12 @@ async function handleApi(req, res) {
     if (!collection) return sendError(res, 400, "Invalid archive type");
     const item = collection.find(next => next.id === body.id);
     if (!item) return sendError(res, 404, "Item not found");
-    item.adminArchived = true;
-    item.adminArchivedAt = new Date().toISOString();
+    const shouldArchive = body.archived !== false;
+    item.adminArchived = shouldArchive;
+    item.adminArchivedAt = shouldArchive ? new Date().toISOString() : item.adminArchivedAt;
+    if (!shouldArchive) item.adminUnarchivedAt = new Date().toISOString();
     await writeDb(db);
-    return sendJson(res, 200, { archived: true, type: body.type, id: body.id });
+    return sendJson(res, 200, { archived: shouldArchive, type: body.type, id: body.id });
   }
 
   if (method === "PATCH" && parts[1] === "admin" && parts[2] === "payments" && parts[3] === "upi") {
