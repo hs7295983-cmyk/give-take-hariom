@@ -2003,12 +2003,14 @@ textarea {
 
 .checkout-wallet-badge {
   display: grid;
-  gap: 5px;
-  min-width: 170px;
-  padding: 12px;
+  gap: 4px;
+  min-width: 178px;
+  padding: 12px 14px;
+  animation: cartSoftIn 0.22s ease;
 }
 
 .checkout-wallet-badge span,
+.checkout-wallet-badge small,
 .checkout-address-card small,
 .checkout-review-item span {
   color: var(--muted);
@@ -2016,20 +2018,47 @@ textarea {
   font-weight: 900;
 }
 
+.checkout-wallet-badge small {
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .checkout-wallet-badge strong {
   display: flex;
   align-items: center;
   gap: 6px;
   color: var(--green);
-  font-size: 20px;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .checkout-warning-card {
-  padding: 12px;
+  display: grid;
+  gap: 9px;
+  align-items: start;
+  padding: 14px;
   border-color: #f1db90;
   background: #fff8dd;
   color: #7a5a10;
   font-weight: 900;
+  animation: cartSoftIn 0.22s ease;
+}
+
+.checkout-warning-card strong {
+  color: #6a4c0c;
+  font-size: 15px;
+}
+
+.checkout-warning-card span {
+  color: #7a5a10;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.checkout-warning-card .primary-button {
+  justify-self: start;
+  min-height: 38px;
+  padding: 0 14px;
 }
 
 .checkout-address-card {

@@ -2831,12 +2831,17 @@ function renderCart() {
               <p>Review your order before placing it.</p>
             </div>
             <div class="checkout-wallet-badge">
-              <span>Your Balance</span>
+              <span>Wallet Balance</span>
               <strong>${formatCoins(balance)}</strong>
+              <small>Available for purchases</small>
             </div>
           </div>
           ${additionalCoinsNeeded ? `
-            <div class="checkout-warning-card">You need ${new Intl.NumberFormat("en-IN").format(additionalCoinsNeeded)} G&T more to place this order.</div>
+            <div class="checkout-warning-card">
+              <strong>⚠️ Insufficient G&T Coins</strong>
+              <span>You need ${new Intl.NumberFormat("en-IN").format(additionalCoinsNeeded)} more G&T Coins to place this order.</span>
+              <a class="primary-button" href="#wallet">Add Coins</a>
+            </div>
           ` : ""}
           <div class="checkout-address-card">
             <span class="checkout-address-icon">⌖</span>
@@ -2861,11 +2866,12 @@ function renderCart() {
               `;
             }).join("")}
           </div>
-          <section class="cart-review-summary" aria-label="Cart summary">
-            ${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins • ${deliveryCharge === 0 ? "Free Delivery" : `Rs.${deliveryCharge} Delivery`}
-          </section>
           <section class="checkout-price-details" aria-label="Price details">
             <h3>Price Details</h3>
+            <div>
+              <span>Total Items</span>
+              <strong>${itemCount}</strong>
+            </div>
             <div>
               <span>Items Total</span>
               <strong>${formatCoins(total)}</strong>
@@ -2889,7 +2895,7 @@ function renderCart() {
           </section>
           <div class="checkout-nav">
             <button class="secondary-button" data-checkout-step="delivery" type="button">Back</button>
-            ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : `<a class="primary-button" href="#wallet">Add Coins</a>`}
+            ${hasEnoughCoins ? `<button class="primary-button" type="submit">Confirm Order</button>` : ""}
           </div>
         </section>
       </form>
