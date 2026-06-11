@@ -1637,6 +1637,7 @@ const state = {
   cartQuantities: savedCartState.cartQuantities,
   checkoutStep: savedCartState.checkoutStep,
   deliveryDetails: savedCartState.deliveryDetails,
+  pendingRemoveCartId: null,
   query: "",
   rechargeAmount: null,
   orderFilter: "all",
@@ -2729,6 +2730,7 @@ function renderPartnerTasks() {
 function renderCart() {
   if (!state.cart.length) {
     state.checkoutStep = "cart";
+    state.pendingRemoveCartId = null;
     const recommended = products
       .filter(product => product.status === "listed")
       .slice(0, 4);
@@ -2759,8 +2761,8 @@ function renderCart() {
               <path d="M29 19c5-5 13-6 19-1 6-5 15-4 20 1" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/>
             </svg>
           </div>
-          <h2>Your cart is empty</h2>
-          <p>Start exploring products and exchange unused items using G&T Coins.</p>
+          <h2>Your Cart is Empty</h2>
+          <p>Browse products and start exchanging today.</p>
           <a class="primary-button" href="#market">Browse Products</a>
         </div>
         <section class="cart-recommendations" aria-label="Recommended For You">
@@ -2778,6 +2780,7 @@ function renderCart() {
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
   const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
   const deliveryCharge = getDeliveryCharge(total);
+  const itemCount = items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0);
   const hasEnoughCoins = (wallet.balance || 0) >= total;
   const savedAddress = currentUser?.addressBook || {};
   const delivery = Object.keys(state.deliveryDetails || {}).length ? state.deliveryDetails : {
@@ -2817,7 +2820,6 @@ function renderCart() {
     return;
   }
   if (state.checkoutStep === "review") {
-    const itemCount = items.reduce((sum, product) => sum + Number(state.cartQuantities[product.id] || 1), 0);
     const balance = Number(wallet.balance || 0);
     const additionalCoinsNeeded = Math.max(0, total - balance);
     els.cartView.innerHTML = `
@@ -2859,6 +2861,9 @@ function renderCart() {
               `;
             }).join("")}
           </div>
+          <section class="cart-review-summary" aria-label="Cart summary">
+            ${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins • ${deliveryCharge === 0 ? "Free Delivery" : `Rs.${deliveryCharge} Delivery`}
+          </section>
           <section class="checkout-price-details" aria-label="Price details">
             <h3>Price Details</h3>
             <div>
@@ -2872,6 +2877,10 @@ function renderCart() {
             <div>
               <span>Delivery Charge</span>
               <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} Pay on Delivery`}</strong>
+            </div>
+            <div class="checkout-delivery-info">
+              <span>🚚 Delivery in 3-4 Business Days</span>
+              <span>✅ Free Delivery on Orders Above 499 G&T Coins</span>
             </div>
             <div class="checkout-price-total">
               <span>Total Coins Required</span>
@@ -2889,7 +2898,13 @@ function renderCart() {
   }
   els.cartView.innerHTML = `
     <section class="checkout-flow">
-      <h1 class="cart-title">My Cart</h1>
+      <div class="empty-cart-head cart-filled-head">
+        <div class="cart-title-wrap">
+          <span class="cart-title-icon" aria-hidden="true">🛒</span>
+          <h1 class="cart-title">My Cart</h1>
+        </div>
+        <span class="cart-summary">${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins</span>
+      </div>
       <div class="cart-items">
         ${items.map(product => {
           const qty = Number(state.cartQuantities[product.id] || 1);
@@ -2900,28 +2915,42 @@ function renderCart() {
                 <strong>${escapeHtml(compactProductTitle(product.title, 64))}</strong>
                 <span>${escapeHtml(displayCategoryName(product.category))}</span>
                 <div class="cart-price-row">
-                  <label>Qty:
-                    <select data-cart-qty="${product.id}">
-                      ${[1, 2, 3, 4, 5].map(value => `<option value="${value}" ${qty === value ? "selected" : ""}>${value}</option>`).join("")}
-                    </select>
-                  </label>
+                  <div class="cart-qty-control" aria-label="Quantity">
+                    <button type="button" data-cart-qty-step="${product.id}" data-step="-1" aria-label="Decrease quantity">-</button>
+                    <strong>${qty}</strong>
+                    <button type="button" data-cart-qty-step="${product.id}" data-step="1" aria-label="Increase quantity">+</button>
+                  </div>
                   <strong class="cart-line-price">${formatCoins(product.price * qty)}</strong>
                 </div>
+                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">🗑 Remove</button>
               </div>
               <div class="cart-item-actions">
-                <button class="secondary-button" data-remove-cart="${product.id}" type="button">Remove</button>
                 <button class="primary-button" data-cart-buy-now="${product.id}" type="button">Buy this now</button>
               </div>
             </article>
           `;
         }).join("")}
       </div>
+      <section class="cart-review-summary" aria-label="Cart summary">
+        ${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins • ${deliveryCharge === 0 ? "Free Delivery" : `Rs.${deliveryCharge} Delivery`}
+      </section>
       <div class="cart-total-bar">
         <span>Total</span>
         <strong>${formatCoins(total)}</strong>
         <small>Delivery: ${formatDeliveryCharge(total)}</small>
         <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
       </div>
+      ${state.pendingRemoveCartId ? `
+        <div class="cart-confirm-backdrop" role="presentation">
+          <section class="cart-confirm-modal" role="dialog" aria-modal="true" aria-label="Remove item">
+            <h2>Remove this item from cart?</h2>
+            <div>
+              <button class="secondary-button" data-cancel-remove-cart type="button">Cancel</button>
+              <button class="primary-button danger-button" data-confirm-remove-cart="${state.pendingRemoveCartId}" type="button">Remove</button>
+            </div>
+          </section>
+        </div>
+      ` : ""}
     </section>
   `;
 }
@@ -3038,13 +3067,42 @@ function wireEvents() {
 
     const removeCart = event.target.closest("[data-remove-cart]");
     if (removeCart) {
-      state.cart = state.cart.filter(id => id !== removeCart.dataset.removeCart);
-      delete state.cartQuantities[removeCart.dataset.removeCart];
+      state.pendingRemoveCartId = removeCart.dataset.removeCart;
+      renderCart();
+      return;
+    }
+
+    const cancelRemoveCart = event.target.closest("[data-cancel-remove-cart]");
+    if (cancelRemoveCart) {
+      state.pendingRemoveCartId = null;
+      renderCart();
+      return;
+    }
+
+    const confirmRemoveCart = event.target.closest("[data-confirm-remove-cart]");
+    if (confirmRemoveCart) {
+      const productId = confirmRemoveCart.dataset.confirmRemoveCart;
+      state.cart = state.cart.filter(id => id !== productId);
+      delete state.cartQuantities[productId];
       state.checkoutStep = "cart";
+      state.pendingRemoveCartId = null;
       if (!state.cart.length) state.deliveryDetails = {};
       saveCartState();
       renderCart();
       renderAuthStatus();
+      return;
+    }
+
+    const qtyStep = event.target.closest("[data-cart-qty-step]");
+    if (qtyStep) {
+      const productId = qtyStep.dataset.cartQtyStep;
+      const step = Number(qtyStep.dataset.step || 0);
+      const currentQty = Number(state.cartQuantities[productId] || 1);
+      state.cartQuantities[productId] = Math.max(1, Math.min(5, currentQty + step));
+      saveCartState();
+      renderCart();
+      renderAuthStatus();
+      return;
     }
 
     const cartBuyNow = event.target.closest("[data-cart-buy-now]");
