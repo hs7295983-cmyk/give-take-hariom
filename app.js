@@ -2104,7 +2104,7 @@ function renderWallet() {
       </div>
       <form class="upi-reference-form" id="upiReferenceForm">
         <input name="upiReference" placeholder="Enter UPI transaction/reference ID" required />
-        <button class="primary-button" type="submit">Submit Recharge Request</button>
+        <button class="primary-button" type="submit">Submit Add Coins Request</button>
         <button class="secondary-button" data-cancel-recharge type="button">Change Amount</button>
       </form>
     `;
