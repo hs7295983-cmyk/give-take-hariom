@@ -2484,6 +2484,19 @@ textarea {
   white-space: nowrap;
 }
 
+.cart-required-coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.cart-required-coins .coin-symbol {
+  width: 30px;
+  height: 26px;
+  font-size: 10px;
+}
+
 .cart-price-details .checkout-price-total .coin-symbol {
   flex: 0 0 auto;
   vertical-align: 0;

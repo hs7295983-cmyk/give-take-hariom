@@ -2964,7 +2964,7 @@ function renderCart() {
         </div>
         <div class="checkout-price-total">
           <span>Total Coins Required</span>
-          <strong>${formatCoins(total)}</strong>
+          <strong class="cart-required-coins">${new Intl.NumberFormat("en-IN").format(total)} <span class="coin-symbol" aria-label="G&T coins"></span></strong>
         </div>
         <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
       </section>
