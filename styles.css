@@ -347,10 +347,10 @@ main {
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-  gap: 28px;
-  min-height: 520px;
+  gap: 22px;
+  min-height: 490px;
   align-items: center;
-  padding: 46px;
+  padding: 40px;
   border-radius: 10px;
   background:
     linear-gradient(105deg, rgba(23, 108, 79, 0.92), rgba(13, 69, 52, 0.9)),
@@ -455,7 +455,7 @@ main {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 26px;
+  margin-top: 20px;
 }
 
 .primary-button,
@@ -487,7 +487,7 @@ main {
 
 .hero-panel {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .status-card,
@@ -497,7 +497,7 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.13);
-  padding: 18px;
+  padding: 16px;
   backdrop-filter: blur(10px);
 }
 
@@ -511,9 +511,22 @@ main {
 
 .status-card strong {
   display: block;
-  margin: 8px 0;
+  margin: 6px 0 10px;
   font-size: 38px;
   font-family: "Outfit", sans-serif;
+}
+
+.status-card small {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(214, 242, 122, 0.5);
+  border-radius: 999px;
+  background: rgba(214, 242, 122, 0.95);
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .flow-card {
@@ -2896,12 +2909,29 @@ textarea {
   }
 
   .hero {
-    padding: 24px;
+    padding: 20px;
     min-height: auto;
   }
 
   .hero h1 {
     font-size: 46px;
+  }
+
+  .hero-actions {
+    margin-top: 18px;
+  }
+
+  .hero-panel {
+    gap: 10px;
+  }
+
+  .status-card,
+  .hero-login-card {
+    padding: 14px;
+  }
+
+  .status-card strong {
+    margin: 5px 0 8px;
   }
 
   .main-nav {
