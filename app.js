@@ -23,6 +23,15 @@ const fallbackCategories = [
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
+const categoryChips = {
+  electronics: "📱",
+  books: "📚",
+  furniture: "🪑",
+  fashion: "👕",
+  home: "🍳",
+  bags: "🎒",
+  toys: "🧸",
+};
 const DELIVERY_CHARGE = 50;
 const DELIVERY_FREE_THRESHOLD = 499;
 
@@ -1960,7 +1969,7 @@ function renderCategories() {
     .filter(Boolean);
   els.categoryGrid.innerHTML = homeCategories.map((category, index) => `
     <article class="category-card" data-category="${category.id}">
-      <div class="category-icon" style="filter:hue-rotate(${index * 26}deg)"></div>
+      <div class="category-icon" style="filter:hue-rotate(${index * 26}deg)" aria-hidden="true">${categoryChips[category.id] || "•"}</div>
       <div>
         <h3>${escapeHtml(category.name)}</h3>
       </div>
