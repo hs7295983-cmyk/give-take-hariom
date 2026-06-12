@@ -2329,9 +2329,9 @@ textarea {
   width: fit-content;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
+  border: 1px solid #ead7d4;
+  border-radius: 10px;
+  background: #fffafa;
   color: var(--red);
   cursor: pointer;
   font-size: 13px;
@@ -2377,6 +2377,7 @@ textarea {
 
 .cart-remove-button:hover,
 .cart-remove-button:active {
+  border-color: #e7a79f;
   background: #fff3f1;
   transform: translateY(-1px);
 }
@@ -2404,7 +2405,7 @@ textarea {
   justify-self: stretch;
   min-height: 42px;
   border-radius: 10px;
-  background: transparent;
+  background: #fffafa;
 }
 
 .cart-item-actions .primary-button {

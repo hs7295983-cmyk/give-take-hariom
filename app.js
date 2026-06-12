@@ -2930,7 +2930,10 @@ function renderCart() {
                 </div>
               </div>
               <div class="cart-item-actions">
-                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">🗑 Remove</button>
+                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">
+                  <svg class="cart-remove-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+                  <span>Remove</span>
+                </button>
                 <button class="primary-button" data-cart-buy-now="${product.id}" type="button">Buy this now</button>
               </div>
             </article>
@@ -3092,8 +3095,15 @@ function wireEvents() {
 
     const removeCart = event.target.closest("[data-remove-cart]");
     if (removeCart) {
-      state.pendingRemoveCartId = removeCart.dataset.removeCart;
+      const productId = removeCart.dataset.removeCart;
+      state.cart = state.cart.filter(id => id !== productId);
+      delete state.cartQuantities[productId];
+      state.checkoutStep = "cart";
+      state.pendingRemoveCartId = null;
+      if (!state.cart.length) state.deliveryDetails = {};
+      saveCartState();
       renderCart();
+      renderAuthStatus();
       return;
     }
 
