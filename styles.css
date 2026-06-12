@@ -2350,8 +2350,26 @@ textarea {
 }
 
 .cart-item-actions {
+  display: grid;
   grid-column: 1 / -1;
-  justify-content: flex-end;
+  grid-template-columns: minmax(104px, 0.85fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.cart-item-actions .cart-remove-button {
+  justify-self: stretch;
+  min-height: 42px;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.cart-item-actions .primary-button {
+  width: 100%;
+  min-height: 42px;
 }
 
 .cart-review-summary {
@@ -2379,6 +2397,47 @@ textarea {
 .cart-total-bar small {
   color: var(--muted);
   font-weight: 800;
+}
+
+.cart-price-details {
+  gap: 12px;
+  padding: 18px;
+}
+
+.cart-price-details h3 {
+  font-size: 22px;
+}
+
+.cart-price-details > div {
+  font-size: 18px;
+}
+
+.cart-price-details .checkout-delivery-info {
+  display: grid;
+  align-items: start;
+  justify-content: start;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.cart-price-details .checkout-price-total {
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
+.cart-price-details .checkout-price-total span,
+.cart-price-details .checkout-price-total strong {
+  font-size: 22px;
+}
+
+.cart-price-details .primary-button {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 2px;
+  font-size: 18px;
 }
 
 .cart-confirm-backdrop {
@@ -3113,13 +3172,31 @@ textarea {
 
   .cart-item-actions {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(100px, 0.85fr) minmax(0, 1.35fr);
     gap: 8px;
   }
 
   .cart-item-actions button {
     min-height: 42px;
     padding: 8px;
+  }
+
+  .cart-item-actions .cart-remove-button {
+    font-size: 13px;
+  }
+
+  .cart-price-details {
+    padding: 14px;
+  }
+
+  .cart-price-details > div {
+    align-items: flex-start;
+    font-size: 15px;
+  }
+
+  .cart-price-details .checkout-price-total span,
+  .cart-price-details .checkout-price-total strong {
+    font-size: 18px;
   }
 
   .cart-total-bar {

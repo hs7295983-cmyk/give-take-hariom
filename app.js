@@ -2928,24 +2928,43 @@ function renderCart() {
                   </div>
                   <strong class="cart-line-price">${formatCoins(product.price * qty)}</strong>
                 </div>
-                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">🗑 Remove</button>
               </div>
               <div class="cart-item-actions">
+                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">🗑 Remove</button>
                 <button class="primary-button" data-cart-buy-now="${product.id}" type="button">Buy this now</button>
               </div>
             </article>
           `;
         }).join("")}
       </div>
-      <section class="cart-review-summary" aria-label="Cart summary">
-        ${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins • ${deliveryCharge === 0 ? "Free Delivery" : `Rs.${deliveryCharge} Delivery`}
-      </section>
-      <div class="cart-total-bar">
-        <span>Total</span>
-        <strong>${formatCoins(total)}</strong>
-        <small>Delivery: ${formatDeliveryCharge(total)}</small>
+      <section class="checkout-price-details cart-price-details" aria-label="Price details">
+        <h3>Price Details</h3>
+        <div>
+          <span>Total Items</span>
+          <strong>${itemCount}</strong>
+        </div>
+        <div>
+          <span>Items Total</span>
+          <strong>${formatCoins(total)}</strong>
+        </div>
+        <div>
+          <span>Payment Method</span>
+          <strong>G&T Coins</strong>
+        </div>
+        <div>
+          <span>Delivery Charge</span>
+          <strong>${deliveryCharge === 0 ? "Free" : `Rs.${deliveryCharge} Pay on Delivery`}</strong>
+        </div>
+        <div class="checkout-delivery-info">
+          <span>🚚 Delivery in 3-4 Business Days</span>
+          <span>✅ Free Delivery on Orders Above 499 G&T Coins</span>
+        </div>
+        <div class="checkout-price-total">
+          <span>Total Coins Required</span>
+          <strong>${formatCoins(total)}</strong>
+        </div>
         <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
-      </div>
+      </section>
       ${state.pendingRemoveCartId ? `
         <div class="cart-confirm-backdrop" role="presentation">
           <section class="cart-confirm-modal" role="dialog" aria-modal="true" aria-label="Remove item">
