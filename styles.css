@@ -2321,6 +2321,10 @@ textarea {
 }
 
 .cart-remove-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   justify-self: start;
   width: fit-content;
   min-height: 34px;
@@ -2333,6 +2337,17 @@ textarea {
   font-size: 13px;
   font-weight: 900;
   transition: background 0.14s ease, transform 0.14s ease;
+}
+
+.cart-remove-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .cart-remove-button:hover,
@@ -2352,7 +2367,7 @@ textarea {
 .cart-item-actions {
   display: grid;
   grid-column: 1 / -1;
-  grid-template-columns: minmax(104px, 0.85fr) minmax(0, 1.4fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   gap: 12px;
   margin-top: 4px;
@@ -3172,7 +3187,7 @@ textarea {
 
   .cart-item-actions {
     display: grid;
-    grid-template-columns: minmax(100px, 0.85fr) minmax(0, 1.35fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
