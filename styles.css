@@ -720,19 +720,31 @@ main {
   grid-template-columns: 48px 1fr;
   gap: 12px;
   align-items: center;
-  min-height: 74px;
+  min-height: 70px;
   padding: 12px;
+  box-shadow: 0 6px 18px rgba(31, 41, 55, 0.05);
   cursor: pointer;
 }
 
 .category-icon {
   display: grid;
   place-items: center;
+  width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f6c85f, #76c7a2);
-  font-size: 24px;
-  line-height: 1;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8fbf8;
+  color: var(--green);
+}
+
+.category-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .category-card h3,
@@ -3190,7 +3202,14 @@ textarea {
   }
 
   .category-icon {
+    width: 34px;
     height: 34px;
+    border-radius: 10px;
+  }
+
+  .category-icon svg {
+    width: 18px;
+    height: 18px;
   }
 
   .category-card h3 {

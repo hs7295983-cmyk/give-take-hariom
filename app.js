@@ -23,14 +23,15 @@ const fallbackCategories = [
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
-const categoryChips = {
-  electronics: "📱",
-  books: "📚",
-  furniture: "🪑",
-  fashion: "👕",
-  home: "🍳",
-  bags: "🎒",
-  toys: "🧸",
+const categoryIcons = {
+  electronics: '<svg viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M11 18h2"/></svg>',
+  books: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19a2.5 2.5 0 0 1 2.5-2H20"/><path d="M8 7h8"/></svg>',
+  furniture: '<svg viewBox="0 0 24 24"><path d="M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4"/><path d="M4 11h16v6H4z"/><path d="M6 17v3"/><path d="M18 17v3"/></svg>',
+  fashion: '<svg viewBox="0 0 24 24"><path d="M9 4 6 6 3 7l2 5 3-1v9h8v-9l3 1 2-5-3-1-3-2"/><path d="M9 4a3 3 0 0 0 6 0"/></svg>',
+  home: '<svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/></svg>',
+  bags: '<svg viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>',
+  toys: '<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.8L6.8 19l1-5.8-4.2-4.1 5.8-.8L12 3Z"/></svg>',
+  default: '<svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M8 7V5h8v2"/></svg>',
 };
 const DELIVERY_CHARGE = 50;
 const DELIVERY_FREE_THRESHOLD = 499;
@@ -1969,7 +1970,7 @@ function renderCategories() {
     .filter(Boolean);
   els.categoryGrid.innerHTML = homeCategories.map((category, index) => `
     <article class="category-card" data-category="${category.id}">
-      <div class="category-icon" style="filter:hue-rotate(${index * 26}deg)" aria-hidden="true">${categoryChips[category.id] || "•"}</div>
+      <div class="category-icon" aria-hidden="true">${categoryIcons[category.id] || categoryIcons.default}</div>
       <div>
         <h3>${escapeHtml(category.name)}</h3>
       </div>
