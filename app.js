@@ -2126,9 +2126,10 @@ function renderWallet() {
     `).join("");
     els.rechargeGrid.innerHTML = `
       ${rechargeButtons}
-      <form class="custom-recharge-form" id="customRechargeForm">
-        <input name="customRechargeAmount" type="number" min="50" step="50" placeholder="Enter custom amount" required />
-        <button class="secondary-button" type="submit">Add Coins</button>
+      <form class="custom-recharge-form" id="customRechargeForm" novalidate>
+        <input name="customRechargeAmount" type="number" min="50" step="50" inputmode="numeric" placeholder="Enter custom amount" required />
+        <button class="secondary-button" data-custom-recharge-submit type="submit" disabled>Add Coins</button>
+        <small>Enter amount in multiples of 50</small>
       </form>
     `;
   }
@@ -3531,6 +3532,13 @@ function wireEvents() {
       saveCartState();
       renderCart();
       renderAuthStatus();
+    }
+  });
+  document.body.addEventListener("input", event => {
+    if (event.target.name === "customRechargeAmount") {
+      const amount = Number(event.target.value);
+      const submitButton = event.target.form?.querySelector("[data-custom-recharge-submit]");
+      if (submitButton) submitButton.disabled = !Number.isInteger(amount) || amount < 50 || amount % 50 !== 0;
     }
   });
   [els.categoryFilter, els.cityFilter, els.sortFilter].forEach(el => el.addEventListener("change", renderProducts));
