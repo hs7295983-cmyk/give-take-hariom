@@ -1876,7 +1876,7 @@ async function refreshAdminProducts() {
 }
 
 function formatCoins(value) {
-  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
+  return `<span class="coin-amount">${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span></span>`;
 }
 
 function coinMarkup() {
@@ -2169,7 +2169,7 @@ function renderWallet() {
   } else {
     els.rechargeGrid.classList.remove("payment-step");
     const rechargeButtons = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
-      <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="G&T coins"></span></button>
+      <button type="button" data-recharge="${amount}">${formatCoins(amount)}</button>
     `).join("");
     els.rechargeGrid.innerHTML = `
       ${rechargeButtons}
@@ -2182,7 +2182,7 @@ function renderWallet() {
   }
   els.walletBalance.textContent = walletIsLoading ? "..." : new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletPageBalance = document.getElementById("walletPageBalance");
-  if (walletPageBalance) walletPageBalance.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol" aria-label="G&T coin"></span>`;
+  if (walletPageBalance) walletPageBalance.innerHTML = `<span class="coin-amount">${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol" aria-label="G&T coin"></span></span>`;
   const walletEmptyNote = document.getElementById("walletEmptyNote");
   if (walletEmptyNote) walletEmptyNote.hidden = Number(wallet.balance || 0) > 0;
   const ledger = wallet.ledger || [];
@@ -2353,7 +2353,7 @@ function renderOrders() {
             </section>
             <section class="order-detail-section">
               <h3>Order Items (${totalItemCount})</h3>
-              <div class="order-item-row">
+              <button class="order-item-row order-item-link" data-product="${firstItem.id || ""}" type="button">
                 ${productVisual(firstItem, "order-item-image")}
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
@@ -2361,7 +2361,7 @@ function renderOrders() {
                   ${firstItem.qty > 1 ? `<span>Price: ${formatCoins(firstItem.unitPrice)} each • ${formatCoins(firstItem.lineTotal)} total</span>` : ""}
                 </div>
                 <strong>${formatCoins(firstItem.lineTotal || firstItem.unitPrice || 0)}</strong>
-              </div>
+              </button>
             </section>
             ${isExpanded ? `
               <section class="order-detail-section order-expanded-details">
@@ -2376,7 +2376,7 @@ function renderOrders() {
                 </div>
                 <div class="order-expanded-items">
                   ${displayItems.map(item => `
-                    <div class="order-item-row">
+                    <button class="order-item-row order-item-link" data-product="${item.id || ""}" type="button">
                       ${productVisual(item, "order-item-image")}
                       <div>
                         <strong>${escapeHtml(item.title || "Product title")}</strong>
@@ -2384,7 +2384,7 @@ function renderOrders() {
                         <span>Price: ${formatCoins(item.unitPrice)} each</span>
                       </div>
                       <strong>${formatCoins(item.lineTotal || item.unitPrice || 0)}</strong>
-                    </div>
+                    </button>
                   `).join("")}
                 </div>
               </section>
@@ -2526,7 +2526,7 @@ function renderAccount() {
     <article class="account-wallet-card">
       <div>
         <span>Current Balance</span>
-        <strong>${balanceText} <span class="coin-symbol large" aria-label="G&T Coins"></span></strong>
+        <strong>${formatCoins(balance)}</strong>
       </div>
       <a class="primary-button" href="#wallet">Open Wallet</a>
     </article>
@@ -2658,7 +2658,7 @@ function renderAdmin() {
       <div class="admin-list ${state.adminCollapsed.recharges ? "is-collapsed" : ""}">
         ${pendingRecharges.map(item => `
           <div class="admin-row">
-            <span>${item.id} • ${item.amount} ${coinMarkup()} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
+            <span>${item.id} • ${formatCoins(item.amount || 0)} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
             <div class="admin-actions">
               <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
               <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
@@ -2870,7 +2870,7 @@ function renderCart() {
             <span class="cart-title-icon" aria-hidden="true">🛒</span>
             <h1 class="cart-title">My Cart</h1>
           </div>
-          <span class="cart-summary">0 Items • 0 G&T Coins</span>
+          <span class="cart-summary">0 Items • ${formatCoins(0)}</span>
         </div>
         <div class="empty-cart-panel">
           <div class="empty-cart-illustration" aria-hidden="true">
@@ -2958,7 +2958,7 @@ function renderCart() {
           ${additionalCoinsNeeded ? `
             <div class="checkout-warning-card">
               <strong>⚠️ Insufficient G&T Coins</strong>
-              <span>You need ${new Intl.NumberFormat("en-IN").format(additionalCoinsNeeded)} more G&T Coins to place this order.</span>
+              <span>You need ${formatCoins(additionalCoinsNeeded)} more to place this order.</span>
               <a class="primary-button" href="#wallet">Add Coins</a>
             </div>
           ` : ""}
@@ -3005,7 +3005,7 @@ function renderCart() {
             </div>
             <div class="checkout-delivery-info">
               <span>🚚 Delivery in 3-4 Business Days</span>
-              <span>✅ Free Delivery on Orders Above 499 G&T Coins</span>
+              <span>✅ Free Delivery on Orders Above ${formatCoins(499)}</span>
             </div>
             <div class="checkout-price-total">
               <span>Total Coins Required</span>
@@ -3079,7 +3079,7 @@ function renderCart() {
         </div>
         <div class="checkout-delivery-info">
           <span>🚚 Delivery in 3-4 Business Days</span>
-          <span>✅ Free Delivery on Orders Above 499 G&T Coins</span>
+          <span>✅ Free Delivery on Orders Above ${formatCoins(499)}</span>
         </div>
         <div class="checkout-price-total">
           <span>Total Coins Required</span>
@@ -3198,7 +3198,7 @@ function wireEvents() {
     if (category) location.hash = `category/${category.dataset.category}`;
 
     const product = event.target.closest("[data-product]");
-    if (product) location.hash = `product/${product.dataset.product}`;
+    if (product?.dataset.product) location.hash = `product/${product.dataset.product}`;
 
     const add = event.target.closest("[data-add]");
     if (add) {

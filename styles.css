@@ -304,6 +304,13 @@ button:disabled {
   vertical-align: -5px;
 }
 
+.coin-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 .app-toast {
   position: fixed;
   left: 50%;
@@ -2175,6 +2182,21 @@ textarea {
 
 .order-expanded-items {
   padding-top: 2px;
+}
+
+.order-item-link {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.order-item-link:hover strong,
+.order-item-link:active strong {
+  color: var(--green);
 }
 
 .order-item-image {
