@@ -281,19 +281,15 @@ button:disabled {
 .coin-symbol {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 24px;
-  border: 1px solid #d6a33a;
-  border-radius: 999px;
-  background: #f4c84a;
-  color: #4a3510;
-  font-family: Arial, "Manrope", sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  text-shadow: none;
-  box-shadow: 0 1px 3px rgba(74, 53, 16, 0.16);
+  width: 24px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffe38a, #d58a18);
+  color: #6a4c0c;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45);
   vertical-align: -2px;
 }
 
@@ -538,7 +534,7 @@ main {
 }
 
 .status-card .coin-rate-highlight {
-  gap: 8px;
+  gap: 6px;
   width: fit-content;
   min-height: 36px;
   padding: 0 14px;
@@ -547,6 +543,13 @@ main {
   background: #fffdf2;
   color: var(--green-dark);
   box-shadow: 0 10px 22px rgba(13, 69, 52, 0.18);
+}
+
+.coin-rate-bracket {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: inherit;
 }
 
 .flow-card {
