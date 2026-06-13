@@ -1683,6 +1683,7 @@ const state = {
   query: "",
   rechargeAmount: null,
   orderFilter: "all",
+  expandedOrderId: null,
   adminCollapsed: {},
 };
 
@@ -2263,12 +2264,31 @@ function renderOrders() {
       </div>
       ${filteredList.length ? filteredList.map(order => {
         const details = order.deliveryDetails || {};
-        const orderItems = (order.products || order.productIds || []).map(item => {
-          const productId = typeof item === "string" ? item : item.id;
-          const product = products.find(next => next.id === productId) || item;
-          return product;
-        }).filter(Boolean);
-        const firstItem = { artA: "#d3f4e9", artB: "#3a6e63", ...(orderItems[0] || {}) };
+        const orderedProductIds = Array.isArray(order.productIds) ? order.productIds : [];
+        const sourceItems = Array.isArray(order.products) ? order.products : [];
+        const itemCounts = orderedProductIds.length
+          ? orderedProductIds.reduce((map, productId) => map.set(productId, (map.get(productId) || 0) + 1), new Map())
+          : sourceItems.reduce((map, item) => map.set(item.id, (map.get(item.id) || 0) + 1), new Map());
+        const groupedItems = [...itemCounts.entries()].map(([productId, qty]) => {
+          const product = sourceItems.find(item => item.id === productId)
+            || products.find(item => item.id === productId)
+            || { id: productId, title: "Product title", price: 0 };
+          const unitPrice = Number(product.price || 0);
+          return {
+            ...product,
+            artA: product.artA || "#d3f4e9",
+            artB: product.artB || "#3a6e63",
+            qty,
+            unitPrice,
+            lineTotal: unitPrice * qty,
+          };
+        });
+        const firstItem = groupedItems[0] || { artA: "#d3f4e9", artB: "#3a6e63", title: "Product title", qty: 1, unitPrice: order.totalCoins || 0, lineTotal: order.totalCoins || 0 };
+        const displayItems = groupedItems.length ? groupedItems : [firstItem];
+        const totalItemCount = groupedItems.reduce((sum, item) => sum + item.qty, 0) || orderedProductIds.length || 1;
+        const deliveryChargeAmount = Number(order.deliveryCharge || 0);
+        const deliveryChargeText = deliveryChargeAmount ? `Rs.${deliveryChargeAmount}` : "Free";
+        const isExpanded = state.expandedOrderId === order.id;
         const rawStatus = getOrderStatus(order);
         const statusText = rawStatus.replaceAll("-", " ");
         const placedDate = order.createdAt ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Recently";
@@ -2319,24 +2339,51 @@ function renderOrders() {
             <section class="order-detail-section">
               <h3>Delivery Details</h3>
               ${isCancelled(order) && order.cancellationReason ? `<p class="order-cancel-reason"><span>Cancellation Reason</span><strong>${escapeHtml(order.cancellationReason)}</strong></p>` : ""}
-              <p><span>Delivery Method</span><strong>Cash on Delivery</strong></p>
-              <p><span>Delivery Charge</span><strong>${Number(order.deliveryCharge || 0) ? `Rs.${order.deliveryCharge}` : "Free"}</strong></p>
+              ${deliveryChargeAmount ? `<p><span>Delivery Method</span><strong>Cash on Delivery</strong></p>` : ""}
+              <p><span>Delivery Charge</span><strong>${deliveryChargeText}</strong></p>
               <p><span>Deliver to</span><strong>${escapeHtml(details.name || "Customer")} • ${escapeHtml(details.city || order.deliveryCity || "City")}</strong></p>
             </section>
             <section class="order-detail-section">
-              <h3>Order Items (${orderItems.length || 1})</h3>
+              <h3>Order Items (${totalItemCount})</h3>
               <div class="order-item-row">
                 ${productVisual(firstItem, "order-item-image")}
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
-                  <span>Qty: ${(order.productIds || []).length || 1}</span>
+                  <span>Qty: ${firstItem.qty}</span>
+                  ${firstItem.qty > 1 ? `<span>Price: ${formatCoins(firstItem.unitPrice)} each • ${formatCoins(firstItem.lineTotal)} total</span>` : ""}
                 </div>
-                <strong>${formatCoins(order.totalCoins || firstItem.price || 0)}</strong>
+                <strong>${formatCoins(firstItem.lineTotal || firstItem.unitPrice || 0)}</strong>
               </div>
             </section>
+            ${isExpanded ? `
+              <section class="order-detail-section order-expanded-details">
+                <h3>Full Order Details</h3>
+                <div class="order-summary-grid">
+                  <p><span>Total items</span><strong>${totalItemCount}</strong></p>
+                  <p><span>Total coins used</span><strong>${formatCoins(order.totalCoins || 0)}</strong></p>
+                  <p><span>Delivery charge</span><strong>${deliveryChargeText}</strong></p>
+                  <p><span>Order status</span><strong>${escapeHtml(statusText)}</strong></p>
+                  <p><span>Order date/time</span><strong>${escapeHtml(placedDate)}</strong></p>
+                  <p><span>Delivery address</span><strong>${escapeHtml([details.name, details.address, details.city, details.pincode, details.landmark ? `Near ${details.landmark}` : ""].filter(Boolean).join(" • ") || "Address not available")}</strong></p>
+                </div>
+                <div class="order-expanded-items">
+                  ${displayItems.map(item => `
+                    <div class="order-item-row">
+                      ${productVisual(item, "order-item-image")}
+                      <div>
+                        <strong>${escapeHtml(item.title || "Product title")}</strong>
+                        <span>Qty: ${item.qty}</span>
+                        <span>Price: ${formatCoins(item.unitPrice)} each</span>
+                      </div>
+                      <strong>${formatCoins(item.lineTotal || item.unitPrice || 0)}</strong>
+                    </div>
+                  `).join("")}
+                </div>
+              </section>
+            ` : ""}
             <div class="order-detail-footer">
               <span>Need Help? <a href="#support">Contact Support</a></span>
-              <button class="secondary-button" type="button">View Order Details</button>
+              <button class="secondary-button" data-order-details="${order.id}" type="button">${isExpanded ? "Hide Order Details" : "View Order Details"}</button>
             </div>
           </article>
         `;
@@ -3128,6 +3175,13 @@ function wireEvents() {
     const orderFilter = event.target.closest("[data-order-filter]");
     if (orderFilter) {
       state.orderFilter = orderFilter.dataset.orderFilter || "all";
+      renderOrders();
+      return;
+    }
+
+    const orderDetails = event.target.closest("[data-order-details]");
+    if (orderDetails) {
+      state.expandedOrderId = state.expandedOrderId === orderDetails.dataset.orderDetails ? null : orderDetails.dataset.orderDetails;
       renderOrders();
       return;
     }

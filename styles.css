@@ -2141,6 +2141,20 @@ textarea {
   text-align: right;
 }
 
+.order-expanded-details {
+  gap: 12px;
+}
+
+.order-summary-grid,
+.order-expanded-items {
+  display: grid;
+  gap: 10px;
+}
+
+.order-expanded-items {
+  padding-top: 2px;
+}
+
 .order-item-image {
   position: relative;
   overflow: hidden;
