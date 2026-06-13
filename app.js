@@ -2063,7 +2063,10 @@ function renderProducts() {
 }
 
 function renderProductDetail() {
-  const product = products.find(item => item.id === state.productId) || products[0];
+  const orderProduct = orders
+    .flatMap(order => order.products || [])
+    .find(item => (item.productId || item.id) === state.productId);
+  const product = products.find(item => item.id === state.productId) || orderProduct || products[0];
   const hiddenChecks = new Set(["Original price listed", "Admin price editable"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
@@ -2354,7 +2357,7 @@ function renderOrders() {
             </section>
             <section class="order-detail-section">
               <h3>Order Items (${totalItemCount})</h3>
-              <button class="order-item-row order-item-link" data-product="${firstItem.productId || firstItem.id || ""}" type="button">
+              <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${firstItem.productId || firstItem.id || "item"}`)}" data-product="${firstItem.productId || firstItem.id || ""}" type="button">
                 ${productVisual(firstItem, "order-item-image")}
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
@@ -2377,7 +2380,7 @@ function renderOrders() {
                 </div>
                 <div class="order-expanded-items">
                   ${displayItems.map(item => `
-                    <button class="order-item-row order-item-link" data-product="${item.productId || item.id || ""}" type="button">
+                    <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${item.productId || item.id || "item"}`)}" data-product="${item.productId || item.id || ""}" type="button">
                       ${productVisual(item, "order-item-image")}
                       <div>
                         <strong>${escapeHtml(item.title || "Product title")}</strong>

@@ -2177,7 +2177,7 @@ textarea {
 .order-summary-grid,
 .order-expanded-items {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .order-expanded-items {
@@ -2192,6 +2192,19 @@ textarea {
   color: inherit;
   cursor: pointer;
   text-align: left;
+}
+
+.order-detail-section .order-item-row {
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  background: white;
+}
+
+.order-item-row > strong {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .order-item-link:hover strong,
