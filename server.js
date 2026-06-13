@@ -135,14 +135,24 @@ function publicUser(user) {
   return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
 }
 
-async function sendOtpEmail(email, otp) {
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
+
+async function sendBrevoEmail({ to, subject, htmlContent, textContent }) {
   if (!brevoApiKey) throw new Error("Brevo API key is not configured");
   const payload = JSON.stringify({
     sender: { name: otpFromName, email: otpFromEmail },
-    to: [{ email }],
-    subject: "Your GIVE & TAKE login OTP",
-    htmlContent: `<p>Your GIVE & TAKE login OTP is <strong>${otp}</strong>.</p><p>This OTP expires in 5 minutes.</p>`,
-    textContent: `Your GIVE & TAKE login OTP is ${otp}. This OTP expires in 5 minutes.`
+    to: [{ email: to }],
+    subject,
+    htmlContent,
+    textContent
   });
   await new Promise((resolve, reject) => {
     const request = https.request({
@@ -165,6 +175,68 @@ async function sendOtpEmail(email, otp) {
     request.on("error", reject);
     request.write(payload);
     request.end();
+  });
+}
+
+async function sendOtpEmail(email, otp) {
+  await sendBrevoEmail({
+    to: email,
+    subject: "Your GIVE & TAKE login OTP",
+    htmlContent: `<p>Your GIVE & TAKE login OTP is <strong>${otp}</strong>.</p><p>This OTP expires in 5 minutes.</p>`,
+    textContent: `Your GIVE & TAKE login OTP is ${otp}. This OTP expires in 5 minutes.`
+  });
+}
+
+async function sendOrderConfirmationEmail(email, order) {
+  if (!email) throw new Error("Customer email is not available");
+  const counts = order.productIds.reduce((map, productId) => map.set(productId, (map.get(productId) || 0) + 1), new Map());
+  const productRows = [...counts.entries()].map(([productId, qty]) => {
+    const product = order.products.find(item => item.id === productId) || { title: "Product", price: 0 };
+    const lineTotal = Number(product.price || 0) * qty;
+    return { product, qty, lineTotal };
+  });
+  const address = [
+    order.deliveryDetails.name,
+    order.deliveryDetails.address,
+    order.deliveryDetails.city,
+    order.deliveryDetails.pincode,
+    order.deliveryDetails.landmark ? `Near ${order.deliveryDetails.landmark}` : ""
+  ].filter(Boolean).join(" • ");
+  const status = String(order.status || "new-order").replaceAll("-", " ");
+  const orderDate = new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const rowsHtml = productRows.map(({ product, qty, lineTotal }) => `
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid #d8e4d8;">${escapeHtml(product.title)}</td>
+      <td style="padding:8px;border-bottom:1px solid #d8e4d8;text-align:center;">${qty}</td>
+      <td style="padding:8px;border-bottom:1px solid #d8e4d8;text-align:right;">${lineTotal} G&T coins</td>
+    </tr>
+  `).join("");
+  const textItems = productRows.map(({ product, qty, lineTotal }) => `- ${product.title} | Qty: ${qty} | ${lineTotal} G&T coins`).join("\n");
+  await sendBrevoEmail({
+    to: email,
+    subject: `GIVE & TAKE order confirmed: ${order.id}`,
+    htmlContent: `
+      <div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.5;">
+        <h2>Your order has been confirmed</h2>
+        <p>Order ID: <strong>${escapeHtml(order.id)}</strong></p>
+        <table style="border-collapse:collapse;width:100%;max-width:640px;">
+          <thead><tr><th align="left">Product</th><th>Qty</th><th align="right">Coins</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <p><strong>Total G&T coins used:</strong> ${order.totalCoins}</p>
+        <p><strong>Delivery address:</strong> ${escapeHtml(address)}</p>
+        <p><strong>Order status:</strong> ${escapeHtml(status)}</p>
+        <p><strong>Order date/time:</strong> ${escapeHtml(orderDate)}</p>
+      </div>
+    `,
+    textContent: `Your GIVE & TAKE order has been confirmed.
+Order ID: ${order.id}
+Products:
+${textItems}
+Total G&T coins used: ${order.totalCoins}
+Delivery address: ${address}
+Order status: ${status}
+Order date/time: ${orderDate}`
   });
 }
 
@@ -491,7 +563,16 @@ async function handleApi(req, res) {
     };
     db.orders.unshift(order);
     await writeDb(db);
-    return sendJson(res, 201, { order, wallet: db.wallets[userId] });
+    let confirmationEmailSent = false;
+    let confirmationEmailWarning = "";
+    try {
+      await sendOrderConfirmationEmail(order.userEmail, order);
+      confirmationEmailSent = true;
+    } catch (error) {
+      confirmationEmailWarning = "Order placed, but confirmation email could not be sent.";
+      console.warn(`${confirmationEmailWarning} ${error.message}`);
+    }
+    return sendJson(res, 201, { order, wallet: db.wallets[userId], confirmationEmailSent, confirmationEmailWarning });
   }
 
   if (method === "GET" && parts[1] === "orders") {

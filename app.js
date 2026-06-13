@@ -1684,6 +1684,7 @@ const state = {
   rechargeAmount: null,
   orderFilter: "all",
   expandedOrderId: null,
+  orderSuccessNotice: null,
   adminCollapsed: {},
 };
 
@@ -2256,6 +2257,13 @@ function renderOrders() {
   }
   els.ordersGrid.innerHTML = `
     <section class="orders-shell">
+      ${state.orderSuccessNotice ? `
+        <article class="order-success-card">
+          <strong>Order placed successfully! Your order has been confirmed. You can track it from My Orders.</strong>
+          ${state.orderSuccessNotice.warning ? `<span>${escapeHtml(state.orderSuccessNotice.warning)}</span>` : ""}
+          <a class="primary-button" href="#orders">View My Orders</a>
+        </article>
+      ` : ""}
       <div class="orders-tabs">
         <button class="${state.orderFilter === "all" ? "active" : ""}" data-order-filter="all" type="button">All Orders (${list.length})</button>
         <button class="${state.orderFilter === "active" ? "active" : ""}" data-order-filter="active" type="button">Active (${activeOrders})</button>
@@ -3948,6 +3956,10 @@ function wireEvents() {
         cacheWallet(wallet);
         orders.unshift(data.order);
         cacheOrders(orders);
+        state.orderSuccessNotice = {
+          orderId: data.order.id,
+          warning: data.confirmationEmailWarning || "",
+        };
         state.cart = [];
         state.cartQuantities = {};
         state.checkoutStep = "cart";
@@ -3956,7 +3968,6 @@ function wireEvents() {
         await refreshCurrentWallet();
         renderAll();
         location.hash = "orders";
-        alert(`Order confirmed: ${data.order.id}`);
       } catch (error) {
         alert(error.message);
       } finally {

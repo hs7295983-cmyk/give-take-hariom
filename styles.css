@@ -1977,6 +1977,28 @@ textarea {
   text-align: center;
 }
 
+.order-success-card {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 14px;
+  border: 1px solid rgba(23, 108, 79, 0.18);
+  border-radius: var(--radius-soft);
+  background: #eef9e7;
+  color: var(--green-dark);
+  box-shadow: var(--shadow-soft);
+}
+
+.order-success-card span {
+  color: #6a4c0c;
+  font-weight: 800;
+}
+
+.order-success-card .primary-button {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
 .order-detail-card {
   display: grid;
   gap: 16px;
