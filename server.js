@@ -192,9 +192,9 @@ async function sendOrderConfirmationEmail(email, order) {
   const counts = order.productIds.reduce((map, productId) => map.set(productId, (map.get(productId) || 0) + 1), new Map());
   const productRows = [...counts.entries()].map(([productId, qty]) => {
     const product = order.products.find(item => item.id === productId) || { title: "Product", price: 0 };
-    const lineTotal = Number(product.price || 0) * qty;
-    return { product, qty, lineTotal };
+    return { product, qty };
   });
+  const customerName = order.deliveryDetails.name || "Customer";
   const address = [
     order.deliveryDetails.name,
     order.deliveryDetails.address,
@@ -203,40 +203,48 @@ async function sendOrderConfirmationEmail(email, order) {
     order.deliveryDetails.landmark ? `Near ${order.deliveryDetails.landmark}` : ""
   ].filter(Boolean).join(" • ");
   const status = String(order.status || "new-order").replaceAll("-", " ");
-  const orderDate = new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-  const rowsHtml = productRows.map(({ product, qty, lineTotal }) => `
-    <tr>
-      <td style="padding:8px;border-bottom:1px solid #d8e4d8;">${escapeHtml(product.title)}</td>
-      <td style="padding:8px;border-bottom:1px solid #d8e4d8;text-align:center;">${qty}</td>
-      <td style="padding:8px;border-bottom:1px solid #d8e4d8;text-align:right;">${lineTotal} G&T coins</td>
-    </tr>
-  `).join("");
-  const textItems = productRows.map(({ product, qty, lineTotal }) => `- ${product.title} | Qty: ${qty} | ${lineTotal} G&T coins`).join("\n");
+  const itemsHtml = productRows.map(({ product }) => `<li>${escapeHtml(product.title)}</li>`).join("");
+  const quantityHtml = productRows.map(({ product, qty }) => `<li>${escapeHtml(product.title)}: ${qty}</li>`).join("");
+  const textItems = productRows.map(({ product }) => `- ${product.title}`).join("\n");
+  const textQuantities = productRows.map(({ product, qty }) => `- ${product.title}: ${qty}`).join("\n");
   await sendBrevoEmail({
     to: email,
-    subject: `GIVE & TAKE order confirmed: ${order.id}`,
+    subject: "Your GIVE & TAKE order is confirmed",
     htmlContent: `
       <div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.5;">
-        <h2>Your order has been confirmed</h2>
-        <p>Order ID: <strong>${escapeHtml(order.id)}</strong></p>
-        <table style="border-collapse:collapse;width:100%;max-width:640px;">
-          <thead><tr><th align="left">Product</th><th>Qty</th><th align="right">Coins</th></tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-        <p><strong>Total G&T coins used:</strong> ${order.totalCoins}</p>
-        <p><strong>Delivery address:</strong> ${escapeHtml(address)}</p>
-        <p><strong>Order status:</strong> ${escapeHtml(status)}</p>
-        <p><strong>Order date/time:</strong> ${escapeHtml(orderDate)}</p>
+        <p>Hi ${escapeHtml(customerName)},</p>
+        <p>Your order has been successfully placed.</p>
+        <p><strong>Order Details:</strong></p>
+        <p><strong>Order ID:</strong> ${escapeHtml(order.id)}</p>
+        <p><strong>Items:</strong></p>
+        <ul>${itemsHtml}</ul>
+        <p><strong>Quantity:</strong></p>
+        <ul>${quantityHtml}</ul>
+        <p><strong>Total G&T Coins:</strong> ${order.totalCoins}</p>
+        <p><strong>Delivery Address:</strong> ${escapeHtml(address)}</p>
+        <p><strong>Order Status:</strong> ${escapeHtml(status)}</p>
+        <p>You can view your order anytime from My Orders.</p>
+        <p>Thank you,<br/>GIVE & TAKE</p>
       </div>
     `,
-    textContent: `Your GIVE & TAKE order has been confirmed.
+    textContent: `Hi ${customerName},
+
+Your order has been successfully placed.
+
+Order Details:
 Order ID: ${order.id}
-Products:
+Items:
 ${textItems}
-Total G&T coins used: ${order.totalCoins}
-Delivery address: ${address}
-Order status: ${status}
-Order date/time: ${orderDate}`
+Quantity:
+${textQuantities}
+Total G&T Coins: ${order.totalCoins}
+Delivery Address: ${address}
+Order Status: ${status}
+
+You can view your order anytime from My Orders.
+
+Thank you,
+GIVE & TAKE`
   });
 }
 
