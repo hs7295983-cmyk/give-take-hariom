@@ -534,10 +534,21 @@ main {
 }
 
 .status-card .coin-rate-highlight {
-  border: 1px solid rgba(255, 206, 84, 0.75);
-  background: #ffcf4a;
-  color: #2e2508;
-  box-shadow: 0 10px 22px rgba(255, 207, 74, 0.26);
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 211, 92, 0.45);
+  border-radius: 8px;
+  background: #0f2440;
+  color: white;
+  box-shadow: 0 10px 22px rgba(15, 36, 64, 0.24);
+}
+
+.status-card .coin-rate-highlight .coin-symbol {
+  flex: 0 0 auto;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.45),
+    0 3px 9px rgba(255, 198, 64, 0.24);
 }
 
 .flow-card {
