@@ -1593,6 +1593,7 @@ let orders = loadCachedOrders();
 let sellRequests = [];
 let adminDashboard = null;
 let partnerTasks = [];
+let partnerTasksLoaded = false;
 let pendingLoginEmail = "";
 let pendingLoginName = "";
 let platformConfig = {
@@ -1689,6 +1690,7 @@ const state = {
   adminCollapsed: {},
   adminOrderView: "active",
   adminSearch: "",
+  adminShowProducts: false,
 };
 
 const els = {
@@ -1858,12 +1860,14 @@ function setSubmitState(form, isSubmitting, label = "Submitting...") {
 }
 
 async function loadProtectedData() {
-  const [adminData, taskData] = await Promise.all([
-    api("/api/admin/dashboard", { admin: true }),
-    api("/api/partner/tasks", { admin: true }),
-  ]);
-  adminDashboard = adminData;
+  adminDashboard = await api("/api/admin/dashboard", { admin: true });
+}
+
+async function loadPartnerTasks() {
+  if (!adminToken) return;
+  const taskData = await api("/api/partner/tasks", { admin: true });
   partnerTasks = taskData.tasks;
+  partnerTasksLoaded = true;
 }
 
 async function refreshAdminProducts() {
@@ -2865,30 +2869,37 @@ function renderAdmin() {
       </form>
     </article>
     <article class="wide-card">
-      <strong>Products Manager</strong>
-      <span>Manage product name, price, condition, listing status, and deletion.</span>
-      <div class="admin-product-manager">
-        ${adminProducts.map(product => `
-          <div class="admin-product-row">
-            ${productVisual(product, "admin-product-thumb")}
-            <div>
-              <strong>${escapeHtml(product.title || "Untitled product")}</strong>
-              <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
-              <span>${formatCoins(product.price || 0)}</span>
-            </div>
-            <div class="admin-product-actions">
-              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="title" type="button">Edit Name</button>
-              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="price" type="button">Edit Price</button>
-              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="imageUrl" type="button">Edit Image</button>
-              <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="condition" type="button">Edit Condition</button>
-              <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${product.id}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
-                ${product.status === "listed" ? "Unlist Product" : "List Product"}
-              </button>
-              <button class="danger-button" data-delete-product="${product.id}" type="button">Delete Product</button>
-            </div>
-          </div>
-        `).join("") || `<p>No products available yet.</p>`}
+      <div class="admin-section-head">
+        <div>
+          <strong>Products Manager <span class="admin-count-badge ${adminProducts.length > 0 ? "has-items" : ""}">${adminProducts.length}</span></strong>
+          <span>Open only when you need to edit, list, unlist, or delete products.</span>
+        </div>
+        <button class="secondary-button" data-admin-products-toggle type="button">${state.adminShowProducts ? "Hide Products" : "Show Products"}</button>
       </div>
+      ${state.adminShowProducts ? `
+        <div class="admin-product-manager">
+          ${adminProducts.map(product => `
+            <div class="admin-product-row">
+              ${productVisual(product, "admin-product-thumb")}
+              <div>
+                <strong>${escapeHtml(product.title || "Untitled product")}</strong>
+                <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
+                <span>${formatCoins(product.price || 0)}</span>
+              </div>
+              <div class="admin-product-actions">
+                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="title" type="button">Edit Name</button>
+                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="price" type="button">Edit Price</button>
+                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="imageUrl" type="button">Edit Image</button>
+                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="condition" type="button">Edit Condition</button>
+                <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${product.id}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
+                  ${product.status === "listed" ? "Unlist Product" : "List Product"}
+                </button>
+                <button class="danger-button" data-delete-product="${product.id}" type="button">Delete Product</button>
+              </div>
+            </div>
+          `).join("") || `<p>No products available yet.</p>`}
+        </div>
+      ` : ""}
     </article>
   `;
 }
@@ -3223,6 +3234,13 @@ function navigate(rawHash, shouldScroll = true) {
   renderAccount();
   renderAdmin();
   renderPartnerTasks();
+  if (state.route === "partner" && adminToken && !partnerTasksLoaded) {
+    loadPartnerTasks()
+      .then(renderPartnerTasks)
+      .catch(error => {
+        console.warn(`Could not load partner tasks: ${error.message}`);
+      });
+  }
   renderAuthStatus();
   if (shouldScroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -3425,6 +3443,13 @@ function wireEvents() {
     const adminOrderView = event.target.closest("[data-admin-order-view]");
     if (adminOrderView) {
       state.adminOrderView = adminOrderView.dataset.adminOrderView;
+      renderAdmin();
+      return;
+    }
+
+    const adminProductsToggle = event.target.closest("[data-admin-products-toggle]");
+    if (adminProductsToggle) {
+      state.adminShowProducts = !state.adminShowProducts;
       renderAdmin();
       return;
     }

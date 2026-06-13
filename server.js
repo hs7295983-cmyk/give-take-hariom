@@ -695,6 +695,18 @@ async function handleApi(req, res) {
       rechargeRequests: (db.rechargeRequests || []).filter(item => item.adminArchived),
       joinApplications: (db.joinApplications || []).filter(item => item.adminArchived)
     };
+    const adminProducts = (db.products || []).map(product => ({
+      id: product.id,
+      title: product.title,
+      category: product.category,
+      condition: product.condition,
+      status: product.status,
+      price: product.price,
+      imageUrl: product.imageUrl || "",
+      images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
+      artA: product.artA,
+      artB: product.artB
+    }));
     return sendJson(res, 200, {
       counts: {
         users: db.users.length,
@@ -709,7 +721,7 @@ async function handleApi(req, res) {
       },
       maintenance: db.maintenance,
       integrations: db.integrations,
-      products: db.products || [],
+      products: adminProducts,
       orders: visibleOrders,
       sellRequests: visibleSellRequests,
       rechargeRequests: visibleRechargeRequests,
