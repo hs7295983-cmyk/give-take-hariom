@@ -2596,7 +2596,7 @@ function renderAdmin() {
   const counts = adminDashboard.counts;
   const upi = adminDashboard.integrations.payments.upi || {};
   const adminSellRequests = adminDashboard.sellRequests || [];
-  const pendingRecharges = (adminDashboard.rechargeRequests || []).filter(item => item.status === "pending-admin-verification");
+  const adminRecharges = adminDashboard.rechargeRequests || [];
   const joinApplications = adminDashboard.joinApplications || [];
   const adminOrders = adminDashboard.orders || [];
   const maintenance = adminDashboard.maintenance || {};
@@ -2657,26 +2657,31 @@ function renderAdmin() {
                 <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
                 <button class="primary-button" data-sell-request-action="${item.id}" data-action="accept" data-expected="${item.expectedCoins || 0}" type="button">Accept + Credit Coins</button>
                 <button class="danger-button" data-sell-request-action="${item.id}" data-action="reject" type="button">Reject</button>
-                <button class="secondary-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Archive</button>
+                <button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Archive</button></div>`}
+            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Cut</button></div>`}
           </div>
         `).join("")}
       </div>
     </article>
     <article class="wide-card">
-      ${adminSectionHeader("recharges", "Pending UPI Recharges", pendingRecharges.length, "Verify payment in your UPI account before approving.")}
+      ${adminSectionHeader("recharges", "UPI Recharge Requests", adminRecharges.length, "Verify payment in your UPI account before approving.")}
       <div class="admin-list ${state.adminCollapsed.recharges ? "is-collapsed" : ""}">
-        ${pendingRecharges.map(item => `
+        ${adminRecharges.map(item => {
+          const isPending = item.status === "pending-admin-verification";
+          return `
           <div class="admin-row">
-            <span>${item.id} • ${formatCoins(item.amount || 0)} • ${escapeHtml(item.userEmail || item.userId || "User")} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
+            <span>${item.id} • ${formatCoins(item.amount || 0)} • ${escapeHtml(item.userEmail || item.userId || "User")} • ${escapeHtml(String(item.status || "request").replaceAll("-", " "))} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
             <div class="admin-actions">
-              <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
-              <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
-              <button class="secondary-button" data-admin-archive="rechargeRequests" data-archive-id="${item.id}" type="button">Archive</button>
+              ${isPending ? `
+                <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
+                <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
+              ` : ""}
+              <button class="secondary-button admin-cut-button" data-admin-archive="rechargeRequests" data-archive-id="${item.id}" type="button">Cut</button>
             </div>
           </div>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     </article>
     <article class="wide-card">
@@ -2729,7 +2734,7 @@ function renderAdmin() {
                 ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
                 ${statusButton("delivered", "Delivered", "primary-button", 4)}
                 <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
-                <button class="secondary-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">Archive</button>
+                <button class="secondary-button admin-cut-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">Cut</button>
               </div>
             </div>
           `;
@@ -2748,24 +2753,24 @@ function renderAdmin() {
               <div class="admin-actions">
                 <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
                 <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
-                <button class="secondary-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Archive</button>
+                <button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Archive</button></div>`}
+            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Cut</button></div>`}
           </div>
         `).join("")}
       </div>
     </article>
     <article class="wide-card">
-      ${adminSectionHeader("archivedItems", "Archived Items", archivedItems.length, "Archived admin records are hidden from the main dashboard.")}
+      ${adminSectionHeader("archivedItems", "Cut Items", archivedItems.length, "Cut admin records are hidden from the main dashboard.")}
       <div class="admin-list ${state.adminCollapsed.archivedItems ? "is-collapsed" : ""}">
         ${archivedItems.map(item => `
           <div class="admin-row">
             <span><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.title || item.id)} • ${escapeHtml(item.meta || "")}</span>
             <div class="admin-actions">
-              <button class="secondary-button" data-admin-unarchive="${item.type}" data-archive-id="${item.id}" type="button">Unarchive</button>
+              <button class="secondary-button" data-admin-unarchive="${item.type}" data-archive-id="${item.id}" type="button">Restore</button>
             </div>
           </div>
-        `).join("") || `<p>No archived items yet.</p>`}
+        `).join("") || `<p>No cut items yet.</p>`}
       </div>
     </article>
     <article class="wide-card">
@@ -3359,7 +3364,7 @@ function wireEvents() {
 
     const adminArchive = event.target.closest("[data-admin-archive]");
     if (adminArchive) {
-      if (!confirm("Archive this item from admin portal? It will be hidden from this admin list.")) return;
+      if (!confirm("Cut this item from the admin list? It will be hidden from this admin section.")) return;
       try {
         adminArchive.disabled = true;
         await api("/api/admin/archive", {
@@ -3373,7 +3378,7 @@ function wireEvents() {
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
         renderAdmin();
-        alert("Archived.");
+        alert("Cut from admin list.");
       } catch (error) {
         adminArchive.disabled = false;
         alert(error.message);
@@ -3397,7 +3402,7 @@ function wireEvents() {
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
         renderAdmin();
-        alert("Unarchived.");
+        alert("Restored.");
       } catch (error) {
         adminUnarchive.disabled = false;
         alert(error.message);

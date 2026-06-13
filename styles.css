@@ -2997,6 +2997,16 @@ textarea {
   background: #ffe4df;
 }
 
+.admin-cut-button {
+  border-color: #f0b7ad;
+  background: #fffaf9;
+  color: var(--red);
+}
+
+.admin-cut-button:hover {
+  background: #fff3f1;
+}
+
 .admin-list {
   display: grid;
   gap: 8px;
