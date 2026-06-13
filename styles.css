@@ -1060,6 +1060,17 @@ textarea {
   font-weight: 900;
 }
 
+.coin-rate-highlight {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ffe066;
+  color: #3c2b00;
+  font-weight: 900;
+}
+
 .badge-icon {
   display: inline-grid;
   place-items: center;

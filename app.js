@@ -1833,7 +1833,7 @@ async function refreshAdminProducts() {
 }
 
 function formatCoins(value) {
-  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
+  return `GNT ${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
 }
 
 function coinMarkup() {
@@ -2023,13 +2023,14 @@ function renderProductDetail() {
   const product = products.find(item => item.id === state.productId) || products[0];
   const hiddenChecks = new Set(["Original price listed", "Admin price editable"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
+  const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
   els.productDetail.innerHTML = `
     ${productVisual(product, "detail-image")}
     <article class="detail-panel">
       <div class="badges">
         <span class="badge">${product.source}</span>
         <span class="badge">${product.condition}</span>
-        ${product.badges.map(badge => `<span class="badge">${badge}</span>`).join("")}
+        ${allowedDetailBadges.map(badge => `<span class="badge">${badge}</span>`).join("")}
       </div>
       <h1>${product.title}</h1>
       <div class="coin-price">${formatCoins(product.price)}</div>
@@ -2919,7 +2920,7 @@ function renderCart() {
           <span class="cart-title-icon" aria-hidden="true">🛒</span>
           <h1 class="cart-title">My Cart</h1>
         </div>
-        <span class="cart-summary">${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${new Intl.NumberFormat("en-IN").format(total)} G&T Coins</span>
+        <span class="cart-summary">${itemCount} ${itemCount === 1 ? "Item" : "Items"} • ${formatCoins(total)}</span>
       </div>
       <div class="cart-items">
         ${items.map(product => {
@@ -2974,7 +2975,7 @@ function renderCart() {
         </div>
         <div class="checkout-price-total">
           <span>Total Coins Required</span>
-          <strong class="cart-required-coins">${new Intl.NumberFormat("en-IN").format(total)} <span class="coin-symbol" aria-label="G&T coins"></span></strong>
+          <strong class="cart-required-coins">${formatCoins(total)}</strong>
         </div>
         <button class="primary-button" data-checkout-step="delivery" type="button">Place Order</button>
       </section>
