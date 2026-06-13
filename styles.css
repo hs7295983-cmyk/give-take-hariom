@@ -1321,6 +1321,21 @@ textarea {
   flex: 0 0 auto;
 }
 
+.address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.address-actions .secondary-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .address-book-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1337,6 +1352,13 @@ textarea {
 
 .address-book-form button {
   width: fit-content;
+}
+
+.address-book-form input:disabled,
+.address-book-form select:disabled {
+  background: #f8fbf8;
+  color: var(--ink);
+  opacity: 1;
 }
 
 .account-logout-row {

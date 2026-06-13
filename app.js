@@ -1685,6 +1685,7 @@ const state = {
   orderFilter: "all",
   expandedOrderId: null,
   orderSuccessNotice: null,
+  addressBookEditing: false,
   adminCollapsed: {},
 };
 
@@ -2362,7 +2363,7 @@ function renderOrders() {
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
                   <span>Qty: ${firstItem.qty}</span>
-                  ${firstItem.qty > 1 ? `<span>Price: ${formatCoins(firstItem.unitPrice)} each • ${formatCoins(firstItem.lineTotal)} total</span>` : ""}
+                  ${firstItem.qty > 1 ? `<span>Price: ${formatCoins(firstItem.unitPrice)} • ${formatCoins(firstItem.lineTotal)} total</span>` : ""}
                 </div>
                 <strong>${formatCoins(firstItem.lineTotal || firstItem.unitPrice || 0)}</strong>
               </button>
@@ -2385,7 +2386,7 @@ function renderOrders() {
                       <div>
                         <strong>${escapeHtml(item.title || "Product title")}</strong>
                         <span>Qty: ${item.qty}</span>
-                        <span>Price: ${formatCoins(item.unitPrice)} each</span>
+                        <span>Price: ${formatCoins(item.unitPrice)}</span>
                       </div>
                       <strong>${formatCoins(item.lineTotal || item.unitPrice || 0)}</strong>
                     </button>
@@ -2479,6 +2480,7 @@ function renderAccount() {
     `;
   };
   const hasDefaultAddress = Boolean(address.name && address.phone && address.houseArea && address.city && address.pincode);
+  const addressLocked = hasDefaultAddress && !state.addressBookEditing;
   const addressSummary = [
     address.houseArea,
     address.city,
@@ -2494,7 +2496,12 @@ function renderAccount() {
           <p>${escapeHtml(addressSummary || "Save your default pickup and delivery address.")}</p>
         </div>
       </div>
-      ${hasDefaultAddress ? `<span class="verified-badge address-default-badge">Default Address</span>` : ""}
+      ${hasDefaultAddress ? `
+        <div class="address-actions">
+          <span class="verified-badge address-default-badge">Default Address</span>
+          <button class="secondary-button" data-edit-address type="button">${addressLocked ? "Edit Address" : "Cancel Edit"}</button>
+        </div>
+      ` : ""}
     </div>
     `;
   
@@ -2549,17 +2556,17 @@ function renderAccount() {
     <article class="wide-card account-panel">
       ${addressHeader}
       <form class="address-book-form" id="addressBookForm">
-        <label>Name <input name="name" value="${escapeHtml(address.name || currentUser.name || "")}" placeholder="Full name" required /></label>
-        <label>Phone <input name="phone" value="${escapeHtml(address.phone || "")}" inputmode="tel" placeholder="Mobile number" required /></label>
-        <label>House / Area <input name="houseArea" value="${escapeHtml(address.houseArea || "")}" placeholder="House no, street, area" required /></label>
+        <label>Name <input name="name" value="${escapeHtml(address.name || currentUser.name || "")}" placeholder="Full name" required ${addressLocked ? "disabled" : ""} /></label>
+        <label>Phone <input name="phone" value="${escapeHtml(address.phone || "")}" inputmode="tel" placeholder="Mobile number" required ${addressLocked ? "disabled" : ""} /></label>
+        <label>House / Area <input name="houseArea" value="${escapeHtml(address.houseArea || "")}" placeholder="House no, street, area" required ${addressLocked ? "disabled" : ""} /></label>
         <label>City
-          <select name="city" required>
+          <select name="city" required ${addressLocked ? "disabled" : ""}>
             ${["Lucknow", "Ayodhya", "Gonda"].map(city => `<option ${address.city === city ? "selected" : ""}>${city}</option>`).join("")}
           </select>
         </label>
-        <label>Pincode <input name="pincode" value="${escapeHtml(address.pincode || "")}" inputmode="numeric" placeholder="Pincode" required /></label>
-        <label>Landmark <input name="landmark" value="${escapeHtml(address.landmark || "")}" placeholder="Nearby landmark" /></label>
-        <button class="primary-button" type="submit">Save Address</button>
+        <label>Pincode <input name="pincode" value="${escapeHtml(address.pincode || "")}" inputmode="numeric" placeholder="Pincode" required ${addressLocked ? "disabled" : ""} /></label>
+        <label>Landmark <input name="landmark" value="${escapeHtml(address.landmark || "")}" placeholder="Nearby landmark" ${addressLocked ? "disabled" : ""} /></label>
+        ${addressLocked ? "" : `<button class="primary-button" type="submit">${hasDefaultAddress ? "Update Address" : "Save Address"}</button>`}
       </form>
     </article>
     <div class="account-logout-row">
@@ -3195,6 +3202,13 @@ function wireEvents() {
     if (orderDetails) {
       state.expandedOrderId = state.expandedOrderId === orderDetails.dataset.orderDetails ? null : orderDetails.dataset.orderDetails;
       renderOrders();
+      return;
+    }
+
+    const editAddress = event.target.closest("[data-edit-address]");
+    if (editAddress) {
+      state.addressBookEditing = !state.addressBookEditing;
+      renderAccount();
       return;
     }
 
@@ -3918,6 +3932,7 @@ function wireEvents() {
         });
         currentUser = data.user || currentUser;
         if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
+        state.addressBookEditing = false;
         renderAccount();
         alert("Address saved.");
       } catch (error) {
