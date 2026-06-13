@@ -2908,6 +2908,53 @@ textarea {
   grid-column: span 3;
 }
 
+.admin-today-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-today-summary > div {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.admin-today-summary > div > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-today-summary strong {
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.admin-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f8fbf8;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: 1px;
+}
+
+.admin-count-badge.has-items {
+  border-color: rgba(23, 108, 79, 0.24);
+  background: #eef9e7;
+  color: var(--green);
+}
+
 .admin-section-head {
   display: flex;
   align-items: center;
@@ -3046,6 +3093,46 @@ textarea {
   opacity: 1;
 }
 
+.admin-order-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-order-tools input {
+  min-height: 42px;
+}
+
+.admin-order-toggle {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.admin-order-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.admin-order-toggle button.active {
+  border-color: rgba(23, 108, 79, 0.2);
+  background: #eef9e7;
+  color: var(--green);
+}
+
 .admin-order-images {
   display: flex;
   flex-wrap: wrap;
@@ -3153,6 +3240,10 @@ textarea {
   .policy-grid,
   .admin-grid,
   .orders-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-today-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3285,6 +3376,16 @@ textarea {
   .orders-grid,
   .toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .admin-today-summary,
+  .admin-order-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .empty-cart {

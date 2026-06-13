@@ -1687,6 +1687,8 @@ const state = {
   orderSuccessNotice: null,
   addressBookEditing: false,
   adminCollapsed: {},
+  adminOrderView: "active",
+  adminSearch: "",
 };
 
 const els = {
@@ -2598,33 +2600,127 @@ function renderAdmin() {
   const adminSellRequests = adminDashboard.sellRequests || [];
   const adminRecharges = adminDashboard.rechargeRequests || [];
   const joinApplications = adminDashboard.joinApplications || [];
-  const adminOrders = adminDashboard.orders || [];
+  const activeAdminOrders = adminDashboard.orders || [];
   const maintenance = adminDashboard.maintenance || {};
   const adminProducts = adminDashboard.products || [];
   const archived = adminDashboard.archived || {};
+  const archivedOrderRecords = archived.orders || [];
+  const adminOrderSource = state.adminOrderView === "archived" ? archivedOrderRecords : activeAdminOrders;
+  const pendingRechargeCount = adminRecharges.filter(item => item.status === "pending-admin-verification").length;
+  const pendingSellCount = adminSellRequests.filter(item => ["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted")).length;
+  const todayKey = new Date().toDateString();
+  const todayOrders = [...activeAdminOrders, ...archivedOrderRecords].filter(order => order.createdAt && new Date(order.createdAt).toDateString() === todayKey);
+  const todayRevenue = todayOrders.reduce((sum, order) => sum + Number(order.totalCoins || 0), 0);
   const archivedItems = [
-    ...(archived.orders || []).map(item => ({ type: "orders", label: "Order", id: item.id, title: item.id, meta: String(item.status || "order").replaceAll("-", " ") })),
     ...(archived.sellRequests || []).map(item => ({ type: "sellRequests", label: "Sell Request", id: item.id, title: item.title || item.id, meta: String(item.status || "request").replaceAll("-", " ") })),
     ...(archived.rechargeRequests || []).map(item => ({ type: "rechargeRequests", label: "Recharge", id: item.id, title: item.id, meta: `${item.amount || 0} coins • ${item.status || "request"}` })),
     ...(archived.joinApplications || []).map(item => ({ type: "joinApplications", label: "Join", id: item.id, title: item.name || item.role || item.id, meta: String(item.status || "application").replaceAll("-", " ") })),
   ];
   const adminSectionHeader = (key, title, count, openText) => {
     const collapsed = Boolean(state.adminCollapsed[key]);
+    const badgeClass = count > 0 ? "admin-count-badge has-items" : "admin-count-badge";
     return `
       <div class="admin-section-head">
         <div>
-          <strong>${title}</strong>
+          <strong>${title} <span class="${badgeClass}">${count}</span></strong>
           <span>${count ? openText : `No ${title.toLowerCase()} yet.`}</span>
         </div>
         <button class="secondary-button" data-admin-collapse="${key}" type="button">${collapsed ? "Show" : "Hide"}</button>
       </div>
     `;
   };
+  const matchesAdminOrderSearch = order => {
+    const query = state.adminSearch.trim().toLowerCase();
+    if (!query) return true;
+    const details = order.deliveryDetails || {};
+    return [order.id, details.name, details.phone]
+      .filter(Boolean)
+      .some(value => String(value).toLowerCase().includes(query));
+  };
+  const filteredAdminOrders = adminOrderSource.filter(matchesAdminOrderSearch);
+  const renderAdminOrder = order => {
+    const details = order.deliveryDetails || {};
+    const orderProducts = (order.products || order.productIds || []).map(item => {
+      const productId = typeof item === "string" ? item : item.id;
+      const product = products.find(next => next.id === productId) || {};
+      return typeof item === "string" ? { id: item, ...product } : { ...product, ...item };
+    });
+    const orderProductImages = orderProducts.map(item => {
+      const images = Array.isArray(item.images) ? item.images : [];
+      return item.imageUrl || images[0] || "";
+    }).filter(Boolean);
+    const rawStatus = String(order.status || "new-order").toLowerCase();
+    const placedDate = order.createdAt
+      ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+      : "Date not available";
+    const statusRank = {
+      "new-order": 0,
+      confirmed: 1,
+      packed: 2,
+      "out-for-delivery": 3,
+      delivered: 4,
+      cancelled: 5,
+    }[rawStatus] ?? 0;
+    const finalStatus = ["delivered", "cancelled"].includes(rawStatus);
+    const statusButton = (nextStatus, label, className, rank) => {
+      const completed = statusRank >= rank;
+      const disabled = completed || finalStatus || state.adminOrderView === "archived";
+      const buttonText = completed && nextStatus !== "cancelled" ? `${label} ✓` : label;
+      return `<button class="${className} ${completed ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="${nextStatus}" type="button" ${disabled ? "disabled" : ""}>${buttonText}</button>`;
+    };
+    return `
+      <div class="admin-row stacked">
+        <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} pay on delivery`}</span>
+        <span>Placed on: ${escapeHtml(placedDate)}</span>
+        <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
+        <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
+        ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
+        <span>${orderProducts.map(item => escapeHtml(item.title || item.id || "Product")).join(", ")}</span>
+        <div class="admin-order-images">
+          ${orderProductImages.map((image, index) => `
+            <a href="${escapeHtml(image)}" target="_blank" rel="noopener" title="Open product image ${index + 1}">
+              <img src="${escapeHtml(image)}" alt="Ordered product image ${index + 1}" loading="lazy" />
+            </a>
+          `).join("") || `<span>No product image available</span>`}
+        </div>
+        <div class="admin-actions">
+          ${state.adminOrderView === "active" ? `
+            ${statusButton("confirmed", "Confirm", "secondary-button", 1)}
+            ${statusButton("packed", "Packed", "secondary-button", 2)}
+            ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
+            ${statusButton("delivered", "Delivered", "primary-button", 4)}
+            <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
+            <button class="secondary-button admin-cut-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">${rawStatus === "delivered" ? "Archive" : "Cut"}</button>
+          ` : `
+            <button class="secondary-button" data-admin-unarchive="orders" data-archive-id="${order.id}" type="button">Restore</button>
+          `}
+        </div>
+      </div>
+    `;
+  };
   els.adminGrid.innerHTML = `
-    <article><strong>Product Review</strong><span>${counts.sellRequests} sell requests in system</span></article>
-    <article><strong>Inventory</strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
-    <article><strong>Orders</strong><span>${counts.orders} order records</span></article>
-    <article><strong>Join Us</strong><span>${counts.joinApplications || joinApplications.length || 0} applications in system</span></article>
+    <article class="wide-card admin-today-summary">
+      <div>
+        <span>Orders Today</span>
+        <strong>${todayOrders.length}</strong>
+      </div>
+      <div>
+        <span>Revenue Today</span>
+        <strong>${formatCoins(todayRevenue)}</strong>
+      </div>
+      <div>
+        <span>Pending Recharge Requests</span>
+        <strong>${pendingRechargeCount}</strong>
+      </div>
+      <div>
+        <span>Pending Sell Requests</span>
+        <strong>${pendingSellCount}</strong>
+      </div>
+    </article>
+    <article><strong>Product Review <span class="admin-count-badge ${counts.sellRequests > 0 ? "has-items" : ""}">${counts.sellRequests}</span></strong><span>${counts.sellRequests} sell requests in system</span></article>
+    <article><strong>Inventory <span class="admin-count-badge ${counts.listedProducts > 0 ? "has-items" : ""}">${counts.listedProducts}</span></strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
+    <article><strong>Orders <span class="admin-count-badge ${activeAdminOrders.length > 0 ? "has-items" : ""}">${activeAdminOrders.length}</span></strong><span>${activeAdminOrders.length} active order records</span></article>
+    <article><strong>Join Us <span class="admin-count-badge ${(counts.joinApplications || joinApplications.length || 0) > 0 ? "has-items" : ""}">${counts.joinApplications || joinApplications.length || 0}</span></strong><span>${counts.joinApplications || joinApplications.length || 0} applications in system</span></article>
     <article><strong>Returns</strong><span>${counts.returns} return requests</span></article>
     <article>
       <strong>Maintenance Mode</strong>
@@ -2685,64 +2781,16 @@ function renderAdmin() {
       </div>
     </article>
     <article class="wide-card">
-      ${adminSectionHeader("orders", "New Orders", adminOrders.length, "Customer and delivery details for placed orders.")}
+      ${adminSectionHeader("orders", "Orders", filteredAdminOrders.length, "Customer and delivery details for placed orders.")}
       <div class="admin-list ${state.adminCollapsed.orders ? "is-collapsed" : ""}">
-        ${adminOrders.map(order => {
-          const details = order.deliveryDetails || {};
-          const orderProducts = (order.products || order.productIds || []).map(item => {
-            const productId = typeof item === "string" ? item : item.id;
-            const product = products.find(next => next.id === productId) || {};
-            return typeof item === "string" ? { id: item, ...product } : { ...product, ...item };
-          });
-          const orderProductImages = orderProducts.map(item => {
-            const images = Array.isArray(item.images) ? item.images : [];
-            return item.imageUrl || images[0] || "";
-          }).filter(Boolean);
-          const rawStatus = String(order.status || "new-order").toLowerCase();
-          const placedDate = order.createdAt
-            ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
-            : "Date not available";
-          const statusRank = {
-            "new-order": 0,
-            confirmed: 1,
-            packed: 2,
-            "out-for-delivery": 3,
-            delivered: 4,
-            cancelled: 5,
-          }[rawStatus] ?? 0;
-          const finalStatus = ["delivered", "cancelled"].includes(rawStatus);
-          const statusButton = (nextStatus, label, className, rank) => {
-            const completed = statusRank >= rank;
-            const disabled = completed || finalStatus;
-            const buttonText = completed && nextStatus !== "cancelled" ? `${label} ✓` : label;
-            return `<button class="${className} ${completed ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="${nextStatus}" type="button" ${disabled ? "disabled" : ""}>${buttonText}</button>`;
-          };
-          return `
-            <div class="admin-row stacked">
-              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} pay on delivery`}</span>
-              <span>Placed on: ${escapeHtml(placedDate)}</span>
-              <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
-              <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
-              ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
-              <span>${orderProducts.map(item => escapeHtml(item.title || item.id || "Product")).join(", ")}</span>
-              <div class="admin-order-images">
-                ${orderProductImages.map((image, index) => `
-                  <a href="${escapeHtml(image)}" target="_blank" rel="noopener" title="Open product image ${index + 1}">
-                    <img src="${escapeHtml(image)}" alt="Ordered product image ${index + 1}" loading="lazy" />
-                  </a>
-                `).join("") || `<span>No product image available</span>`}
-              </div>
-              <div class="admin-actions">
-                ${statusButton("confirmed", "Confirm", "secondary-button", 1)}
-                ${statusButton("packed", "Packed", "secondary-button", 2)}
-                ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
-                ${statusButton("delivered", "Delivered", "primary-button", 4)}
-                <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
-                <button class="secondary-button admin-cut-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">Cut</button>
-              </div>
-            </div>
-          `;
-        }).join("")}
+        <div class="admin-order-tools">
+          <input name="adminSearch" value="${escapeHtml(state.adminSearch)}" type="search" placeholder="Search order ID, customer name, phone" />
+          <div class="admin-order-toggle">
+            <button class="${state.adminOrderView === "active" ? "active" : ""}" data-admin-order-view="active" type="button">Active Orders <span class="admin-count-badge ${activeAdminOrders.length > 0 ? "has-items" : ""}">${activeAdminOrders.length}</span></button>
+            <button class="${state.adminOrderView === "archived" ? "active" : ""}" data-admin-order-view="archived" type="button">Archived Orders <span class="admin-count-badge ${archivedOrderRecords.length > 0 ? "has-items" : ""}">${archivedOrderRecords.length}</span></button>
+          </div>
+        </div>
+        ${filteredAdminOrders.map(renderAdminOrder).join("") || `<p>No matching ${state.adminOrderView === "archived" ? "archived" : "active"} orders found.</p>`}
       </div>
     </article>
     <article class="wide-card">
@@ -3366,9 +3414,17 @@ function wireEvents() {
       return;
     }
 
+    const adminOrderView = event.target.closest("[data-admin-order-view]");
+    if (adminOrderView) {
+      state.adminOrderView = adminOrderView.dataset.adminOrderView;
+      renderAdmin();
+      return;
+    }
+
     const adminArchive = event.target.closest("[data-admin-archive]");
     if (adminArchive) {
-      if (!confirm("Cut this item from the admin list? It will be hidden from this admin section.")) return;
+      const archiveLabel = adminArchive.textContent.trim().toLowerCase() === "archive";
+      if (!confirm(archiveLabel ? "Archive this order? It will move to Archived Orders." : "Cut this item from the admin list? It will be hidden from this admin section.")) return;
       try {
         adminArchive.disabled = true;
         await api("/api/admin/archive", {
@@ -3382,7 +3438,7 @@ function wireEvents() {
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
         renderAdmin();
-        alert("Cut from admin list.");
+        alert(archiveLabel ? "Moved to Archived Orders." : "Cut from admin list.");
       } catch (error) {
         adminArchive.disabled = false;
         alert(error.message);
@@ -3695,6 +3751,17 @@ function wireEvents() {
     }
   });
   document.body.addEventListener("input", event => {
+    if (event.target.name === "adminSearch") {
+      const cursor = event.target.selectionStart || event.target.value.length;
+      state.adminSearch = event.target.value;
+      renderAdmin();
+      const searchInput = document.querySelector('input[name="adminSearch"]');
+      searchInput?.focus();
+      try {
+        searchInput?.setSelectionRange(cursor, cursor);
+      } catch {}
+      return;
+    }
     if (event.target.name === "customRechargeAmount") {
       const amount = Number(event.target.value);
       const submitButton = event.target.form?.querySelector("[data-custom-recharge-submit]");
