@@ -692,6 +692,34 @@ main {
   line-height: 1;
 }
 
+.wallet-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: min(520px, 100%);
+}
+
+.wallet-balance-row span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.wallet-balance-row strong {
+  font-family: "Outfit", sans-serif;
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wallet-coin-rate {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .text-link {
   color: var(--green);
   align-self: center;
@@ -1445,6 +1473,13 @@ textarea {
 
 .recharge-grid.payment-step {
   grid-template-columns: 1fr;
+}
+
+.custom-recharge-form {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
 }
 
 .payment-summary,
@@ -3399,6 +3434,7 @@ textarea {
   .admin-product-form,
   .checkout-fields,
   .upi-reference-form,
+  .custom-recharge-form,
   .admin-row,
   .admin-product-row {
     grid-template-columns: 1fr;

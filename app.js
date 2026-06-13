@@ -2121,15 +2121,22 @@ function renderWallet() {
     `;
   } else {
     els.rechargeGrid.classList.remove("payment-step");
-    els.rechargeGrid.innerHTML = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
+    const rechargeButtons = [50, 100, 150, 200, 250, 500, 1000, 2000, 5000].map(amount => `
       <button type="button" data-recharge="${amount}">${amount} <span class="coin-symbol" aria-label="G&T coins"></span></button>
     `).join("");
+    els.rechargeGrid.innerHTML = `
+      ${rechargeButtons}
+      <form class="custom-recharge-form" id="customRechargeForm">
+        <input name="customRechargeAmount" type="number" min="50" step="50" placeholder="Enter custom amount" required />
+        <button class="secondary-button" type="submit">Add Coins</button>
+      </form>
+    `;
   }
   els.walletBalance.textContent = walletIsLoading ? "..." : new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
-  const walletHeading = document.querySelector("#page-wallet .page-title h1");
-  if (walletHeading) walletHeading.innerHTML = walletIsLoading
-    ? `Loading wallet...`
-    : `Available Balance: ${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
+  const walletPageBalance = document.getElementById("walletPageBalance");
+  if (walletPageBalance) walletPageBalance.textContent = walletIsLoading
+    ? "Loading..."
+    : `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
@@ -3844,6 +3851,25 @@ function wireEvents() {
       } finally {
         setSubmitState(event.target, false);
       }
+      return;
+    }
+    if (event.target.id === "customRechargeForm") {
+      event.preventDefault();
+      if (!requireCustomerLogin()) return;
+      const upi = platformConfig.integrations?.payments?.upi || {};
+      if (!upi.upiId) {
+        alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
+        return;
+      }
+      const form = new FormData(event.target);
+      const amount = Number(form.get("customRechargeAmount"));
+      if (!Number.isInteger(amount) || amount < 50 || amount % 50 !== 0) {
+        alert("Enter an amount in multiples of 50.");
+        return;
+      }
+      state.rechargeAmount = amount;
+      renderWallet();
+      document.querySelector(".payment-step")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     if (event.target.id === "upiReferenceForm") {
