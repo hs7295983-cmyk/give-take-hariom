@@ -1564,10 +1564,20 @@ textarea {
   background: var(--paper-soft);
 }
 
+.recharge-grid.payment-step .payment-summary,
+.recharge-grid.payment-step .upi-payment-box {
+  gap: 8px;
+}
+
 .payment-summary span,
 .upi-payment-box span,
 .upi-payment-box small {
   color: var(--muted);
+}
+
+.payment-summary small {
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .payment-summary strong {
@@ -1575,10 +1585,28 @@ textarea {
   font-size: 28px;
 }
 
+.upi-id-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
 .upi-payment-box strong {
   color: #2e7354;
   font-size: 22px;
   word-break: break-word;
+}
+
+.upi-copy-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #f3d98d;
+  border-radius: 8px;
+  background: white;
+  color: #6a4c0c;
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .upi-open-button {
@@ -1589,7 +1617,41 @@ textarea {
 .upi-reference-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 10px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.upi-reference-form input {
+  min-height: 52px;
+}
+
+.upi-reference-form .add-coins-submit-button,
+.upi-reference-form .add-coins-change-button {
+  min-height: 52px;
+  border-radius: 8px;
+  font-weight: 900;
+}
+
+.upi-reference-form .add-coins-submit-button {
+  border-color: #a7670a;
+  background: #b87510;
+  color: white;
+  box-shadow: 0 8px 18px rgba(106, 76, 12, 0.16);
+}
+
+.upi-reference-form .add-coins-submit-button:hover {
+  background: #a7670a;
+}
+
+.upi-reference-form .add-coins-submit-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(106, 76, 12, 0.14);
+}
+
+.upi-reference-form .add-coins-change-button {
+  border-color: #b87510;
+  background: white;
+  color: #8a5a0a;
 }
 
 .ledger-list {

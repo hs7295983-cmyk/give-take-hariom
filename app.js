@@ -2125,17 +2125,21 @@ function renderWallet() {
       <div class="payment-summary">
         <span>Selected amount</span>
         <strong>${formatCoins(state.rechargeAmount)}</strong>
+        <small>Equivalent to ₹${new Intl.NumberFormat("en-IN").format(state.rechargeAmount)}</small>
       </div>
       <div class="upi-payment-box">
         <span>Pay using any UPI app</span>
-        <strong>${upi.upiId ? escapeHtml(upi.upiId) : "UPI ID not configured"}</strong>
+        <div class="upi-id-row">
+          <strong>${upi.upiId ? escapeHtml(upi.upiId) : "UPI ID not configured"}</strong>
+          ${upi.upiId ? `<button class="upi-copy-button" data-copy-upi="${escapeHtml(upi.upiId)}" type="button">Copy</button>` : ""}
+        </div>
         <small>After payment, enter your UPI transaction/reference ID below.</small>
         <a class="primary-button upi-open-button" href="${escapeHtml(buildUpiPayUrl(state.rechargeAmount))}">Open UPI App</a>
       </div>
       <form class="upi-reference-form" id="upiReferenceForm">
         <input name="upiReference" placeholder="Enter UPI transaction/reference ID" required />
-        <button class="primary-button" type="submit">Submit Add Coins Request</button>
-        <button class="secondary-button" data-cancel-recharge type="button">Change Amount</button>
+        <button class="primary-button add-coins-submit-button" type="submit">Submit Add Coins Request</button>
+        <button class="secondary-button add-coins-change-button" data-cancel-recharge type="button">Change Amount</button>
       </form>
     `;
   } else {
@@ -3198,6 +3202,30 @@ function wireEvents() {
 
     const route = event.target.closest("[data-route]");
     if (route) location.hash = route.dataset.route;
+
+    const copyUpi = event.target.closest("[data-copy-upi]");
+    if (copyUpi) {
+      const value = copyUpi.dataset.copyUpi || "";
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = value;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          textarea.remove();
+        }
+        copyUpi.textContent = "Copied";
+        setTimeout(() => { copyUpi.textContent = "Copy"; }, 1200);
+      } catch {
+        alert("Could not copy UPI ID. Please copy it manually.");
+      }
+      return;
+    }
 
     const recharge = event.target.closest("[data-recharge]");
     if (recharge) {
