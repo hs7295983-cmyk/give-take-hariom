@@ -1015,6 +1015,14 @@ textarea {
   padding: 20px;
 }
 
+.wallet-card h2 {
+  margin-bottom: 8px;
+}
+
+.wallet-card > p {
+  margin-bottom: 14px;
+}
+
 .panel-form {
   display: grid;
   gap: 14px;
@@ -1517,6 +1525,12 @@ textarea {
   grid-column: 1 / -1;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
+}
+
+.custom-recharge-form [data-custom-recharge-submit] {
+  background: var(--green-dark);
+  color: white;
+  border-color: var(--green-dark);
 }
 
 .custom-recharge-form small {
