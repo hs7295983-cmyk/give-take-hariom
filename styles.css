@@ -1500,6 +1500,12 @@ textarea {
   border: 1px solid var(--line);
 }
 
+.ledger-empty {
+  display: grid;
+  justify-content: center;
+  text-align: center;
+}
+
 .cart-view {
   padding: 0;
   border: 0;

@@ -2129,12 +2129,12 @@ function renderWallet() {
   const walletHeading = document.querySelector("#page-wallet .page-title h1");
   if (walletHeading) walletHeading.innerHTML = walletIsLoading
     ? `Loading wallet...`
-    : `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol large" aria-label="G&T coins"></span> available.`;
+    : `Available Balance: ${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
     return `<div class="ledger-item"><strong>${sign}${new Intl.NumberFormat("en-IN").format(entry.amount)}</strong><span>${entry.reason}</span></div>`;
-  }).join("") || `<p>No wallet activity yet.</p>`;
+  }).join("") || `<div class="ledger-item ledger-empty"><strong>No coin transactions yet.</strong><span>No transactions yet. Add coins to get started.</span></div>`;
 }
 
 function renderOrders() {
