@@ -3954,6 +3954,8 @@ function wireEvents() {
         });
         wallet = normalizeWallet(data.wallet);
         cacheWallet(wallet);
+        currentUser = data.user || currentUser;
+        if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
         orders.unshift(data.order);
         cacheOrders(orders);
         state.orderSuccessNotice = {

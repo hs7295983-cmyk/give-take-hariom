@@ -561,6 +561,18 @@ async function handleApi(req, res) {
       timeline: ["order-placed", "coins-deducted", "new-order"],
       createdAt: new Date().toISOString()
     };
+    const user = (db.users || []).find(item => item.id === userId);
+    if (user) {
+      user.addressBook = {
+        name: order.deliveryDetails.name,
+        phone: order.deliveryDetails.phone,
+        houseArea: order.deliveryDetails.address,
+        city: order.deliveryDetails.city,
+        pincode: order.deliveryDetails.pincode,
+        landmark: order.deliveryDetails.landmark,
+      };
+      user.updatedAt = new Date().toISOString();
+    }
     db.orders.unshift(order);
     await writeDb(db);
     let confirmationEmailSent = false;
@@ -572,7 +584,7 @@ async function handleApi(req, res) {
       confirmationEmailWarning = "Order placed, but confirmation email could not be sent.";
       console.warn(`${confirmationEmailWarning} ${error.message}`);
     }
-    return sendJson(res, 201, { order, wallet: db.wallets[userId], confirmationEmailSent, confirmationEmailWarning });
+    return sendJson(res, 201, { order, wallet: db.wallets[userId], user: publicUser(user), confirmationEmailSent, confirmationEmailWarning });
   }
 
   if (method === "GET" && parts[1] === "orders") {
