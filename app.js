@@ -3,6 +3,7 @@ const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : confi
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
 const CUSTOMER_USER_KEY = "give_take_customer_user";
+const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CART_STATE_KEY = "give_take_cart_state";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
@@ -1581,7 +1582,7 @@ const fallbackProducts = [
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
-let wallet = { balance: 0, ledger: [] };
+let wallet = loadCachedWallet();
 let orders = [];
 let sellRequests = [];
 let adminDashboard = null;
@@ -1605,6 +1606,18 @@ function normalizeWallet(nextWallet) {
   return nextWallet && typeof nextWallet.balance === "number"
     ? { balance: nextWallet.balance, ledger: Array.isArray(nextWallet.ledger) ? nextWallet.ledger : [] }
     : { balance: 0, ledger: [] };
+}
+
+function loadCachedWallet() {
+  try {
+    return normalizeWallet(JSON.parse(localStorage.getItem(CUSTOMER_WALLET_KEY) || "null"));
+  } catch {
+    return { balance: 0, ledger: [] };
+  }
+}
+
+function cacheWallet(nextWallet) {
+  localStorage.setItem(CUSTOMER_WALLET_KEY, JSON.stringify(normalizeWallet(nextWallet)));
 }
 
 function loadSavedCartState() {
@@ -1717,6 +1730,7 @@ async function loadBackendData() {
     categories = categoryData.categories;
     products = productData.products;
     wallet = normalizeWallet(walletData.wallet);
+    cacheWallet(wallet);
     orders = orderData.orders;
     sellRequests = sellRequestData.sellRequests || [];
     platformConfig = configData;
@@ -1743,16 +1757,19 @@ async function refreshCurrentWallet() {
   const userId = getCurrentUserId();
   if (!userId) {
     wallet = { balance: 0, ledger: [] };
+    localStorage.removeItem(CUSTOMER_WALLET_KEY);
     return;
   }
   const data = await api(`/api/wallet/${encodeURIComponent(userId)}`);
   wallet = normalizeWallet(data.wallet);
+  cacheWallet(wallet);
 }
 
 async function loadAuthUser() {
   if (!customerToken) {
     authRestorePending = false;
     localStorage.removeItem(CUSTOMER_USER_KEY);
+    localStorage.removeItem(CUSTOMER_WALLET_KEY);
     document.documentElement.classList.remove("has-customer-token");
     return;
   }
@@ -1760,6 +1777,7 @@ async function loadAuthUser() {
     const data = await api("/api/auth/me", { customer: true });
     currentUser = data.user || null;
     wallet = normalizeWallet(data.wallet);
+    cacheWallet(wallet);
     document.documentElement.classList.toggle("has-customer-token", Boolean(currentUser));
     if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
   } catch (error) {
@@ -1767,6 +1785,7 @@ async function loadAuthUser() {
       customerToken = "";
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_USER_KEY);
+      localStorage.removeItem(CUSTOMER_WALLET_KEY);
       currentUser = null;
       document.documentElement.classList.remove("has-customer-token");
     }
@@ -2135,11 +2154,9 @@ function renderWallet() {
   }
   els.walletBalance.textContent = walletIsLoading ? "..." : new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletPageBalance = document.getElementById("walletPageBalance");
-  if (walletPageBalance) walletPageBalance.textContent = walletIsLoading
-    ? "Loading..."
-    : `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
+  if (walletPageBalance) walletPageBalance.textContent = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
   const walletEmptyNote = document.getElementById("walletEmptyNote");
-  if (walletEmptyNote) walletEmptyNote.hidden = walletIsLoading || Number(wallet.balance || 0) > 0;
+  if (walletEmptyNote) walletEmptyNote.hidden = Number(wallet.balance || 0) > 0;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
@@ -3065,6 +3082,7 @@ function wireEvents() {
       customerToken = "";
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_USER_KEY);
+      localStorage.removeItem(CUSTOMER_WALLET_KEY);
       currentUser = null;
       authRestorePending = false;
       customerDataReady = true;
@@ -3704,6 +3722,7 @@ function wireEvents() {
         customerDataReady = true;
         document.documentElement.classList.add("has-customer-token");
         wallet = normalizeWallet(data.wallet);
+        cacheWallet(wallet);
         await loadBackendData();
         renderAll();
         location.hash = "wallet";
@@ -3821,6 +3840,7 @@ function wireEvents() {
           }),
         });
         wallet = normalizeWallet(data.wallet);
+        cacheWallet(wallet);
         orders.unshift(data.order);
         state.cart = [];
         state.cartQuantities = {};
@@ -3913,6 +3933,7 @@ function wireEvents() {
           }),
         });
         wallet = normalizeWallet(data.wallet);
+        cacheWallet(wallet);
         state.rechargeAmount = null;
         await refreshCurrentWallet();
         renderAll();
