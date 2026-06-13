@@ -1833,7 +1833,7 @@ async function refreshAdminProducts() {
 }
 
 function formatCoins(value) {
-  return `GNT ${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
+  return `${new Intl.NumberFormat("en-IN").format(value)} <span class="coin-symbol" aria-label="G&T coins"></span>`;
 }
 
 function coinMarkup() {
