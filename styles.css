@@ -535,13 +535,14 @@ main {
 
 .status-card .coin-rate-highlight {
   gap: 7px;
+  width: 80%;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 211, 92, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 8px;
-  background: #0f2440;
-  color: white;
-  box-shadow: 0 10px 22px rgba(15, 36, 64, 0.24);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: none;
 }
 
 .status-card .coin-rate-highlight .coin-symbol {
