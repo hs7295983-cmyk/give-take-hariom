@@ -2699,6 +2699,9 @@ function renderAdmin() {
             return item.imageUrl || images[0] || "";
           }).filter(Boolean);
           const rawStatus = String(order.status || "new-order").toLowerCase();
+          const placedDate = order.createdAt
+            ? new Date(order.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+            : "Date not available";
           const statusRank = {
             "new-order": 0,
             confirmed: 1,
@@ -2717,6 +2720,7 @@ function renderAdmin() {
           return `
             <div class="admin-row stacked">
               <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} pay on delivery`}</span>
+              <span>Placed on: ${escapeHtml(placedDate)}</span>
               <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
               <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
               ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}
