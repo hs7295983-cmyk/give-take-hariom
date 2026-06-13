@@ -2031,7 +2031,7 @@ textarea {
 .order-detail-card {
   display: grid;
   gap: 16px;
-  padding: 18px;
+  padding: 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--panel);
@@ -2081,7 +2081,7 @@ textarea {
 
 .order-status-panel,
 .order-detail-section {
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--paper-soft);
@@ -2168,7 +2168,7 @@ textarea {
 
 .order-detail-section {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .order-detail-section h3 {
@@ -2196,6 +2196,49 @@ textarea {
   gap: 12px;
 }
 
+.order-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.order-summary-strip p {
+  display: grid;
+  align-items: start;
+  justify-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.order-summary-strip strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.order-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-section-title > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.order-items-section {
+  gap: 14px;
+}
+
 .order-summary-grid,
 .order-expanded-items {
   display: grid;
@@ -2218,15 +2261,12 @@ textarea {
 
 .order-detail-section .order-item-row {
   gap: 12px;
-  padding: 14px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 16px;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   background: white;
-}
-
-.order-item-row > strong {
-  flex: 0 0 auto;
-  white-space: nowrap;
 }
 
 .order-item-link:hover strong,
@@ -2246,7 +2286,16 @@ textarea {
 .order-item-row > div {
   flex: 1;
   display: grid;
-  gap: 4px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.order-item-row > div > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .order-detail-footer {
@@ -3486,6 +3535,14 @@ textarea {
 
   .order-progress strong {
     font-size: 11px;
+  }
+
+  .order-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .order-section-title {
+    align-items: flex-start;
   }
 
   .order-item-row {

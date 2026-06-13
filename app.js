@@ -2358,16 +2358,26 @@ function renderOrders() {
               <p><span>Delivery Charge</span><strong>${deliveryChargeText}</strong></p>
               <p><span>Deliver to</span><strong>${escapeHtml(details.name || "Customer")} • ${escapeHtml(details.city || order.deliveryCity || "City")}</strong></p>
             </section>
-            <section class="order-detail-section">
-              <h3>Order Items (${totalItemCount})</h3>
+            <section class="order-detail-section order-summary-section">
+              <h3>Order Summary</h3>
+              <div class="order-summary-strip">
+                <p><span>Order ID</span><strong>#${escapeHtml(order.id)}</strong></p>
+                <p><span>Total Items</span><strong>${totalItemCount} ${totalItemCount === 1 ? "Item" : "Items"}</strong></p>
+                <p><span>Order Total</span><strong>${formatCoins(order.totalCoins || 0)}</strong></p>
+                <p><span>Order Date</span><strong>${escapeHtml(placedDate)}</strong></p>
+              </div>
+            </section>
+            <section class="order-detail-section order-items-section">
+              <div class="order-section-title">
+                <h3>Order Items (${totalItemCount})</h3>
+                <strong>Total: ${formatCoins(order.totalCoins || 0)}</strong>
+              </div>
               <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${firstItem.productId || firstItem.id || "item"}`)}" data-product="${firstItem.productId || firstItem.id || ""}" type="button">
                 ${productVisual(firstItem, "order-item-image")}
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
-                  <span>Qty: ${firstItem.qty}</span>
-                  ${firstItem.qty > 1 ? `<span>Price: ${formatCoins(firstItem.unitPrice)} • ${formatCoins(firstItem.lineTotal)} total</span>` : ""}
+                  <span>Qty: ${firstItem.qty} × ${formatCoins(firstItem.unitPrice)}</span>
                 </div>
-                <strong>${formatCoins(firstItem.lineTotal || firstItem.unitPrice || 0)}</strong>
               </button>
             </section>
             ${isExpanded ? `
@@ -2387,10 +2397,8 @@ function renderOrders() {
                       ${productVisual(item, "order-item-image")}
                       <div>
                         <strong>${escapeHtml(item.title || "Product title")}</strong>
-                        <span>Qty: ${item.qty}</span>
-                        <span>Price: ${formatCoins(item.unitPrice)}</span>
+                        <span>Qty: ${item.qty} × ${formatCoins(item.unitPrice)}</span>
                       </div>
-                      <strong>${formatCoins(item.lineTotal || item.unitPrice || 0)}</strong>
                     </button>
                   `).join("")}
                 </div>
