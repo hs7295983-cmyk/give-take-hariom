@@ -1508,6 +1508,14 @@ textarea {
   font-weight: 800;
 }
 
+.custom-recharge-form small.valid {
+  color: var(--green);
+}
+
+.custom-recharge-form small.invalid {
+  color: var(--red);
+}
+
 .payment-summary,
 .upi-payment-box {
   display: grid;

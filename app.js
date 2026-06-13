@@ -2129,7 +2129,7 @@ function renderWallet() {
       <form class="custom-recharge-form" id="customRechargeForm" novalidate>
         <input name="customRechargeAmount" type="number" min="50" step="50" inputmode="numeric" placeholder="Enter custom amount" required />
         <button class="secondary-button" data-custom-recharge-submit type="submit" disabled>Add Coins</button>
-        <small>Enter amount in multiples of 50</small>
+        <small data-custom-recharge-hint>Enter amount in multiples of 50</small>
       </form>
     `;
   }
@@ -3538,7 +3538,19 @@ function wireEvents() {
     if (event.target.name === "customRechargeAmount") {
       const amount = Number(event.target.value);
       const submitButton = event.target.form?.querySelector("[data-custom-recharge-submit]");
-      if (submitButton) submitButton.disabled = !Number.isInteger(amount) || amount < 50 || amount % 50 !== 0;
+      const hint = event.target.form?.querySelector("[data-custom-recharge-hint]");
+      const isEmpty = event.target.value === "";
+      const isValid = Number.isInteger(amount) && amount >= 50 && amount % 50 === 0;
+      if (submitButton) submitButton.disabled = !isValid;
+      if (hint) {
+        hint.classList.toggle("valid", isValid);
+        hint.classList.toggle("invalid", !isEmpty && !isValid);
+        hint.textContent = isEmpty
+          ? "Enter amount in multiples of 50"
+          : isValid
+            ? `${new Intl.NumberFormat("en-IN").format(amount)} coins ready to add`
+            : "Amount must be a multiple of 50";
+      }
     }
   });
   [els.categoryFilter, els.cityFilter, els.sortFilter].forEach(el => el.addEventListener("change", renderProducts));
