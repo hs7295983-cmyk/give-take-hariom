@@ -727,8 +727,8 @@ main {
   width: fit-content;
   padding: 4px 8px;
   border-radius: 999px;
-  background: #eef9e7;
-  color: var(--green);
+  background: var(--green-dark);
+  color: white;
 }
 
 .wallet-coin-rate {
@@ -738,6 +738,23 @@ main {
   margin: 8px 0 0;
   color: var(--muted);
   font-weight: 800;
+}
+
+.wallet-empty-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.wallet-empty-note strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.wallet-empty-note[hidden] {
+  display: none;
 }
 
 .text-link {
@@ -1509,7 +1526,11 @@ textarea {
 }
 
 .custom-recharge-form small.valid {
-  color: var(--green);
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--green-dark);
+  color: white;
 }
 
 .custom-recharge-form small.invalid {

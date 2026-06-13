@@ -2138,6 +2138,8 @@ function renderWallet() {
   if (walletPageBalance) walletPageBalance.textContent = walletIsLoading
     ? "Loading..."
     : `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
+  const walletEmptyNote = document.getElementById("walletEmptyNote");
+  if (walletEmptyNote) walletEmptyNote.hidden = walletIsLoading || Number(wallet.balance || 0) > 0;
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
