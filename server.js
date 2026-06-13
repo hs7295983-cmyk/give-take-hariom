@@ -437,7 +437,8 @@ async function handleApi(req, res) {
 
   if (method === "POST" && parts[1] === "wallet" && parts[2] === "recharge") {
     const body = await readBody(req);
-    const userId = body.userId || "user-demo";
+    const userId = String(body.userId || "").trim();
+    if (!userId) return sendError(res, 401, "Login required");
     if (!db.wallets[userId]) db.wallets[userId] = { balance: 0, ledger: [] };
     const amount = Number(body.amount);
     const paymentMethod = String(body.method || "UPI").toUpperCase();
@@ -487,7 +488,7 @@ async function handleApi(req, res) {
     if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
-      userId: body.userId || "user-demo",
+      userId: String(body.userId || "").trim(),
       userEmail: body.userEmail || "",
       sellerName: String(body.sellerName || "").trim(),
       sellerPhone,
@@ -505,6 +506,7 @@ async function handleApi(req, res) {
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()
     };
+    if (!request.userId) return sendError(res, 401, "Login required");
     db.sellRequests.unshift(request);
     await writeDb(db);
     return sendJson(res, 201, { sellRequest: request });
@@ -518,7 +520,8 @@ async function handleApi(req, res) {
 
   if (method === "POST" && parts[1] === "orders") {
     const body = await readBody(req);
-    const userId = body.userId || "user-demo";
+    const userId = String(body.userId || "").trim();
+    if (!userId) return sendError(res, 401, "Login required");
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
     const selected = productIds.map(productId => db.products.find(product => product.id === productId)).filter(Boolean);
     if (!selected.length) return sendError(res, 400, "No valid products selected");

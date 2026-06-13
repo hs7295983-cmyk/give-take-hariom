@@ -1941,7 +1941,7 @@ function getDeliveryCharge(productTotal) {
 
 function formatDeliveryCharge(productTotal) {
   const charge = getDeliveryCharge(productTotal);
-  return charge === 0 ? "Free delivery" : `Rs.${charge} cash on delivery`;
+  return charge === 0 ? "Free delivery" : `Rs.${charge} delivery fee - pay on delivery`;
 }
 
 let toastTimer = null;
@@ -2083,7 +2083,7 @@ function renderProductDetail() {
       </div>
       <h1>${product.title}</h1>
       <div class="coin-price">${formatCoins(product.price)}</div>
-      <p>Product price is coin-only. Delivery charge can be paid by coins online or cash on delivery.</p>
+      <p>Product price is coin-only. Any delivery fee is shown separately and paid on delivery.</p>
       <div class="checklist">
         ${visibleChecks.map(check => `<span>${check}</span>`).join("")}
       </div>

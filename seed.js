@@ -1573,70 +1573,11 @@ function createSeed() {
     },
     categories,
     products,
-    users: [
-      {
-        id: "user-demo",
-        phone: "9999999999",
-        email: "demo@giveandtake.local",
-        city: "Lucknow",
-        profileComplete: false,
-        role: "customer"
-      }
-    ],
-    wallets: {
-      "user-demo": {
-        balance: 2450,
-        ledger: [
-          { id: "l1", type: "credit", amount: 1200, reason: "Item accepted after warehouse check", createdAt: new Date().toISOString() },
-          { id: "l2", type: "debit", amount: 650, reason: "Product purchase", createdAt: new Date().toISOString() },
-          { id: "l3", type: "credit", amount: 500, reason: "UPI coin recharge", createdAt: new Date().toISOString() },
-          { id: "l4", type: "debit", amount: 50, reason: "Delivery paid in coins", createdAt: new Date().toISOString() },
-          { id: "l5", type: "credit", amount: 5, reason: "Referral reward", createdAt: new Date().toISOString() }
-        ]
-      }
-    },
-    sellRequests: [
-      {
-        id: "GT-S1001",
-        userId: "user-demo",
-        city: "Lucknow",
-        category: "mobiles",
-        title: "Demo phone upload",
-        expectedCoins: 7000,
-        status: "warehouse-final-check",
-        timeline: ["upload-submitted", "under-review", "pickup-scheduled", "doorstep-verified", "product-collected", "warehouse-final-check"],
-        createdAt: new Date().toISOString()
-      }
-    ],
-    partnerTasks: [
-      {
-        id: "GT-P229",
-        type: "pickup-verification",
-        city: "Lucknow",
-        category: "mobiles",
-        status: "assigned",
-        checklist: ["Verify IMEI", "Run speaker test", "Run microphone test", "Check display", "Capture photos", "Capture short video", "OTP handover"]
-      },
-      {
-        id: "GT-P230",
-        type: "bundle-pickup",
-        city: "Gonda",
-        category: "books",
-        status: "assigned",
-        checklist: ["Check each item", "Capture photos", "Mark accepted or rejected", "Collect OTP"]
-      }
-    ],
-    orders: [
-      {
-        id: "GT-1042",
-        userId: "user-demo",
-        productIds: ["p5"],
-        totalCoins: 1450,
-        status: "coins-confirmed",
-        timeline: ["order-placed", "coins-confirmed"],
-        createdAt: new Date().toISOString()
-      }
-    ],
+    users: [],
+    wallets: {},
+    sellRequests: [],
+    partnerTasks: [],
+    orders: [],
     joinApplications: [],
     rechargeRequests: [],
     returns: [],
@@ -1644,13 +1585,13 @@ function createSeed() {
       payments: {
         preferred: "UPI only",
         allowedMethods: ["UPI"],
-        status: "local-upi-simulation",
+        status: "manual-upi-verification",
         upi: {
           merchantName: "GIVE & TAKE",
           upiId: "",
           note: "Add your UPI ID from the admin panel before public launch."
         },
-        notes: "Only UPI is enabled. Without a payment gateway API, recharge requests stay pending until admin verifies the UPI payment."
+        notes: "Only UPI is enabled. Recharge requests stay pending until admin verifies the UPI payment."
       },
       delivery: {
         ownPartnerPanel: "active-local-system",
