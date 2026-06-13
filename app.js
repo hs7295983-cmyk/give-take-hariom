@@ -4,6 +4,7 @@ const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
 const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
+const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
@@ -1582,16 +1583,16 @@ const fallbackProducts = [
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
-let wallet = loadCachedWallet();
-let orders = [];
-let sellRequests = [];
-let adminDashboard = null;
-let partnerTasks = [];
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
 let authRestorePending = Boolean(customerToken && !currentUser);
 let customerDataReady = !customerToken;
+let wallet = loadCachedWallet();
+let orders = loadCachedOrders();
+let sellRequests = [];
+let adminDashboard = null;
+let partnerTasks = [];
 let pendingLoginEmail = "";
 let pendingLoginName = "";
 let platformConfig = {
@@ -1618,6 +1619,24 @@ function loadCachedWallet() {
 
 function cacheWallet(nextWallet) {
   localStorage.setItem(CUSTOMER_WALLET_KEY, JSON.stringify(normalizeWallet(nextWallet)));
+}
+
+function loadCachedOrders() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CUSTOMER_ORDERS_KEY) || "null");
+    return cached?.userId === getCurrentUserId() && Array.isArray(cached.orders) ? cached.orders : [];
+  } catch {
+    return [];
+  }
+}
+
+function cacheOrders(nextOrders) {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+  localStorage.setItem(CUSTOMER_ORDERS_KEY, JSON.stringify({
+    userId,
+    orders: Array.isArray(nextOrders) ? nextOrders : [],
+  }));
 }
 
 function loadSavedCartState() {
@@ -1732,6 +1751,7 @@ async function loadBackendData() {
     wallet = normalizeWallet(walletData.wallet);
     cacheWallet(wallet);
     orders = orderData.orders;
+    cacheOrders(orders);
     sellRequests = sellRequestData.sellRequests || [];
     platformConfig = configData;
     if (adminToken) await loadProtectedData();
@@ -1770,6 +1790,7 @@ async function loadAuthUser() {
     authRestorePending = false;
     localStorage.removeItem(CUSTOMER_USER_KEY);
     localStorage.removeItem(CUSTOMER_WALLET_KEY);
+    localStorage.removeItem(CUSTOMER_ORDERS_KEY);
     document.documentElement.classList.remove("has-customer-token");
     return;
   }
@@ -1786,6 +1807,7 @@ async function loadAuthUser() {
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_USER_KEY);
       localStorage.removeItem(CUSTOMER_WALLET_KEY);
+      localStorage.removeItem(CUSTOMER_ORDERS_KEY);
       currentUser = null;
       document.documentElement.classList.remove("has-customer-token");
     }
@@ -3087,6 +3109,7 @@ function wireEvents() {
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_USER_KEY);
       localStorage.removeItem(CUSTOMER_WALLET_KEY);
+      localStorage.removeItem(CUSTOMER_ORDERS_KEY);
       currentUser = null;
       authRestorePending = false;
       customerDataReady = true;
@@ -3870,6 +3893,7 @@ function wireEvents() {
         wallet = normalizeWallet(data.wallet);
         cacheWallet(wallet);
         orders.unshift(data.order);
+        cacheOrders(orders);
         state.cart = [];
         state.cartQuantities = {};
         state.checkoutStep = "cart";
