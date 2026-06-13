@@ -529,11 +529,15 @@ main {
   align-items: center;
   min-height: 30px;
   padding: 0 12px;
-  border: 1px solid rgba(214, 242, 122, 0.5);
   border-radius: 999px;
-  background: rgba(214, 242, 122, 0.95);
-  color: var(--ink);
   font-weight: 900;
+}
+
+.status-card .coin-rate-highlight {
+  border: 1px solid rgba(255, 206, 84, 0.75);
+  background: #ffcf4a;
+  color: #2e2508;
+  box-shadow: 0 10px 22px rgba(255, 207, 74, 0.26);
 }
 
 .flow-card {
