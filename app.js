@@ -2154,7 +2154,7 @@ function renderWallet() {
   }
   els.walletBalance.textContent = walletIsLoading ? "..." : new Intl.NumberFormat("en-IN").format(wallet.balance || 0);
   const walletPageBalance = document.getElementById("walletPageBalance");
-  if (walletPageBalance) walletPageBalance.textContent = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} G&T`;
+  if (walletPageBalance) walletPageBalance.innerHTML = `${new Intl.NumberFormat("en-IN").format(wallet.balance || 0)} <span class="coin-symbol" aria-label="G&T coin"></span>`;
   const walletEmptyNote = document.getElementById("walletEmptyNote");
   if (walletEmptyNote) walletEmptyNote.hidden = Number(wallet.balance || 0) > 0;
   const ledger = wallet.ledger || [];
