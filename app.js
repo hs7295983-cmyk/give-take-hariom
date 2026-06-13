@@ -2278,12 +2278,13 @@ function renderOrders() {
           ? orderedProductIds.reduce((map, productId) => map.set(productId, (map.get(productId) || 0) + 1), new Map())
           : sourceItems.reduce((map, item) => map.set(item.id, (map.get(item.id) || 0) + 1), new Map());
         const groupedItems = [...itemCounts.entries()].map(([productId, qty]) => {
-          const product = sourceItems.find(item => item.id === productId)
+          const product = sourceItems.find(item => (item.productId || item.id) === productId)
             || products.find(item => item.id === productId)
             || { id: productId, title: "Product title", price: 0 };
           const unitPrice = Number(product.price || 0);
           return {
             ...product,
+            productId,
             artA: product.artA || "#d3f4e9",
             artB: product.artB || "#3a6e63",
             qty,
@@ -2323,7 +2324,7 @@ function renderOrders() {
               <div class="order-total-box">
                 <span>Total Amount</span>
                 <strong>${formatCoins(order.totalCoins || 0)}</strong>
-                <small>${Number(order.deliveryCharge || 0) ? "COD" : "Coins"}</small>
+                <small>${deliveryChargeAmount ? "Delivery fee - Pay on delivery" : "Coins"}</small>
               </div>
             </div>
             <section class="order-status-panel">
@@ -2347,13 +2348,13 @@ function renderOrders() {
             <section class="order-detail-section">
               <h3>Delivery Details</h3>
               ${isCancelled(order) && order.cancellationReason ? `<p class="order-cancel-reason"><span>Cancellation Reason</span><strong>${escapeHtml(order.cancellationReason)}</strong></p>` : ""}
-              ${deliveryChargeAmount ? `<p><span>Delivery Method</span><strong>Cash on Delivery</strong></p>` : ""}
+              ${deliveryChargeAmount ? `<p><span>Delivery Fee</span><strong>Pay on Delivery</strong></p>` : ""}
               <p><span>Delivery Charge</span><strong>${deliveryChargeText}</strong></p>
               <p><span>Deliver to</span><strong>${escapeHtml(details.name || "Customer")} • ${escapeHtml(details.city || order.deliveryCity || "City")}</strong></p>
             </section>
             <section class="order-detail-section">
               <h3>Order Items (${totalItemCount})</h3>
-              <button class="order-item-row order-item-link" data-product="${firstItem.id || ""}" type="button">
+              <button class="order-item-row order-item-link" data-product="${firstItem.productId || firstItem.id || ""}" type="button">
                 ${productVisual(firstItem, "order-item-image")}
                 <div>
                   <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
@@ -2376,7 +2377,7 @@ function renderOrders() {
                 </div>
                 <div class="order-expanded-items">
                   ${displayItems.map(item => `
-                    <button class="order-item-row order-item-link" data-product="${item.id || ""}" type="button">
+                    <button class="order-item-row order-item-link" data-product="${item.productId || item.id || ""}" type="button">
                       ${productVisual(item, "order-item-image")}
                       <div>
                         <strong>${escapeHtml(item.title || "Product title")}</strong>
@@ -2700,7 +2701,7 @@ function renderAdmin() {
           };
           return `
             <div class="admin-row stacked">
-              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} COD`}</span>
+              <span><strong>${escapeHtml(order.id)}</strong> • ${escapeHtml(String(order.status || "").replaceAll("-", " "))} • ${formatCoins(order.totalCoins || 0)} • Delivery: ${Number(order.deliveryCharge || 0) === 0 ? "Free" : `Rs.${order.deliveryCharge} pay on delivery`}</span>
               <span>${escapeHtml(details.name || "Name not entered")} • ${escapeHtml(details.phone || "Phone not entered")} • ${escapeHtml(order.userEmail || order.userId || "User")}</span>
               <span>${escapeHtml(details.address || "Address not entered")} • ${escapeHtml(details.city || order.deliveryCity || "City not entered")} ${details.pincode ? `• ${escapeHtml(details.pincode)}` : ""}</span>
               ${order.cancellationReason ? `<span>Cancel reason: ${escapeHtml(order.cancellationReason)}</span>` : ""}

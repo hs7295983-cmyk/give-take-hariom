@@ -542,8 +542,9 @@ async function handleApi(req, res) {
       userId,
       userEmail: body.userEmail || "",
       productIds,
-      products: selected.map(product => ({
+      products: selected.map((product, index) => ({
         id: product.id,
+        productId: productIds[index] || product.id,
         title: product.title,
         price: product.price,
         condition: product.condition,
