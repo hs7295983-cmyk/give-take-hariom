@@ -1567,9 +1567,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1608,9 +1606,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1648,9 +1644,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1690,9 +1684,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1730,9 +1722,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1772,9 +1762,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1812,9 +1800,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1856,9 +1842,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1896,9 +1880,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1936,9 +1918,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -1975,9 +1955,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2018,9 +1996,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2059,9 +2035,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2098,9 +2072,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2139,9 +2111,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2180,9 +2150,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2224,9 +2192,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
@@ -2264,9 +2230,7 @@ const homeKitchenScreenshotProducts = [
     ],
     "checks": [
       "GIVE & TAKE verified",
-      "Product matched from supplied screenshot",
       "Admin price editable",
-      "4+ DeoDap product photos linked"
     ],
     "artA": "#d3f4e9",
     "artB": "#3a6e63",
