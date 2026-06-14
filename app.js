@@ -2729,7 +2729,13 @@ const state = {
   expandedOrderId: null,
   orderSuccessNotice: null,
   addressBookEditing: false,
-  adminCollapsed: {},
+  adminCollapsed: {
+    sellRequests: true,
+    recharges: true,
+    orders: true,
+    joinApplications: true,
+    archivedItems: true,
+  },
   adminOrderView: "active",
   adminSearch: "",
   adminShowProducts: false,
@@ -2907,6 +2913,10 @@ function setSubmitState(form, isSubmitting, label = "Submitting...") {
 }
 
 async function loadProtectedData() {
+  adminDashboard = await api("/api/admin/dashboard?summary=1", { admin: true });
+}
+
+async function loadFullAdminData() {
   adminDashboard = await api("/api/admin/dashboard", { admin: true });
 }
 
@@ -2988,6 +2998,16 @@ function productVisual(product, className = "product-visual") {
     `;
   }
   return `<div class="${className}" style="${fallbackStyle}"></div>`;
+}
+
+function hydrateDetailGallery() {
+  const thumbnails = [...document.querySelectorAll("[data-gallery-thumb-src]")];
+  thumbnails.forEach((image, index) => {
+    window.setTimeout(() => {
+      image.src = image.dataset.galleryThumbSrc;
+      image.removeAttribute("data-gallery-thumb-src");
+    }, index * 70);
+  });
 }
 
 function escapeHtml(value) {
@@ -3161,7 +3181,7 @@ function renderProductDetail() {
         <div class="detail-thumbnails" aria-label="Product photos">
           ${galleryImages.map((image, index) => `
             <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(optimizedImageUrl(image, 900))}" type="button" aria-label="Show product photo ${index + 1}">
-              <img src="${escapeHtml(optimizedImageUrl(image, 160))}" alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
+              <img ${index < 2 ? `src="${escapeHtml(optimizedImageUrl(image, 160))}"` : `data-gallery-thumb-src="${escapeHtml(optimizedImageUrl(image, 160))}"`} alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
             </button>
           `).join("")}
         </div>
@@ -3185,6 +3205,7 @@ function renderProductDetail() {
       </div>
     </article>
   `;
+  hydrateDetailGallery();
 }
 
 function renderFormFields() {
@@ -3729,6 +3750,7 @@ function renderAdmin() {
       </div>
     `;
   };
+  const collapsedAdminPlaceholder = key => state.adminCollapsed[key] ? `<p class="admin-collapsed-note">Section hidden. Tap Show to load details.</p>` : "";
   const matchesAdminOrderSearch = order => {
     const query = state.adminSearch.trim().toLowerCase();
     if (!query) return true;
@@ -3833,7 +3855,7 @@ function renderAdmin() {
     <article class="wide-card">
       ${adminSectionHeader("sellRequests", "Sell Item Requests", adminSellRequests.length, "Review seller uploads, schedule pickup, and credit coins after final check.")}
       <div class="admin-list ${state.adminCollapsed.sellRequests ? "is-collapsed" : ""}">
-        ${adminSellRequests.map(item => `
+        ${state.adminCollapsed.sellRequests ? collapsedAdminPlaceholder("sellRequests") : adminSellRequests.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.title || "Untitled item")}</strong> • ${escapeHtml(item.category || "category")} • ${escapeHtml(item.condition || "condition")} • ${escapeHtml(item.status || "upload-submitted")}</span>
             <span>${formatCoins(item.expectedCoins || 0)} expected • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.userEmail || item.userId || "User")}</span>
@@ -3863,7 +3885,7 @@ function renderAdmin() {
     <article class="wide-card">
       ${adminSectionHeader("recharges", "UPI Recharge Requests", adminRecharges.length, "Verify payment in your UPI account before approving.")}
       <div class="admin-list ${state.adminCollapsed.recharges ? "is-collapsed" : ""}">
-        ${adminRecharges.map(item => {
+        ${state.adminCollapsed.recharges ? collapsedAdminPlaceholder("recharges") : adminRecharges.map(item => {
           const isPending = item.status === "pending-admin-verification";
           return `
           <div class="admin-row">
@@ -3883,6 +3905,7 @@ function renderAdmin() {
     <article class="wide-card">
       ${adminSectionHeader("orders", "Orders", filteredAdminOrders.length, "Customer and delivery details for placed orders.")}
       <div class="admin-list ${state.adminCollapsed.orders ? "is-collapsed" : ""}">
+        ${state.adminCollapsed.orders ? collapsedAdminPlaceholder("orders") : `
         <div class="admin-order-tools">
           <input name="adminSearch" value="${escapeHtml(state.adminSearch)}" type="search" placeholder="Search order ID, customer name, phone" />
           <div class="admin-order-toggle">
@@ -3891,12 +3914,13 @@ function renderAdmin() {
           </div>
         </div>
         ${filteredAdminOrders.map(renderAdminOrder).join("") || `<p>No matching ${state.adminOrderView === "archived" ? "archived" : "active"} orders found.</p>`}
+        `}
       </div>
     </article>
     <article class="wide-card">
       ${adminSectionHeader("joinApplications", "Join Us Applications", joinApplications.length, "New applicants from the Join Us page.")}
       <div class="admin-list ${state.adminCollapsed.joinApplications ? "is-collapsed" : ""}">
-        ${joinApplications.map(item => `
+        ${state.adminCollapsed.joinApplications ? collapsedAdminPlaceholder("joinApplications") : joinApplications.map(item => `
           <div class="admin-row stacked">
             <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
             <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
@@ -3915,7 +3939,7 @@ function renderAdmin() {
     <article class="wide-card">
       ${adminSectionHeader("archivedItems", "Cut Items", archivedItems.length, "Cut admin records are hidden from the main dashboard.")}
       <div class="admin-list ${state.adminCollapsed.archivedItems ? "is-collapsed" : ""}">
-        ${archivedItems.map(item => `
+        ${state.adminCollapsed.archivedItems ? collapsedAdminPlaceholder("archivedItems") : archivedItems.map(item => `
           <div class="admin-row">
             <span><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.title || item.id)} • ${escapeHtml(item.meta || "")}</span>
             <div class="admin-actions">
@@ -4544,6 +4568,18 @@ function wireEvents() {
     const adminCollapse = event.target.closest("[data-admin-collapse]");
     if (adminCollapse) {
       const key = adminCollapse.dataset.adminCollapse;
+      const willOpen = Boolean(state.adminCollapsed[key]);
+      if (willOpen && adminDashboard?.summary) {
+        adminCollapse.disabled = true;
+        adminCollapse.textContent = "Loading...";
+        try {
+          await loadFullAdminData();
+        } catch (error) {
+          alert(error.message);
+          adminCollapse.disabled = false;
+          return;
+        }
+      }
       state.adminCollapsed[key] = !state.adminCollapsed[key];
       renderAdmin();
       return;

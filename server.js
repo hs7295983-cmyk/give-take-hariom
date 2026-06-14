@@ -693,6 +693,7 @@ async function handleApi(req, res) {
 
   if (method === "GET" && parts[1] === "admin" && parts[2] === "dashboard") {
     if (!requireAdmin(req, res)) return;
+    const summaryOnly = url.searchParams.get("summary") === "1";
     const visibleOrders = (db.orders || []).filter(item => !item.adminArchived);
     const visibleSellRequests = (db.sellRequests || []).filter(item => !item.adminArchived);
     const visibleRechargeRequests = (db.rechargeRequests || []).filter(item => !item.adminArchived);
@@ -715,7 +716,31 @@ async function handleApi(req, res) {
       artA: product.artA,
       artB: product.artB
     }));
+    const summarizeOrder = order => ({
+      ...order,
+      products: (order.products || []).map(product => ({
+        id: product.id,
+        productId: product.productId || product.id,
+        title: product.title,
+        price: product.price,
+        condition: product.condition,
+        category: product.category,
+        imageUrl: product.imageUrl || ""
+      }))
+    });
+    const summarizeSellRequest = request => ({
+      ...request,
+      photoCount: Array.isArray(request.photos) ? request.photos.length : 0,
+      photos: []
+    });
+    const summarizeArchive = archive => ({
+      orders: (archive.orders || []).map(summarizeOrder),
+      sellRequests: (archive.sellRequests || []).map(summarizeSellRequest),
+      rechargeRequests: archive.rechargeRequests || [],
+      joinApplications: archive.joinApplications || []
+    });
     return sendJson(res, 200, {
+      summary: summaryOnly,
       counts: {
         users: db.users.length,
         products: db.products.length,
@@ -730,11 +755,11 @@ async function handleApi(req, res) {
       maintenance: db.maintenance,
       integrations: db.integrations,
       products: adminProducts,
-      orders: visibleOrders,
-      sellRequests: visibleSellRequests,
+      orders: summaryOnly ? visibleOrders.map(summarizeOrder) : visibleOrders,
+      sellRequests: summaryOnly ? visibleSellRequests.map(summarizeSellRequest) : visibleSellRequests,
       rechargeRequests: visibleRechargeRequests,
       joinApplications: visibleJoinApplications,
-      archived
+      archived: summaryOnly ? summarizeArchive(archived) : archived
     });
   }
 
