@@ -2104,7 +2104,523 @@ const fallbackHomeKitchenProducts = [
     "imageCount": 7
   }
 ];
-fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackProducts.filter(product => product.category !== "home"));
+const fallbackElectronicsProducts = [
+  {
+    "id": "el01",
+    "title": "VR Headset for Smartphones - Immersive 3D Mobile Glasses",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 248,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 690,
+    "sold": 24,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/01_cce4cffc-ef30-4cc8-bf82-e685db1de0a5.jpg?v=1772454352",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 900,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 8
+  },
+  {
+    "id": "el02",
+    "title": "LCD Writing Tablet Pencil Case with Calculator 1 Pc",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 153,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 682,
+    "sold": 23,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/LCDWritingTabletPencilBox-WOSKU-1.jpg?v=1773997288",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 899,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el03",
+    "title": "Camera & Mobile Tripod",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 234,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 674,
+    "sold": 22,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/products/4_98b27e7c-6714-4df9-ae02-ef694e6d5901.jpg?v=1737629155",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 898,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 6
+  },
+  {
+    "id": "el04",
+    "title": "Pocket Mini Bluetooth Thermal Printer with 1 Roll Paper - Wireless, Portable",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 726,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 666,
+    "sold": 21,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/61l-OM9K72L._SL1500_e0a450d7-a3ba-4cc1-a8a9-bbf4b20321fd.jpg?v=1737616248",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 897,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 10
+  },
+  {
+    "id": "el05",
+    "title": "USB Vibration Full Body Massager",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 100,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 658,
+    "sold": 20,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/products/02_b7309ff7-09cb-4669-9b0f-11c16348b529.jpg?v=1737631801",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 896,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 12
+  },
+  {
+    "id": "el06",
+    "title": "Multi-Purpose Plastic Wall Mounted Mobile Charging Holder Set (4 Pc)",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 80,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 650,
+    "sold": 19,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/02_dae2a0b9-783b-4eff-918f-ee75d33b1f6f.jpg?v=1771313070",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 895,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 7
+  },
+  {
+    "id": "el07",
+    "title": "Electric Sonic Toothbrush with Extra Head & 2 AA Batteries",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 59,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 642,
+    "sold": 18,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/6217_electric_toothbrush_main.jpg?v=1778563092",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 894,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el08",
+    "title": "Digital Weighing Scale (10 Kg)",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 184,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 634,
+    "sold": 17,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/products/03_6b0a2503-8b86-48ce-9c70-b363cdc1fcf8.jpg?v=1737629208",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 893,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 8
+  },
+  {
+    "id": "el09",
+    "title": "Solar Wall Lamp Wireless Outdoor Light with Motion Sensor & 3 Modes",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 190,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 626,
+    "sold": 16,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/08_41f723d0-703e-479d-a3ee-6269447cd192.jpg?v=1737625784",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 892,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el10",
+    "title": "Mahadev 3D Crystal Ball Night Light (1 Pc)",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 381,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 618,
+    "sold": 15,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/Crystal-ball-night-light-01.jpg?v=1765255387",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 891,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el11",
+    "title": "Ganpati Bapa 3D Crystal Ball Night Light with LED Illumination (1 Pc)",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 373,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 610,
+    "sold": 14,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/3dGlassGanpatiji-WOSKU-01.png?v=1765255573",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 890,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el12",
+    "title": "Mini Handheld Rechargeable USB Fan with Stand - Portable Desk Fan",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 125,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 602,
+    "sold": 13,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/21638-01-no-sku_0f25e2d9-89d2-4b49-b406-d9fd861c6022.jpg?v=1781094445",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 889,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el13",
+    "title": "Multi-Function LED Desk Lamp with Pen Holder & Phone Stand",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 219,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 594,
+    "sold": 12,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/6XoILWxXri.png?v=1777121723",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 888,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 8
+  },
+  {
+    "id": "el14",
+    "title": "50mm Real Glass Magnifying Lens for Reading - Breakage-Proof",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 14,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 586,
+    "sold": 11,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/047_8cf82c0c-6c94-4363-bed8-210568b05ddb.jpg?v=1750845063",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 887,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 8
+  },
+  {
+    "id": "el15",
+    "title": "Mobile Holder Astronaut Phone Stand Planet Creative Fun 3D Design (1 Pc / Mix Design)",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 87,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 578,
+    "sold": 10,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/01_8d5c4877-a713-4aef-b859-ac071f6bf21d.jpg?v=1750928757",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 886,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 11
+  },
+  {
+    "id": "el16",
+    "title": "Multi-Purpose Yellow Wall Holder Stand for Mobile Charging",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 58,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 570,
+    "sold": 9,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/products/34_e0cd29ea-b437-464e-ace7-08b492160bfc.jpg?v=1737634031",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 885,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 7
+  },
+  {
+    "id": "el17",
+    "title": "Mini Flexible Tripod Stand for Mobile Phones with Clip Holder",
+    "category": "electronics",
+    "city": "Ayodhya",
+    "price": 79,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 562,
+    "sold": 8,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/9814-01-no-sku_b1115cb2-0e70-420d-b92d-be75164ea35a.jpg?v=1780663846",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 884,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 9
+  },
+  {
+    "id": "el18",
+    "title": "Wireless Bluetooth 5.3 In-Ear Earbuds with Noise Cancelling & LED Display",
+    "category": "electronics",
+    "city": "Gonda",
+    "price": 228,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 554,
+    "sold": 7,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/03_d5a8c020-9e05-4eec-95de-d3222dcdf89e.jpg?v=1751289031",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 883,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 7
+  },
+  {
+    "id": "el19",
+    "title": "ZW-053 Wireless Bluetooth Over-Ear Headphones with Mic",
+    "category": "electronics",
+    "city": "Lucknow",
+    "price": 395,
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "views": 546,
+    "sold": 6,
+    "badges": [
+      "DeoDap Product"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "imageUrl": "https://deodap.in/cdn/shop/files/02_80783d0a-96ed-4ee0-9112-4beb21cb3996.jpg?v=1744344099",
+    "status": "listed",
+    "quantity": 1,
+    "newest": 882,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "checks": [
+      "GIVE & TAKE verified"
+    ],
+    "imageCount": 8
+  }
+];
+
+fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackElectronicsProducts, ...fallbackProducts.filter(product => !["home", "electronics"].includes(product.category)));
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
