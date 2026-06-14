@@ -2625,6 +2625,7 @@ fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProduc
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
 let productDetails = new Map();
+let productDetailRequests = new Map();
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
@@ -2968,16 +2969,27 @@ function getProductImages(product) {
 
 async function loadProductDetail(productId) {
   if (!productId || productDetails.has(productId)) return productDetails.get(productId);
+  if (productDetailRequests.has(productId)) return productDetailRequests.get(productId);
   const existing = products.find(product => product.id === productId);
   if (existing && Array.isArray(existing.images) && existing.images.length > 1) {
     productDetails.set(productId, existing);
     return existing;
   }
-  const data = await api(`/api/products/${encodeURIComponent(productId)}`);
-  if (!data.product) return existing;
-  productDetails.set(productId, data.product);
-  products = products.map(product => product.id === productId ? { ...product, ...data.product } : product);
-  return data.product;
+  const request = api(`/api/products/${encodeURIComponent(productId)}`)
+    .then(data => {
+      if (!data.product) return existing;
+      productDetails.set(productId, data.product);
+      products = products.map(product => product.id === productId ? { ...product, ...data.product } : product);
+      return data.product;
+    })
+    .finally(() => productDetailRequests.delete(productId));
+  productDetailRequests.set(productId, request);
+  return request;
+}
+
+function preloadProductDetail(productId) {
+  if (!productId || productDetails.has(productId) || productDetailRequests.has(productId)) return;
+  loadProductDetail(productId).catch(() => {});
 }
 
 function optimizedImageUrl(imageUrl, width = 600) {
@@ -4315,6 +4327,44 @@ function renderAll() {
   renderAuthStatus();
 }
 
+function renderCurrentRoute() {
+  if (["home", "market", "category"].includes(state.route)) {
+    renderProducts();
+    return;
+  }
+  if (state.route === "product") {
+    renderProductDetail();
+    return;
+  }
+  if (state.route === "sell") {
+    renderFormFields();
+    return;
+  }
+  if (state.route === "wallet") {
+    renderWallet();
+    return;
+  }
+  if (state.route === "cart") {
+    renderCart();
+    return;
+  }
+  if (state.route === "orders") {
+    renderOrders();
+    return;
+  }
+  if (state.route === "account") {
+    renderAccount();
+    return;
+  }
+  if (state.route === "admin") {
+    renderAdmin();
+    return;
+  }
+  if (state.route === "partner") {
+    renderPartnerTasks();
+  }
+}
+
 function navigate(rawHash, shouldScroll = true) {
   const hash = (rawHash || location.hash || "#home").replace("#", "");
   const [route, value] = hash.split("/");
@@ -4339,8 +4389,7 @@ function navigate(rawHash, shouldScroll = true) {
   document.querySelectorAll("[data-route-link]").forEach(link => {
     link.classList.toggle("active", link.dataset.routeLink === state.route);
   });
-  renderProducts();
-  renderProductDetail();
+  renderCurrentRoute();
   if (state.route === "product" && state.productId) {
     const productId = state.productId;
     loadProductDetail(productId)
@@ -4351,11 +4400,6 @@ function navigate(rawHash, shouldScroll = true) {
         console.warn(`Could not load product gallery: ${error.message}`);
       });
   }
-  renderCart();
-  renderOrders();
-  renderAccount();
-  renderAdmin();
-  renderPartnerTasks();
   if (state.route === "partner" && adminToken && !partnerTasksLoaded) {
     loadPartnerTasks()
       .then(renderPartnerTasks)
@@ -4368,6 +4412,13 @@ function navigate(rawHash, shouldScroll = true) {
 }
 
 function wireEvents() {
+  const prefetchProductFromEvent = event => {
+    const product = event.target.closest?.("[data-product]");
+    if (product?.dataset.product) preloadProductDetail(product.dataset.product);
+  };
+  document.body.addEventListener("pointerover", prefetchProductFromEvent, { passive: true });
+  document.body.addEventListener("pointerdown", prefetchProductFromEvent, { passive: true });
+
   document.body.addEventListener("click", async event => {
     const galleryImage = event.target.closest("[data-gallery-image]");
     if (galleryImage) {
