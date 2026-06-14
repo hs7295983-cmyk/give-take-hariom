@@ -1902,12 +1902,20 @@ function buildUpiPayUrl(amount) {
   return `upi://pay?${params.toString()}`;
 }
 
+function getProductImages(product) {
+  return [...new Set([
+    product.imageUrl,
+    ...(Array.isArray(product.images) ? product.images : [])
+  ].filter(Boolean))];
+}
+
 function productVisual(product, className = "product-visual") {
   const fallbackStyle = `--art-a:${product.artA};--art-b:${product.artB}`;
-  if (product.imageUrl) {
+  const [imageUrl] = getProductImages(product);
+  if (imageUrl) {
     return `
       <div class="${className}" style="${fallbackStyle}">
-        <img class="product-photo" src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />
+        <img class="product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />
       </div>
     `;
   }
@@ -2077,8 +2085,20 @@ function renderProductDetail() {
   const hiddenChecks = new Set(["Original price listed", "Admin price editable"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
+  const galleryImages = getProductImages(product);
   els.productDetail.innerHTML = `
-    ${productVisual(product, "detail-image")}
+    <div class="detail-gallery">
+      ${productVisual(product, "detail-image")}
+      ${galleryImages.length > 1 ? `
+        <div class="detail-thumbnails" aria-label="Product photos">
+          ${galleryImages.map((image, index) => `
+            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(image)}" type="button" aria-label="Show product photo ${index + 1}">
+              <img src="${escapeHtml(image)}" alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" />
+            </button>
+          `).join("")}
+        </div>
+      ` : ""}
+    </div>
     <article class="detail-panel">
       <div class="badges">
         <span class="badge">${product.source}</span>
@@ -3247,6 +3267,17 @@ function navigate(rawHash, shouldScroll = true) {
 
 function wireEvents() {
   document.body.addEventListener("click", async event => {
+    const galleryImage = event.target.closest("[data-gallery-image]");
+    if (galleryImage) {
+      const image = galleryImage.dataset.galleryImage;
+      const heroImage = galleryImage.closest(".detail-gallery")?.querySelector(".detail-image .product-photo");
+      if (image && heroImage) {
+        heroImage.src = image;
+        galleryImage.parentElement?.querySelectorAll("button").forEach(button => button.classList.toggle("is-active", button === galleryImage));
+      }
+      return;
+    }
+
     const logout = event.target.closest("[data-logout]");
     if (logout) {
       if (customerToken) {
