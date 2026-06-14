@@ -1552,6 +1552,603 @@ const products = [
   }
 ];
 
+const homeKitchenScreenshotProducts = [
+  {
+    "id": "hk01",
+    "title": "Glass Tumbler With Straw, Lid & Leather Sleeve - Portable & Stylish",
+    "price": 63,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 720,
+    "sold": 26,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/glass-tumbler.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/glass-tumbler.jpg"
+    ],
+    "newest": 1000,
+    "supplierUrl": "https://deodap.in/products/glass-tumbler-with-straw-and-lid-portable-juice-coffee-cup-1"
+  },
+  {
+    "id": "hk02",
+    "title": "Professional-Grade Stainless Steel Vegetable Cleaver Knife 1 Pc",
+    "price": 56,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 711,
+    "sold": 25,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/cleaver-knife.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/cleaver-knife.jpg"
+    ],
+    "newest": 999,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk03",
+    "title": "DeoDap Transparent Waterproof Heavy Duty Self-Adhesive Wall Hook",
+    "price": 3.36,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 702,
+    "sold": 24,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/wall-hook.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/wall-hook.jpg"
+    ],
+    "newest": 998,
+    "supplierUrl": "https://deodap.in/products/self-adhesive-transparent-wall-hook-holder-clip-1-pc"
+  },
+  {
+    "id": "hk04",
+    "title": "Leakproof 450ml Glass Water Bottle For Outdoor & Sports",
+    "price": 69,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 693,
+    "sold": 23,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/glass-water-bottle.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/glass-water-bottle.jpg"
+    ],
+    "newest": 997,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk05",
+    "title": "Cute Mini Panda Night Light Lamp (1 Pc)",
+    "price": 98,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 684,
+    "sold": 22,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/panda-night-light.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/panda-night-light.jpg"
+    ],
+    "newest": 996,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk06",
+    "title": "Premium Coconut Opener Tool / Driller With Comfortable Grip",
+    "price": 30,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 675,
+    "sold": 21,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/coconut-opener.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/coconut-opener.jpg"
+    ],
+    "newest": 995,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk07",
+    "title": "VelvaBloom Waterproof Disposable Shower Cap - 10 Pack",
+    "price": 0,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 666,
+    "sold": 20,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/shower-cap.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/shower-cap.jpg"
+    ],
+    "newest": 994,
+    "supplierUrl": "https://deodap.in/products/disposable-shower-caps"
+  },
+  {
+    "id": "hk08",
+    "title": "Beauty Face Massage Ice Roller (1 Pc)",
+    "price": 28,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 657,
+    "sold": 19,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/ice-roller.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/ice-roller.jpg"
+    ],
+    "newest": 993,
+    "supplierUrl": "https://deodap.in/products/1224l_ind_face_ice_roller"
+  },
+  {
+    "id": "hk09",
+    "title": "Multi-Purpose Plastic Wall Mounted Mobile Charging Holder Set (4 Pc)",
+    "price": 80,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 648,
+    "sold": 18,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/charging-holder-set.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/charging-holder-set.jpg"
+    ],
+    "newest": 992,
+    "supplierUrl": "https://deodap.in/products/multi-purpose-wall-mounted-plastic-storage-pocket-1-pc"
+  },
+  {
+    "id": "hk10",
+    "title": "Ocean Insulated Water Jug With Tap - BPA-Free",
+    "price": 216,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 639,
+    "sold": 17,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/insulated-water-jug.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/insulated-water-jug.jpg"
+    ],
+    "newest": 991,
+    "supplierUrl": "https://deodap.in/products/2107-water-jug-camper-with-tap-plastic-insulated-water-3-5-liter-water-storage-cool-water-storage-for-traveling-water-jug-3-5-ltr"
+  },
+  {
+    "id": "hk11",
+    "title": "750W Electric Sandwich & Panini Maker - Double-Sided, Non-Stick",
+    "price": 795,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 630,
+    "sold": 16,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/sandwich-maker.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/sandwich-maker.jpg"
+    ],
+    "newest": 990,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk12",
+    "title": "Smokeless Electric Indoor Barbecue Grill, 2000w",
+    "price": 867,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 621,
+    "sold": 15,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/electric-bbq-grill.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/electric-bbq-grill.jpg"
+    ],
+    "newest": 989,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk13",
+    "title": "Kitchen Food Processor (Chop N Churn)",
+    "price": 121,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 612,
+    "sold": 14,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/food-processor.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/food-processor.jpg"
+    ],
+    "newest": 988,
+    "supplierUrl": "https://deodap.in/products/750ml-manual-push-chopper-hand-press-vegetable-cutter-food-processor-for-onion-garlic-nuts-salad"
+  },
+  {
+    "id": "hk14",
+    "title": "Portable Ultrasonic Jewellery Cleaner High-Frequency Vibration Machine",
+    "price": 84,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 603,
+    "sold": 13,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/jewellery-cleaner.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/jewellery-cleaner.jpg"
+    ],
+    "newest": 987,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk15",
+    "title": "Stainless Steel Round Roaster Grill With Wooden Handle - 7.6x13 In",
+    "price": 70,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 594,
+    "sold": 12,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/roaster-grill.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/roaster-grill.jpg"
+    ],
+    "newest": 986,
+    "supplierUrl": ""
+  },
+  {
+    "id": "hk16",
+    "title": "Power Free Blender",
+    "price": 66,
+    "category": "home",
+    "city": "Lucknow",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 585,
+    "sold": 11,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/power-free-blender.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/power-free-blender.jpg"
+    ],
+    "newest": 985,
+    "supplierUrl": "https://deodap.in/products/2117power-free-hand-blender-beater-in-kitchen-appliances"
+  },
+  {
+    "id": "hk17",
+    "title": "Apex Power-X Triple Stainless Steel Blades And Hand-Pull Vegetable Chopper",
+    "price": 140,
+    "category": "home",
+    "city": "Ayodhya",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 576,
+    "sold": 10,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/hand-pull-chopper.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/hand-pull-chopper.jpg"
+    ],
+    "newest": 984,
+    "supplierUrl": "https://deodap.in/products/apex-speed-x-hand-powered-vegetable-chopper-1000-ml"
+  },
+  {
+    "id": "hk18",
+    "title": "Nilkanth Splash 6000 Stainless Steel Insulated Water Dispenser - 6L",
+    "price": 591,
+    "category": "home",
+    "city": "Gonda",
+    "condition": "New",
+    "source": "GIVE & TAKE Verified",
+    "badges": [
+      "DeoDap Product",
+      "Screenshot Matched"
+    ],
+    "checks": [
+      "GIVE & TAKE verified",
+      "Product matched from supplied screenshot",
+      "Admin price editable"
+    ],
+    "artA": "#d3f4e9",
+    "artB": "#3a6e63",
+    "status": "listed",
+    "quantity": 1,
+    "returnWindowHours": 48,
+    "owner": "give-and-take",
+    "sourceType": "screenshot-supplier-inventory",
+    "views": 567,
+    "sold": 9,
+    "imageUrl": "/give-take-hariom/assets/home-kitchen/water-dispenser-6l.jpg",
+    "images": [
+      "/give-take-hariom/assets/home-kitchen/water-dispenser-6l.jpg"
+    ],
+    "newest": 983,
+    "supplierUrl": ""
+  }
+];
+
 function createSeed() {
   return {
     meta: {
@@ -1560,7 +2157,7 @@ function createSeed() {
       coinValue: 1,
       coinRechargeMinimum: 50,
       coinRechargeStep: 50,
-      catalogVersion: "launch-deodap-v2-prices",
+      catalogVersion: "home-kitchen-screenshot-2026-06-14",
       serviceCities: ["Lucknow", "Ayodhya", "Gonda"],
       checkoutCurrency: "coins-only",
       updatedAt: new Date().toISOString()
@@ -1572,7 +2169,7 @@ function createSeed() {
       expectedReturn: ""
     },
     categories,
-    products,
+    products: [...homeKitchenScreenshotProducts, ...products.filter(product => product.category !== "home")],
     users: [],
     wallets: {},
     sellRequests: [],

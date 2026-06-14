@@ -11,8 +11,8 @@
       "Gonda"
     ],
     "checkoutCurrency": "coins-only",
-    "updatedAt": "2026-06-07T13:30:17.150Z",
-    "catalogVersion": "launch-deodap-v1"
+    "updatedAt": "2026-06-14T06:46:07.983Z",
+    "catalogVersion": "home-kitchen-screenshot-2026-06-14"
   },
   "maintenance": {
     "full": false,
@@ -64,124 +64,598 @@
   ],
   "products": [
     {
-      "id": "gtl01",
-      "title": "Disposable Waterproof Shower Cap for Women - 1 Pack",
+      "id": "hk01",
+      "title": "Glass Tumbler With Straw, Lid & Leather Sleeve - Portable & Stylish",
+      "price": 63,
       "category": "home",
       "city": "Lucknow",
-      "price": 50,
       "condition": "New",
       "source": "GIVE & TAKE Verified",
-      "views": 615,
-      "sold": 5,
       "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
+        "DeoDap Product",
+        "Screenshot Matched"
       ],
       "checks": [
         "GIVE & TAKE verified",
-        "Original price listed",
+        "Product matched from supplied screenshot",
         "Admin price editable"
       ],
       "artA": "#d3f4e9",
       "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/3.jpg?v=1761747759",
       "status": "listed",
       "quantity": 1,
-      "newest": 55,
       "returnWindowHours": 48,
       "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 720,
+      "sold": 26,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/glass-tumbler.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/glass-tumbler.jpg"
+      ],
+      "newest": 1000,
+      "supplierUrl": "https://deodap.in/products/glass-tumbler-with-straw-and-lid-portable-juice-coffee-cup-1"
+    },
+    {
+      "id": "hk02",
+      "title": "Professional-Grade Stainless Steel Vegetable Cleaver Knife 1 Pc",
+      "price": 56,
+      "category": "home",
+      "city": "Ayodhya",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 711,
+      "sold": 25,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/cleaver-knife.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/cleaver-knife.jpg"
+      ],
+      "newest": 999,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk03",
+      "title": "DeoDap Transparent Waterproof Heavy Duty Self-Adhesive Wall Hook",
+      "price": 3.36,
+      "category": "home",
+      "city": "Gonda",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 702,
+      "sold": 24,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/wall-hook.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/wall-hook.jpg"
+      ],
+      "newest": 998,
+      "supplierUrl": "https://deodap.in/products/self-adhesive-transparent-wall-hook-holder-clip-1-pc"
+    },
+    {
+      "id": "hk04",
+      "title": "Leakproof 450ml Glass Water Bottle For Outdoor & Sports",
+      "price": 69,
+      "category": "home",
+      "city": "Lucknow",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 693,
+      "sold": 23,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/glass-water-bottle.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/glass-water-bottle.jpg"
+      ],
+      "newest": 997,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk05",
+      "title": "Cute Mini Panda Night Light Lamp (1 Pc)",
+      "price": 98,
+      "category": "home",
+      "city": "Ayodhya",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 684,
+      "sold": 22,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/panda-night-light.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/panda-night-light.jpg"
+      ],
+      "newest": 996,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk06",
+      "title": "Premium Coconut Opener Tool / Driller With Comfortable Grip",
+      "price": 30,
+      "category": "home",
+      "city": "Gonda",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 675,
+      "sold": 21,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/coconut-opener.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/coconut-opener.jpg"
+      ],
+      "newest": 995,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk07",
+      "title": "VelvaBloom Waterproof Disposable Shower Cap - 10 Pack",
+      "price": 0,
+      "category": "home",
+      "city": "Lucknow",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 666,
+      "sold": 20,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/shower-cap.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/shower-cap.jpg"
+      ],
+      "newest": 994,
       "supplierUrl": "https://deodap.in/products/disposable-shower-caps"
     },
     {
-      "id": "gtl02",
-      "title": "Reusable Transparent Double-Sided Nano Adhesive Gel Pad (1 Pc)",
+      "id": "hk08",
+      "title": "Beauty Face Massage Ice Roller (1 Pc)",
+      "price": 28,
       "category": "home",
       "city": "Ayodhya",
-      "price": 50,
       "condition": "New",
       "source": "GIVE & TAKE Verified",
-      "views": 606,
-      "sold": 4,
       "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
+        "DeoDap Product",
+        "Screenshot Matched"
       ],
       "checks": [
         "GIVE & TAKE verified",
-        "Original price listed",
+        "Product matched from supplied screenshot",
         "Admin price editable"
       ],
       "artA": "#d3f4e9",
       "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/23577_01_without_sku_3253db29-3b47-47e0-a828-eb877ccb2615.jpg?v=1780294178",
       "status": "listed",
       "quantity": 1,
-      "newest": 54,
       "returnWindowHours": 48,
       "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/reusable-transparent-double-sided-nano-adhesive-gel-wall-sticker-pad-grip-1-pc"
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 657,
+      "sold": 19,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/ice-roller.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/ice-roller.jpg"
+      ],
+      "newest": 993,
+      "supplierUrl": "https://deodap.in/products/1224l_ind_face_ice_roller"
     },
     {
-      "id": "gtl03",
-      "title": "Transparent Self Adhesive Wall Hook Holder – Punch Free, Strong & Durable",
+      "id": "hk09",
+      "title": "Multi-Purpose Plastic Wall Mounted Mobile Charging Holder Set (4 Pc)",
+      "price": 80,
       "category": "home",
       "city": "Gonda",
-      "price": 50,
       "condition": "New",
       "source": "GIVE & TAKE Verified",
-      "views": 597,
-      "sold": 21,
       "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
+        "DeoDap Product",
+        "Screenshot Matched"
       ],
       "checks": [
         "GIVE & TAKE verified",
-        "Original price listed",
+        "Product matched from supplied screenshot",
         "Admin price editable"
       ],
       "artA": "#d3f4e9",
       "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/23576_01_without_sku_b58c1620-3502-41fa-a24b-ed07bd24d875.jpg?v=1780140882",
       "status": "listed",
       "quantity": 1,
-      "newest": 53,
       "returnWindowHours": 48,
       "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/transparent-self-adhesive-wall-hook-holder-punch-free-for-kitchen-bathroom-1-pc"
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 648,
+      "sold": 18,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/charging-holder-set.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/charging-holder-set.jpg"
+      ],
+      "newest": 992,
+      "supplierUrl": "https://deodap.in/products/multi-purpose-wall-mounted-plastic-storage-pocket-1-pc"
     },
     {
-      "id": "gtl04",
-      "title": "Transparent Self-Adhesive Wall Sticker Hook – Nail-Free, Waterproof (1 Pc)",
+      "id": "hk10",
+      "title": "Ocean Insulated Water Jug With Tap - BPA-Free",
+      "price": 216,
       "category": "home",
       "city": "Lucknow",
-      "price": 50,
       "condition": "New",
       "source": "GIVE & TAKE Verified",
-      "views": 588,
-      "sold": 20,
       "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
+        "DeoDap Product",
+        "Screenshot Matched"
       ],
       "checks": [
         "GIVE & TAKE verified",
-        "Original price listed",
+        "Product matched from supplied screenshot",
         "Admin price editable"
       ],
       "artA": "#d3f4e9",
       "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/23572_01_without_sku_7ffa6339-c40f-4f53-b214-adfc4f9d165f.jpg?v=1780126525",
       "status": "listed",
       "quantity": 1,
-      "newest": 52,
       "returnWindowHours": 48,
       "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/transparent-self-adhesive-wall-sticker-hook-punch-free-for-keys-hanging-1-pc"
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 639,
+      "sold": 17,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/insulated-water-jug.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/insulated-water-jug.jpg"
+      ],
+      "newest": 991,
+      "supplierUrl": "https://deodap.in/products/2107-water-jug-camper-with-tap-plastic-insulated-water-3-5-liter-water-storage-cool-water-storage-for-traveling-water-jug-3-5-ltr"
+    },
+    {
+      "id": "hk11",
+      "title": "750W Electric Sandwich & Panini Maker - Double-Sided, Non-Stick",
+      "price": 795,
+      "category": "home",
+      "city": "Ayodhya",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 630,
+      "sold": 16,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/sandwich-maker.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/sandwich-maker.jpg"
+      ],
+      "newest": 990,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk12",
+      "title": "Smokeless Electric Indoor Barbecue Grill, 2000w",
+      "price": 867,
+      "category": "home",
+      "city": "Gonda",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 621,
+      "sold": 15,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/electric-bbq-grill.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/electric-bbq-grill.jpg"
+      ],
+      "newest": 989,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk13",
+      "title": "Kitchen Food Processor (Chop N Churn)",
+      "price": 121,
+      "category": "home",
+      "city": "Lucknow",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 612,
+      "sold": 14,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/food-processor.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/food-processor.jpg"
+      ],
+      "newest": 988,
+      "supplierUrl": "https://deodap.in/products/750ml-manual-push-chopper-hand-press-vegetable-cutter-food-processor-for-onion-garlic-nuts-salad"
+    },
+    {
+      "id": "hk14",
+      "title": "Portable Ultrasonic Jewellery Cleaner High-Frequency Vibration Machine",
+      "price": 84,
+      "category": "home",
+      "city": "Ayodhya",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 603,
+      "sold": 13,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/jewellery-cleaner.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/jewellery-cleaner.jpg"
+      ],
+      "newest": 987,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk15",
+      "title": "Stainless Steel Round Roaster Grill With Wooden Handle - 7.6x13 In",
+      "price": 70,
+      "category": "home",
+      "city": "Gonda",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 594,
+      "sold": 12,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/roaster-grill.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/roaster-grill.jpg"
+      ],
+      "newest": 986,
+      "supplierUrl": ""
+    },
+    {
+      "id": "hk16",
+      "title": "Power Free Blender",
+      "price": 66,
+      "category": "home",
+      "city": "Lucknow",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 585,
+      "sold": 11,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/power-free-blender.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/power-free-blender.jpg"
+      ],
+      "newest": 985,
+      "supplierUrl": "https://deodap.in/products/2117power-free-hand-blender-beater-in-kitchen-appliances"
+    },
+    {
+      "id": "hk17",
+      "title": "Apex Power-X Triple Stainless Steel Blades And Hand-Pull Vegetable Chopper",
+      "price": 140,
+      "category": "home",
+      "city": "Ayodhya",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 576,
+      "sold": 10,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/hand-pull-chopper.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/hand-pull-chopper.jpg"
+      ],
+      "newest": 984,
+      "supplierUrl": "https://deodap.in/products/apex-speed-x-hand-powered-vegetable-chopper-1000-ml"
+    },
+    {
+      "id": "hk18",
+      "title": "Nilkanth Splash 6000 Stainless Steel Insulated Water Dispenser - 6L",
+      "price": 591,
+      "category": "home",
+      "city": "Gonda",
+      "condition": "New",
+      "source": "GIVE & TAKE Verified",
+      "badges": [
+        "DeoDap Product",
+        "Screenshot Matched"
+      ],
+      "checks": [
+        "GIVE & TAKE verified",
+        "Product matched from supplied screenshot",
+        "Admin price editable"
+      ],
+      "artA": "#d3f4e9",
+      "artB": "#3a6e63",
+      "status": "listed",
+      "quantity": 1,
+      "returnWindowHours": 48,
+      "owner": "give-and-take",
+      "sourceType": "screenshot-supplier-inventory",
+      "views": 567,
+      "sold": 9,
+      "imageUrl": "/give-take-hariom/assets/home-kitchen/water-dispenser-6l.jpg",
+      "images": [
+        "/give-take-hariom/assets/home-kitchen/water-dispenser-6l.jpg"
+      ],
+      "newest": 983,
+      "supplierUrl": ""
     },
     {
       "id": "gtl05",
@@ -394,36 +868,6 @@
       "supplierUrl": "https://deodap.in/products/transparent-plastic-zip-lock-bag-1-pc-33x23-cm"
     },
     {
-      "id": "gtl12",
-      "title": "Effervescent Car Wiper Detergent Tablets for Clear Windshield",
-      "category": "home",
-      "city": "Gonda",
-      "price": 50,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 516,
-      "sold": 12,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/products/721402.jpg?v=1737631045",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 44,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/car-wiper-detergent-effervescent-tablets-washer"
-    },
-    {
       "id": "gtl13",
       "title": "Plastic Hand Mobile Stand (Mix Color / 1 Pc)",
       "category": "furniture",
@@ -452,36 +896,6 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/14318_hand_mobile_stand_1pc"
-    },
-    {
-      "id": "gtl14",
-      "title": "Soft Noise Reduction Ear Plugs – Comfortable & Reusable Pair",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 50,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 498,
-      "sold": 10,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/EarPlugs-WOSKU-01.jpg?v=1767595979",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 42,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/soft-noise-reduction-ear-plugs-1-pair"
     },
     {
       "id": "gtl15",
@@ -514,36 +928,6 @@
       "supplierUrl": "https://deodap.in/products/soft-bristle-kids-toothbrush-1-pc"
     },
     {
-      "id": "gtl16",
-      "title": "Glass Premium Oil Spray Bottle 300ml - Fine Mist Dispenser",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 480,
-      "sold": 8,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/02_oil-bottle.jpg?v=1759918949",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 40,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/premium-oil-spray-bottle-300-ml-1-pc"
-    },
-    {
       "id": "gtl17",
       "title": "Sky Blue Lotus Design Gold Tone Jhumka Earrings with Pearl Beads",
       "category": "fashion",
@@ -574,96 +958,6 @@
       "supplierUrl": "https://deodap.in/products/sky-blue-lotus-design-gold-tone-jhumka-earrings-with-pearl-beads"
     },
     {
-      "id": "gtl18",
-      "title": "4-Compartment Plastic Dish Set with Spoon & Fork – Versatile Dinner & Pav Bhaji Plate",
-      "category": "home",
-      "city": "Gonda",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 462,
-      "sold": 6,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/products/7_97284e7c-a87d-4d7c-a876-f7a3ee5665e6.jpg?v=1751020558",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 38,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/2037-4compartment-dish-with-spoon-and-fork2-dish-set-with-1spoon-and-1fork-dinner-plate-plastic-compartment-plate-pav-bhaji-plate-4-compartments-divided-plastic-food-plate"
-    },
-    {
-      "id": "gtl19",
-      "title": "Swizzy Jelly 500ml Tumbler with Straw – Stylish & Reusable",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 453,
-      "sold": 5,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/Sipper-Bottle-1.jpg?v=1776847724",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 37,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/stylish-swizzy-jelly-tumbler-with-straw-and-fun-lid-1-pc-500ml"
-    },
-    {
-      "id": "gtl20",
-      "title": "Heart-Shaped Grater & Slicer Set for Fruits & Vegetables",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 444,
-      "sold": 4,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/01_64192fbb-9cb6-43a3-90cd-8bc5555cb385.jpg?v=1745666634",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 36,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/2965-heart-grater-set-and-heart-grater-slicer-used-widely-for-grating-and-slicing-of-fruits-vegetables-cheese-etc-including-all-kitchen-purposes"
-    },
-    {
       "id": "gtl21",
       "title": "Bicycle-Shaped Plastic Flower Pot Stand for Home Decor",
       "category": "furniture",
@@ -692,36 +986,6 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/plastic-cycle-flower-vases-for-home-decor-bicycle-flower-pot-stand-1-pc"
-    },
-    {
-      "id": "gtl22",
-      "title": "Soft Plastic Toothbrush Set with Portable Round Box – 20 pcs",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 426,
-      "sold": 20,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/03_689007d6-abd5-4e02-acd8-fbd95f95b1c5.jpg?v=1751115694",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 34,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/13198_pla_soft_toothbrush_10pc_set"
     },
     {
       "id": "gtl23",
@@ -814,36 +1078,6 @@
       "supplierUrl": "https://deodap.in/products/sparkling-ad-floral-design-bracelet-for-party-wear"
     },
     {
-      "id": "gtl26",
-      "title": "3 Compartment Lunch Box with Spoon & Fork Space - BPA Free",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 390,
-      "sold": 16,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/0J0NNS4SHp.jpg?v=1769076349",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 30,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/3-compartment-lunch-box-with-spoon-and-fork-space"
-    },
-    {
       "id": "gtl27",
       "title": "Portable Mini USB Fan, Light & 3-Port USB Hub Combo",
       "category": "electronics",
@@ -904,36 +1138,6 @@
       "supplierUrl": "https://deodap.in/products/premium-big-desktop-mobile-phone-stand-holder-for-smartphones-1-pc"
     },
     {
-      "id": "gtl29",
-      "title": "Plastic Medium Size Cane Fruit Baskets",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 200,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 363,
-      "sold": 13,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/products/248205.jpg?v=1750912867",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 27,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/2482-plastic-medium-size-cane-fruit-baskets"
-    },
-    {
       "id": "gtl30",
       "title": "Mini Bag Sealer, 2 in 1 Seal & Cutter Heat Sealers",
       "category": "bags",
@@ -992,66 +1196,6 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/6556-water-floating-smokeless-candles-lotus-flowers-sensor-led-tealight-for-outdoor-and-indoor-decoration-pack-of-6-candle-candle-pack-of-6"
-    },
-    {
-      "id": "gtl32",
-      "title": "46pcs Metal 1 / 4\"\" Socket Set (Black, 46pcs)",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 400,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 336,
-      "sold": 10,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/0452_b1f1c4e1-adb2-4f8f-9d49-9276bc00dd67.jpg?v=1769171990",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 24,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/46-piece-metal-socket-set"
-    },
-    {
-      "id": "gtl33",
-      "title": "Heavy-Duty Furniture Lifter & Shifting Tool Set",
-      "category": "home",
-      "city": "Gonda",
-      "price": 400,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 327,
-      "sold": 9,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/products/7image_1a79ec66-96d3-4271-b158-c4cb7228c094.jpg?v=1737634058",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 23,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/1619c-heavy-furniture-lifter-and-furniture-shifting-tool-1"
     },
     {
       "id": "gtl34",
@@ -1142,36 +1286,6 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/happy-birthday-led-acrylic-message-lamp-with-wooden-base-decorative-table-light"
-    },
-    {
-      "id": "gtl37",
-      "title": "Romantic Heart Love Decorative Gift Set (1 Set)",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 400,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 291,
-      "sold": 5,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/LoveCombo-WOSKU-01.jpg?v=1769855861",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 19,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/romantic-heart-love-decorative-gift-set-1-set"
     },
     {
       "id": "gtl38",
@@ -1294,96 +1408,6 @@
       "supplierUrl": "https://deodap.in/products/ss-vacuum-insulated-water-bottle-1200-ml"
     },
     {
-      "id": "gtl42",
-      "title": "Topper Cool Water Premium Car Perfume With Rich Fregrence (50ml)",
-      "category": "home",
-      "city": "Gonda",
-      "price": 410,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 246,
-      "sold": 18,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/1cd5bee5-dcea-4784-9b69-9e7ac6d3a047.jpg?v=1742900960",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 14,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/topper-cool-water-premium-car-perfume-with-rich-fregrence-50ml"
-    },
-    {
-      "id": "gtl43",
-      "title": "Personalized Temperature Water Bottle & Chocolate Set (Multi Circle Box / 2 Pc Set)",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 410,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 237,
-      "sold": 17,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/001_ed0626ef-2cda-4bc7-ad4e-55046f9b0a80.jpg?v=1737618597",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 13,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/personalized-temprature-water-bottle-chocolate-with-attractive-multi-circle-box-2-pc-set"
-    },
-    {
-      "id": "gtl44",
-      "title": "Personalized Temperature Water Bottle with Rose Almond Chocolate 2 Pc Mix Color",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 410,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 228,
-      "sold": 16,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/02_7e4eb14b-e6a0-4184-8a20-4baaee27c1da.jpg?v=1733401048",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 12,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/personalized-temperature-water-bottle-rose-almond-chocolate-with-attractive-peacock-box-2-pc-set-mix-color-bottle"
-    },
-    {
       "id": "gtl45",
       "title": "Personalized Temperature Water Bottle Decorative Light with Kesar Pista Almond Chocolate 3 Pc",
       "category": "electronics",
@@ -1444,36 +1468,6 @@
       "supplierUrl": "https://deodap.in/products/led-round-static-grey-sand-art-lamp-modern-ambient-decorative-night-light"
     },
     {
-      "id": "gtl47",
-      "title": "Insulated 5.5L Water Jug for Cool, Odorless Hydration",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 420,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 201,
-      "sold": 13,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/Water-Jug-02_3944ad91-c267-4299-a1df-f798dafaaf8e.jpg?v=1760002481",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 9,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/12263_crystal_water_jug_5_5ltr"
-    },
-    {
       "id": "gtl48",
       "title": "M12 Max Wireless Earbuds, Black Touch Control Bluetooth",
       "category": "electronics",
@@ -1502,96 +1496,6 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/6705_true_wireless_airbuds_m12max"
-    },
-    {
-      "id": "gtl49",
-      "title": "Creative Solar Drummer Car Aromatherapy, Solar Powered Car Air Freshener (1 Pc)",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 420,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 183,
-      "sold": 11,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/02_d5496b47-e5a9-4749-a4ed-dc840b4ec8d3.jpg?v=1750933727",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 7,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/18332-creative-solar-power-aromatherapy-car-air-freshner"
-    },
-    {
-      "id": "gtl50",
-      "title": "Personalized Temperature Water Bottle, (2 Pc Set), Mix Color",
-      "category": "home",
-      "city": "Ayodhya",
-      "price": 420,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 174,
-      "sold": 10,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/266cd06d-0273-4037-a538-6707067854b5_535276ca-8310-4cfb-bdf3-19faa8f6d40e.jpg?v=1758196294",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 6,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/whl146-19712-coffee-bottle-box-cpr"
-    },
-    {
-      "id": "gtl51",
-      "title": "Vikas Cast Iron Dosa Tawa 29 cm – Durable & Naturally Non-Stick",
-      "category": "home",
-      "city": "Gonda",
-      "price": 1099,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 165,
-      "sold": 9,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/b8DXFXVQal.png?v=1780660278",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 5,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/vikas-cast-iron-dosa-tawa-29-cm-with-long-handle-naturally-non-stick-extra-durable"
     },
     {
       "id": "gtl52",
@@ -1652,187 +1556,13 @@
       "owner": "give-and-take",
       "sourceType": "launch-supplier-inventory",
       "supplierUrl": "https://deodap.in/products/2-in-1-plastic-keychain-mobile-stand-100pcs-set"
-    },
-    {
-      "id": "gtl54",
-      "title": "Portable Stainless Steel Foldable Barbecue Grill (1 Pc)",
-      "category": "home",
-      "city": "Gonda",
-      "price": 1099,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 138,
-      "sold": 6,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/CharcoalBBQ-WOSKU-01.jpg?v=1777453440",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 2,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/portable-stainless-steel-foldable-barbecue-grill-1-pc"
-    },
-    {
-      "id": "gtl55",
-      "title": "Abstract Praying Lady Sculpture – Modern Matte Finish Showpiece",
-      "category": "home",
-      "city": "Lucknow",
-      "price": 1099,
-      "condition": "New",
-      "source": "GIVE & TAKE Verified",
-      "views": 129,
-      "sold": 5,
-      "badges": [
-        "Launch Inventory",
-        "Supplier Sourced"
-      ],
-      "checks": [
-        "GIVE & TAKE verified",
-        "Original price listed",
-        "Admin price editable"
-      ],
-      "artA": "#d3f4e9",
-      "artB": "#3a6e63",
-      "imageUrl": "https://deodap.in/cdn/shop/files/6rlJHY9zEE.jpg?v=1776684092",
-      "status": "listed",
-      "quantity": 1,
-      "newest": 1,
-      "returnWindowHours": 48,
-      "owner": "give-and-take",
-      "sourceType": "launch-supplier-inventory",
-      "supplierUrl": "https://deodap.in/products/abstract-praying-lady-sculpture-decorative-home-showpiece"
     }
   ],
-  "users": [
-    {
-      "id": "user-demo",
-      "phone": "9999999999",
-      "email": "demo@giveandtake.local",
-      "city": "Lucknow",
-      "profileComplete": false,
-      "role": "customer"
-    }
-  ],
-  "wallets": {
-    "user-demo": {
-      "balance": 2450,
-      "ledger": [
-        {
-          "id": "l1",
-          "type": "credit",
-          "amount": 1200,
-          "reason": "Item accepted after warehouse check",
-          "createdAt": "2026-06-05T15:57:50.713Z"
-        },
-        {
-          "id": "l2",
-          "type": "debit",
-          "amount": 650,
-          "reason": "Product purchase",
-          "createdAt": "2026-06-05T15:57:50.713Z"
-        },
-        {
-          "id": "l3",
-          "type": "credit",
-          "amount": 500,
-          "reason": "UPI coin recharge",
-          "createdAt": "2026-06-05T15:57:50.713Z"
-        },
-        {
-          "id": "l4",
-          "type": "debit",
-          "amount": 50,
-          "reason": "Delivery paid in coins",
-          "createdAt": "2026-06-05T15:57:50.713Z"
-        },
-        {
-          "id": "l5",
-          "type": "credit",
-          "amount": 5,
-          "reason": "Referral reward",
-          "createdAt": "2026-06-05T15:57:50.713Z"
-        }
-      ]
-    }
-  },
-  "sellRequests": [
-    {
-      "id": "GT-S1001",
-      "userId": "user-demo",
-      "city": "Lucknow",
-      "category": "mobiles",
-      "title": "Demo phone upload",
-      "expectedCoins": 7000,
-      "status": "warehouse-final-check",
-      "timeline": [
-        "upload-submitted",
-        "under-review",
-        "pickup-scheduled",
-        "doorstep-verified",
-        "product-collected",
-        "warehouse-final-check"
-      ],
-      "createdAt": "2026-06-05T15:57:50.713Z"
-    }
-  ],
-  "partnerTasks": [
-    {
-      "id": "GT-P229",
-      "type": "pickup-verification",
-      "city": "Lucknow",
-      "category": "mobiles",
-      "status": "assigned",
-      "checklist": [
-        "Verify IMEI",
-        "Run speaker test",
-        "Run microphone test",
-        "Check display",
-        "Capture photos",
-        "Capture short video",
-        "OTP handover"
-      ]
-    },
-    {
-      "id": "GT-P230",
-      "type": "bundle-pickup",
-      "city": "Gonda",
-      "category": "books",
-      "status": "assigned",
-      "checklist": [
-        "Check each item",
-        "Capture photos",
-        "Mark accepted or rejected",
-        "Collect OTP"
-      ]
-    }
-  ],
-  "orders": [
-    {
-      "id": "GT-1042",
-      "userId": "user-demo",
-      "productIds": [
-        "p5"
-      ],
-      "totalCoins": 1450,
-      "status": "coins-confirmed",
-      "timeline": [
-        "order-placed",
-        "coins-confirmed"
-      ],
-      "createdAt": "2026-06-05T15:57:50.713Z"
-    }
-  ],
+  "users": [],
+  "wallets": {},
+  "sellRequests": [],
+  "partnerTasks": [],
+  "orders": [],
   "joinApplications": [],
   "rechargeRequests": [],
   "returns": [],
@@ -1842,13 +1572,13 @@
       "allowedMethods": [
         "UPI"
       ],
-      "status": "local-upi-simulation",
+      "status": "manual-upi-verification",
       "upi": {
         "merchantName": "GIVE & TAKE",
         "upiId": "",
         "note": "Add your UPI ID from the admin panel before public launch."
       },
-      "notes": "Only UPI is enabled. Without a payment gateway API, recharge requests stay pending until admin verifies the UPI payment."
+      "notes": "Only UPI is enabled. Recharge requests stay pending until admin verifies the UPI payment."
     },
     "delivery": {
       "ownPartnerPanel": "active-local-system",
