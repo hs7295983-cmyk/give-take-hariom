@@ -2992,6 +2992,14 @@ function preloadProductDetail(productId) {
   loadProductDetail(productId).catch(() => {});
 }
 
+function preloadProductImage(productId) {
+  const product = productDetails.get(productId) || products.find(item => item.id === productId);
+  const [imageUrl] = getProductImages(product || {});
+  if (!imageUrl) return;
+  const image = new Image();
+  image.src = optimizedImageUrl(imageUrl, 600);
+}
+
 function optimizedImageUrl(imageUrl, width = 600) {
   if (!imageUrl || !imageUrl.includes("deodap.in/cdn/shop/")) return imageUrl;
   const cleanUrl = imageUrl.replace(/([?&])width=\d+&?/g, "$1").replace(/[?&]$/, "");
@@ -3001,11 +3009,12 @@ function optimizedImageUrl(imageUrl, width = 600) {
 function productVisual(product, className = "product-visual") {
   const fallbackStyle = `--art-a:${product.artA};--art-b:${product.artB}`;
   const [imageUrl] = getProductImages(product);
-  const imageWidth = className.includes("detail") ? 900 : className.includes("cart") || className.includes("order") ? 220 : 520;
+  const imageWidth = className.includes("cart") || className.includes("order") ? 220 : 600;
+  const isDetailImage = className.includes("detail");
   if (imageUrl) {
     return `
       <div class="${className}" style="${fallbackStyle}">
-        <img class="product-photo" src="${escapeHtml(optimizedImageUrl(imageUrl, imageWidth))}" alt="${escapeHtml(product.title)}" loading="lazy" decoding="async" />
+        <img class="product-photo" src="${escapeHtml(optimizedImageUrl(imageUrl, imageWidth))}" alt="${escapeHtml(product.title)}" loading="${isDetailImage ? "eager" : "lazy"}" decoding="async" ${isDetailImage ? 'fetchpriority="high"' : ""} />
       </div>
     `;
   }
@@ -3192,7 +3201,7 @@ function renderProductDetail() {
       ${galleryImages.length > 1 ? `
         <div class="detail-thumbnails" aria-label="Product photos">
           ${galleryImages.map((image, index) => `
-            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(optimizedImageUrl(image, 900))}" type="button" aria-label="Show product photo ${index + 1}">
+            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(optimizedImageUrl(image, 600))}" type="button" aria-label="Show product photo ${index + 1}">
               <img ${index < 2 ? `src="${escapeHtml(optimizedImageUrl(image, 160))}"` : `data-gallery-thumb-src="${escapeHtml(optimizedImageUrl(image, 160))}"`} alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
             </button>
           `).join("")}
@@ -4414,7 +4423,10 @@ function navigate(rawHash, shouldScroll = true) {
 function wireEvents() {
   const prefetchProductFromEvent = event => {
     const product = event.target.closest?.("[data-product]");
-    if (product?.dataset.product) preloadProductDetail(product.dataset.product);
+    if (product?.dataset.product) {
+      preloadProductImage(product.dataset.product);
+      preloadProductDetail(product.dataset.product);
+    }
   };
   document.body.addEventListener("pointerover", prefetchProductFromEvent, { passive: true });
   document.body.addEventListener("pointerdown", prefetchProductFromEvent, { passive: true });
