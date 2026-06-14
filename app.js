@@ -1607,18 +1607,8 @@ const fallbackHomeKitchenProducts = [
     "views": 720,
     "sold": 26,
     "imageUrl": "https://deodap.in/cdn/shop/files/8UR2OC61Qc.jpg?v=1776856123",
-    "images": [
-      "https://deodap.in/cdn/shop/files/8UR2OC61Qc.jpg?v=1776856123",
-      "https://deodap.in/cdn/shop/files/cGZvzJmy2v.jpg?v=1776856122",
-      "https://deodap.in/cdn/shop/files/ZjNrbIEQcp.jpg?v=1776856123",
-      "https://deodap.in/cdn/shop/files/r1uQyM6ouR.jpg?v=1776856122",
-      "https://deodap.in/cdn/shop/files/rstfooRWYL.jpg?v=1776856122",
-      "https://deodap.in/cdn/shop/files/isOKf5AKu9.jpg?v=1776856123",
-      "https://deodap.in/cdn/shop/files/zGP5Ev6ML5.jpg?v=1776856123",
-      "https://deodap.in/cdn/shop/files/jJcBTskzav.jpg?v=1776856123"
-    ],
     "newest": 1000,
-    "supplierUrl": "https://deodap.in/products/glass-tumbler-with-straw-and-lid-portable-juice-coffee-cup-1"
+    "imageCount": 8
   },
   {
     "id": "hk02",
@@ -1646,17 +1636,8 @@ const fallbackHomeKitchenProducts = [
     "views": 711,
     "sold": 25,
     "imageUrl": "https://deodap.in/cdn/shop/files/01_cf89d252-05a8-4b5f-b488-649a8e5ca30d.jpg?v=1769171900",
-    "images": [
-      "https://deodap.in/cdn/shop/files/01_cf89d252-05a8-4b5f-b488-649a8e5ca30d.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/a80bd7fd-d28e-49b1-bda5-2aef37991292_0b371092-e46d-4324-9879-5c8471a0da48.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/04_9eecd7b6-4ff7-4dd4-beb0-47f0dab5e6c1.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/02_9bfe83ed-0412-46c6-8f13-525d8c3a6ce6.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/05_d03d965c-6894-425d-9b4f-f964c0e5e704.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/03_d1d18de1-60c6-49d5-b708-1e26165743da.jpg?v=1769171900",
-      "https://deodap.in/cdn/shop/files/2b9b3759-47bb-4674-abc4-6f7babe123b0_df38a105-9ae8-49dc-b9db-5a4f86db0da8.jpg?v=1769171900"
-    ],
     "newest": 999,
-    "supplierUrl": "https://deodap.in/products/professional-grade-stainless-steel-vegetable-cleaver-knife-1-pc-01"
+    "imageCount": 7
   },
   {
     "id": "hk03",
@@ -1684,19 +1665,8 @@ const fallbackHomeKitchenProducts = [
     "views": 702,
     "sold": 24,
     "imageUrl": "https://deodap.in/cdn/shop/files/Hook-1.jpg?v=1776842596",
-    "images": [
-      "https://deodap.in/cdn/shop/files/Hook-1.jpg?v=1776842596",
-      "https://deodap.in/cdn/shop/files/Hook-9.jpg?v=1776842596",
-      "https://deodap.in/cdn/shop/files/Hook-3.jpg?v=1776842596",
-      "https://deodap.in/cdn/shop/files/Hook-7.jpg?v=1776842595",
-      "https://deodap.in/cdn/shop/files/Hook-5.jpg?v=1776842596",
-      "https://deodap.in/cdn/shop/files/Hook-6.jpg?v=1776842595",
-      "https://deodap.in/cdn/shop/files/Hook-2.jpg?v=1776842596",
-      "https://deodap.in/cdn/shop/files/Hook-4.jpg?v=1776842595",
-      "https://deodap.in/cdn/shop/files/Hook-8.jpg?v=1776842595"
-    ],
     "newest": 998,
-    "supplierUrl": "https://deodap.in/products/transparent-self-adhesive-wall-hook-1-pc"
+    "imageCount": 9
   },
   {
     "id": "hk04",
@@ -1724,17 +1694,8 @@ const fallbackHomeKitchenProducts = [
     "views": 693,
     "sold": 23,
     "imageUrl": "https://deodap.in/cdn/shop/files/01_f0158a81-c2ef-481d-9430-311382fede6b.jpg?v=1737615940",
-    "images": [
-      "https://deodap.in/cdn/shop/files/01_f0158a81-c2ef-481d-9430-311382fede6b.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/212.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/02_af5abeef-e1fa-4846-8086-0e059449d1db.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/03_fee37e73-78c2-4fea-9b77-da8bf021981d.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/05_d10998c8-aa65-4de9-a30b-5461702b55db.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/04_d74e4bcd-e7a1-4e01-a8e9-9530a89b6794.jpg?v=1737615940",
-      "https://deodap.in/cdn/shop/files/10e6d356-1bec-4f00-91b8-94de26cc92c5.jpg?v=1737615940"
-    ],
     "newest": 997,
-    "supplierUrl": "https://deodap.in/products/leakproof-glass-water-bottle-450ml"
+    "imageCount": 7
   },
   {
     "id": "hk05",
@@ -1762,19 +1723,8 @@ const fallbackHomeKitchenProducts = [
     "views": 684,
     "sold": 22,
     "imageUrl": "https://deodap.in/cdn/shop/files/Lightpanda-WOSKU-01.jpg?v=1774331864",
-    "images": [
-      "https://deodap.in/cdn/shop/files/Lightpanda-WOSKU-01.jpg?v=1774331864",
-      "https://deodap.in/cdn/shop/files/21255.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-03.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-06.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-04.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-07.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-05.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-02.jpg?v=1774525594",
-      "https://deodap.in/cdn/shop/files/Lightpanda-live.jpg?v=1774525594"
-    ],
     "newest": 996,
-    "supplierUrl": "https://deodap.in/products/cute-mini-panda-night-light-lamp-1-pc"
+    "imageCount": 9
   },
   {
     "id": "hk06",
@@ -1802,17 +1752,8 @@ const fallbackHomeKitchenProducts = [
     "views": 675,
     "sold": 21,
     "imageUrl": "https://deodap.in/cdn/shop/products/5a03f578a2ef5509bf8a2b70-1-large.jpg?v=1750851930",
-    "images": [
-      "https://deodap.in/cdn/shop/products/5a03f578a2ef5509bf8a2b70-1-large.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/products/1186.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/products/510MEXzOmHL._SL1001.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/products/5b1514a8ec5ead7d6a8dc3ae-2-large.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/products/5de923d33be6b63ac911b58a-9-large.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/products/5de923d33be6b63ac911b58a-12-large.jpg?v=1750851930",
-      "https://deodap.in/cdn/shop/files/a434d2f0-ecaa-4cd2-92ae-74b112c95dd7.jpg?v=1750851930"
-    ],
     "newest": 995,
-    "supplierUrl": "https://deodap.in/products/1186-premium-coconut-opener-tool-driller-with-comfortable-grip"
+    "imageCount": 7
   },
   {
     "id": "hk07",
@@ -1840,21 +1781,8 @@ const fallbackHomeKitchenProducts = [
     "views": 666,
     "sold": 20,
     "imageUrl": "https://deodap.in/cdn/shop/files/3.jpg?v=1761747759",
-    "images": [
-      "https://deodap.in/cdn/shop/files/3.jpg?v=1761747759",
-      "https://deodap.in/cdn/shop/files/46.png?v=1761747759",
-      "https://deodap.in/cdn/shop/files/47.png?v=1761747759",
-      "https://deodap.in/cdn/shop/files/48.png?v=1761747759",
-      "https://deodap.in/cdn/shop/files/49_51c19603-75a6-432c-969d-3bb55fab282d.png?v=1761747759",
-      "https://deodap.in/cdn/shop/files/50_5ac2dc5e-a361-4bee-adc9-6bcc5213e19d.png?v=1761747759",
-      "https://deodap.in/cdn/shop/files/02_8ef5907c-424d-43b5-8963-e412fd176126.jpg?v=1761747759",
-      "https://deodap.in/cdn/shop/files/04_470e54a3-2de3-457f-9ca1-1ae47946c094.jpg?v=1761747759",
-      "https://deodap.in/cdn/shop/files/05_48c8e84c-55a5-4779-8d58-66c790a35cfb.jpg?v=1761747759",
-      "https://deodap.in/cdn/shop/files/06_ecc02eb7-88ba-4bc6-a1b8-fb9123663230.jpg?v=1761747759",
-      "https://deodap.in/cdn/shop/files/5f9c14cb-07a6-42f9-8c5b-49b92167a7dc.jpg?v=1761747759"
-    ],
     "newest": 994,
-    "supplierUrl": "https://deodap.in/products/disposable-shower-caps"
+    "imageCount": 11
   },
   {
     "id": "hk08",
@@ -1882,17 +1810,8 @@ const fallbackHomeKitchenProducts = [
     "views": 657,
     "sold": 19,
     "imageUrl": "https://deodap.in/cdn/shop/files/01_9cea5e9c-9214-4fd3-bb07-a4f9f80d7f81.jpg?v=1737617976",
-    "images": [
-      "https://deodap.in/cdn/shop/files/01_9cea5e9c-9214-4fd3-bb07-a4f9f80d7f81.jpg?v=1737617976",
-      "https://deodap.in/cdn/shop/files/135656.jpg?v=1737617976",
-      "https://deodap.in/cdn/shop/files/04_e0589165-571a-4bc8-8b2d-3ce15631cfd7.jpg?v=1737617976",
-      "https://deodap.in/cdn/shop/files/02_b252b38a-5da8-48c2-8751-7de4301aa0d7.jpg?v=1737617976",
-      "https://deodap.in/cdn/shop/files/05_9285baec-da6a-4e3b-b0e4-408d21daa678.jpg?v=1737617977",
-      "https://deodap.in/cdn/shop/files/03_6bef138f-d27b-4800-8262-3670aa29f5a8.jpg?v=1737617977",
-      "https://deodap.in/cdn/shop/files/20620b5f-feb0-4cf1-910c-6f0d6d21eab0.jpg?v=1737617977"
-    ],
     "newest": 993,
-    "supplierUrl": "https://deodap.in/products/13630-face-massage-ice-roller-1pc"
+    "imageCount": 7
   },
   {
     "id": "hk09",
@@ -1920,17 +1839,8 @@ const fallbackHomeKitchenProducts = [
     "views": 648,
     "sold": 18,
     "imageUrl": "https://deodap.in/cdn/shop/files/02_dae2a0b9-783b-4eff-918f-ee75d33b1f6f.jpg?v=1771313070",
-    "images": [
-      "https://deodap.in/cdn/shop/files/02_dae2a0b9-783b-4eff-918f-ee75d33b1f6f.jpg?v=1771313070",
-      "https://deodap.in/cdn/shop/files/01_6ebdc4aa-3e0c-48e1-b5fd-f6129aa23083.jpg?v=1771313070",
-      "https://deodap.in/cdn/shop/files/04_6fb93fdc-5fa5-4daa-9af7-e7bddf6e5336.jpg?v=1771313070",
-      "https://deodap.in/cdn/shop/files/05_57218cdd-3edc-4101-9267-28536f92108b.jpg?v=1771409448",
-      "https://deodap.in/cdn/shop/files/03_2f2b6a02-81c3-4278-837a-228bcb91fa0d.jpg?v=1771409448",
-      "https://deodap.in/cdn/shop/files/06_0ed4e97b-8659-48ab-b24b-95a5663cbd09.jpg?v=1771313070",
-      "https://deodap.in/cdn/shop/files/07_62299ff7-8cfe-4e66-969d-c9f305bbc632.jpg?v=1771313070"
-    ],
     "newest": 992,
-    "supplierUrl": "https://deodap.in/products/multi-purpose-plastic-wall-mounted-mobile-charging-holder-set-4-pc"
+    "imageCount": 7
   },
   {
     "id": "hk10",
@@ -1958,16 +1868,8 @@ const fallbackHomeKitchenProducts = [
     "views": 639,
     "sold": 17,
     "imageUrl": "https://deodap.in/cdn/shop/files/ru5JONiHAO.jpg?v=1777380985",
-    "images": [
-      "https://deodap.in/cdn/shop/files/ru5JONiHAO.jpg?v=1777380985",
-      "https://deodap.in/cdn/shop/files/JtXfgCprhe.jpg?v=1777380985",
-      "https://deodap.in/cdn/shop/files/SiQn6o2O3V.jpg?v=1777380985",
-      "https://deodap.in/cdn/shop/files/rzM80Y2CYz.jpg?v=1777380985",
-      "https://deodap.in/cdn/shop/files/E04DN4Cy5o.png?v=1777380986",
-      "https://deodap.in/cdn/shop/files/geTqbVueyw.jpg?v=1777380985"
-    ],
     "newest": 991,
-    "supplierUrl": "https://deodap.in/products/ocean-insulated-water-jug-with-tap-4500ml-pc-bpa-free-hot-cold-dispenser"
+    "imageCount": 6
   },
   {
     "id": "hk11",
@@ -1995,20 +1897,8 @@ const fallbackHomeKitchenProducts = [
     "views": 630,
     "sold": 16,
     "imageUrl": "https://deodap.in/cdn/shop/files/21df1db2-13f1-4cae-b097-4646355bad51.jpg?v=1737617649",
-    "images": [
-      "https://deodap.in/cdn/shop/files/21df1db2-13f1-4cae-b097-4646355bad51.jpg?v=1737617649",
-      "https://deodap.in/cdn/shop/files/06_7c8ce855-6fa0-4f6d-a0c0-a47cde595c08.jpg?v=1737617649",
-      "https://deodap.in/cdn/shop/files/07_be0a9d16-3cf2-4ef9-9774-89ee6dabfa39.jpg?v=1737617649",
-      "https://deodap.in/cdn/shop/files/01_508b819c-2e5f-4d4c-8d00-b3e22dc625cd.jpg?v=1737617650",
-      "https://deodap.in/cdn/shop/files/03_2da30c2f-766f-49e2-b9f5-d395b05f1518.jpg?v=1737617650",
-      "https://deodap.in/cdn/shop/files/04_ff7a0c82-0e14-479e-9121-cc27803fc09e.jpg?v=1737617650",
-      "https://deodap.in/cdn/shop/files/05_1a0dd2a7-d36c-4300-b447-7004e52863d4.jpg?v=1737617650",
-      "https://deodap.in/cdn/shop/files/08_a7bf0907-096d-41fe-916c-24147ead7de9.jpg?v=1737617650",
-      "https://deodap.in/cdn/shop/files/09_9f5a7536-711a-430d-9511-63c7262344df.jpg?v=1737617651",
-      "https://deodap.in/cdn/shop/files/2c6ffaf1-efe6-457a-8c9d-cfa37d2af8bf.jpg?v=1737617651"
-    ],
     "newest": 990,
-    "supplierUrl": "https://deodap.in/products/12038_750w_electric_sandwich_maker"
+    "imageCount": 10
   },
   {
     "id": "hk12",
@@ -2036,18 +1926,8 @@ const fallbackHomeKitchenProducts = [
     "views": 621,
     "sold": 15,
     "imageUrl": "https://deodap.in/cdn/shop/products/1_fee79a3d-7b47-4f56-b72e-0b0e22e9a831.jpg?v=1737631031",
-    "images": [
-      "https://deodap.in/cdn/shop/products/1_fee79a3d-7b47-4f56-b72e-0b0e22e9a831.jpg?v=1737631031",
-      "https://deodap.in/cdn/shop/products/0082.jpg?v=1737631031",
-      "https://deodap.in/cdn/shop/products/5_71b9a005-a073-4f15-80c8-890f10ae2b09.jpg?v=1737631031",
-      "https://deodap.in/cdn/shop/products/4_2a16d5e8-cacc-4d5c-af0f-6396a85bdf29.jpg?v=1737631031",
-      "https://deodap.in/cdn/shop/products/04_6.jpg?v=1737631032",
-      "https://deodap.in/cdn/shop/products/3_bee3e193-2584-4c94-b211-f3133bc315c1.jpg?v=1737631032",
-      "https://deodap.in/cdn/shop/products/2_252a2795-cb35-4604-a53a-75dee9aa81e3.jpg?v=1737631032",
-      "https://deodap.in/cdn/shop/products/8697cfac-1638-4013-8a33-05670d0921b5_9a0ebcac-10ed-4aa7-9951-2abb16c72b89.jpg?v=1737631032"
-    ],
     "newest": 989,
-    "supplierUrl": "https://deodap.in/products/082-smokeless-electric-indoor-barbecue-grill-2000w"
+    "imageCount": 8
   },
   {
     "id": "hk13",
@@ -2075,16 +1955,8 @@ const fallbackHomeKitchenProducts = [
     "views": 612,
     "sold": 14,
     "imageUrl": "https://deodap.in/cdn/shop/products/1_980f9b7a-5676-4c1d-a756-d7bcef131eda.jpg?v=1737629483",
-    "images": [
-      "https://deodap.in/cdn/shop/products/1_980f9b7a-5676-4c1d-a756-d7bcef131eda.jpg?v=1737629483",
-      "https://deodap.in/cdn/shop/products/0178.jpg?v=1737629483",
-      "https://deodap.in/cdn/shop/products/IMG-20200706-WA0156.jpg?v=1737629483",
-      "https://deodap.in/cdn/shop/products/Untitled-1copy.jpg?v=1737629483",
-      "https://deodap.in/cdn/shop/products/61iCn2en2GL._AC_SL1500.jpg?v=1737629483",
-      "https://deodap.in/cdn/shop/products/40263d6f-d3c3-469b-a009-4f2263f0a51d.jpg?v=1737629483"
-    ],
     "newest": 988,
-    "supplierUrl": "https://deodap.in/products/178-kitchen-food-processor-chop-n-churn"
+    "imageCount": 6
   },
   {
     "id": "hk14",
@@ -2112,18 +1984,8 @@ const fallbackHomeKitchenProducts = [
     "views": 603,
     "sold": 13,
     "imageUrl": "https://deodap.in/cdn/shop/files/02_e2f6d4fc-c53f-4005-a6af-bf547936d74f.jpg?v=1751263917",
-    "images": [
-      "https://deodap.in/cdn/shop/files/02_e2f6d4fc-c53f-4005-a6af-bf547936d74f.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/37c2ddd4-7f09-4d49-96e0-8ea49f558d18_522b81d8-9033-4539-950c-36d066eae59f.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/06_99939d45-f10d-4410-8600-21297c47e5c4.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/03_39f86d62-d8bd-4b6c-8b09-5209fca1d840.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/04_ca3023f5-5a62-40d9-a4a7-ce0516a4f8a6.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/05_998ee18f-62a7-47ce-aee0-7f01092cd342.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/02_9bcc0d17-7ade-4aa4-8251-06758836726a.jpg?v=1751263917",
-      "https://deodap.in/cdn/shop/files/272da2bc-6c7e-4cd0-8933-3f8bd22caed1_fcb8e295-d416-4913-9734-7ae4c236952b.jpg?v=1743836581"
-    ],
     "newest": 987,
-    "supplierUrl": "https://deodap.in/products/ultrasonic-jewllery-cleaner-ultrasonic-cleaning-machine-portable-jewellery-cleaning-for-jewellery-ring-silver-retainer-glasses-watches-coins"
+    "imageCount": 8
   },
   {
     "id": "hk15",
@@ -2151,18 +2013,8 @@ const fallbackHomeKitchenProducts = [
     "views": 594,
     "sold": 12,
     "imageUrl": "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-WOSKU-01.jpg?v=1774850440",
-    "images": [
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-WOSKU-01.jpg?v=1774850440",
-      "https://deodap.in/cdn/shop/files/sku_8c9064de-4649-4a73-b5e6-9265c11d12b9.jpg?v=1774850440",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-05.jpg?v=1774947892",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-04.jpg?v=1774947892",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-02.jpg?v=1774947892",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-size.jpg?v=1774850479",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-03.jpg?v=1774850479",
-      "https://deodap.in/cdn/shop/files/SteelJaliRoasterGrill-live.jpg?v=1774850479"
-    ],
     "newest": 986,
-    "supplierUrl": "https://deodap.in/products/2085-kitchen-round-stainless-steel-roaster-papad-jali-barbecue-grill-with-wooden-handle"
+    "imageCount": 8
   },
   {
     "id": "hk16",
@@ -2190,21 +2042,8 @@ const fallbackHomeKitchenProducts = [
     "views": 585,
     "sold": 11,
     "imageUrl": "https://deodap.in/cdn/shop/files/0060_power_free_blender.jpg?v=1745572967",
-    "images": [
-      "https://deodap.in/cdn/shop/files/0060_power_free_blender.jpg?v=1745572967",
-      "https://deodap.in/cdn/shop/products/0060.jpg?v=1745572967",
-      "https://deodap.in/cdn/shop/products/4_1024x1024_414ad6c1-b865-4035-bb9b-193cbe1b969f.jpg?v=1745572967",
-      "https://deodap.in/cdn/shop/files/0060_power_free_blender_068a2398-cda4-4718-b9ca-5fd025a406ea.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/as5d5as1d6.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/1_1024x1024_8929ed6f-2ae9-49b0-9879-83c7bd4b6a06.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/04_1.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/2_1024x1024_a2c93c64-f1e4-49c1-8ef1-b6b0b84b8205.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/51yvsEuhUgS._SL1500.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/products/45.jpg?v=1765950442",
-      "https://deodap.in/cdn/shop/files/44ca8443-6a07-4b77-b197-a9202ed5282c.jpg?v=1765950442"
-    ],
     "newest": 985,
-    "supplierUrl": "https://deodap.in/products/060-power-free-blender"
+    "imageCount": 11
   },
   {
     "id": "hk17",
@@ -2232,17 +2071,8 @@ const fallbackHomeKitchenProducts = [
     "views": 576,
     "sold": 10,
     "imageUrl": "https://deodap.in/cdn/shop/files/01_605b09bc-2596-43ba-879e-cb674ebb53fc.jpg?v=1745040067",
-    "images": [
-      "https://deodap.in/cdn/shop/files/01_605b09bc-2596-43ba-879e-cb674ebb53fc.jpg?v=1745040067",
-      "https://deodap.in/cdn/shop/files/sku_4d377bed-2a93-429a-bedb-4dd9e4ae1eb4.jpg?v=1745040067",
-      "https://deodap.in/cdn/shop/files/02_802c513d-67a5-420b-aa58-994b3d1a9015.jpg?v=1745040067",
-      "https://deodap.in/cdn/shop/files/03_4d9053d2-4ccb-4cc6-9b34-24ea8efecb24.jpg?v=1745040068",
-      "https://deodap.in/cdn/shop/files/05_5a593bc2-e9c9-4aa6-80a3-900c84150bc4.jpg?v=1745040068",
-      "https://deodap.in/cdn/shop/files/04_a8046927-5603-4068-862b-dd807a88653e.jpg?v=1745040068",
-      "https://deodap.in/cdn/shop/files/8612937e-511f-47a7-8c68-2a4634f4803a.jpg?v=1745040068"
-    ],
     "newest": 984,
-    "supplierUrl": "https://deodap.in/products/11452_power_x_chopper_500ml_pxc"
+    "imageCount": 7
   },
   {
     "id": "hk18",
@@ -2270,23 +2100,15 @@ const fallbackHomeKitchenProducts = [
     "views": 567,
     "sold": 9,
     "imageUrl": "https://deodap.in/cdn/shop/files/CFRsOR7K1Q.jpg?v=1773662418",
-    "images": [
-      "https://deodap.in/cdn/shop/files/CFRsOR7K1Q.jpg?v=1773662418",
-      "https://deodap.in/cdn/shop/files/ioY8XXEeis.jpg?v=1773662417",
-      "https://deodap.in/cdn/shop/files/icqVz0ttGV.jpg?v=1773662417",
-      "https://deodap.in/cdn/shop/files/NK3OqcjSuJ.jpg?v=1773662419",
-      "https://deodap.in/cdn/shop/files/b83lWeFhqs.jpg?v=1773662416",
-      "https://deodap.in/cdn/shop/files/zejiOvgKA1.jpg?v=1773662416",
-      "https://deodap.in/cdn/shop/files/Ip4soJpoF4.jpg?v=1773662416"
-    ],
     "newest": 983,
-    "supplierUrl": "https://deodap.in/products/stainless-steel-water-dispenser-with-tap-carry-handle-hot-and-cold-beverage-storage"
+    "imageCount": 7
   }
 ];
 fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackProducts.filter(product => product.category !== "home"));
 
 let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
+let productDetails = new Map();
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
@@ -2459,6 +2281,11 @@ async function loadBackendData() {
     ]);
     categories = categoryData.categories;
     products = productData.products;
+    productDetails = new Map(
+      products
+        .filter(product => Array.isArray(product.images) && product.images.length)
+        .map(product => [product.id, product])
+    );
     wallet = normalizeWallet(walletData.wallet);
     cacheWallet(wallet);
     orders = orderData.orders;
@@ -2613,13 +2440,34 @@ function getProductImages(product) {
   ].filter(Boolean))];
 }
 
+async function loadProductDetail(productId) {
+  if (!productId || productDetails.has(productId)) return productDetails.get(productId);
+  const existing = products.find(product => product.id === productId);
+  if (existing && Array.isArray(existing.images) && existing.images.length > 1) {
+    productDetails.set(productId, existing);
+    return existing;
+  }
+  const data = await api(`/api/products/${encodeURIComponent(productId)}`);
+  if (!data.product) return existing;
+  productDetails.set(productId, data.product);
+  products = products.map(product => product.id === productId ? { ...product, ...data.product } : product);
+  return data.product;
+}
+
+function optimizedImageUrl(imageUrl, width = 600) {
+  if (!imageUrl || !imageUrl.includes("deodap.in/cdn/shop/")) return imageUrl;
+  const cleanUrl = imageUrl.replace(/([?&])width=\d+&?/g, "$1").replace(/[?&]$/, "");
+  return `${cleanUrl}${cleanUrl.includes("?") ? "&" : "?"}width=${width}`;
+}
+
 function productVisual(product, className = "product-visual") {
   const fallbackStyle = `--art-a:${product.artA};--art-b:${product.artB}`;
   const [imageUrl] = getProductImages(product);
+  const imageWidth = className.includes("detail") ? 900 : className.includes("cart") || className.includes("order") ? 220 : 520;
   if (imageUrl) {
     return `
       <div class="${className}" style="${fallbackStyle}">
-        <img class="product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />
+        <img class="product-photo" src="${escapeHtml(optimizedImageUrl(imageUrl, imageWidth))}" alt="${escapeHtml(product.title)}" loading="lazy" decoding="async" />
       </div>
     `;
   }
@@ -2785,7 +2633,7 @@ function renderProductDetail() {
   const orderProduct = orders
     .flatMap(order => order.products || [])
     .find(item => (item.productId || item.id) === state.productId);
-  const product = products.find(item => item.id === state.productId) || orderProduct || products[0];
+  const product = productDetails.get(state.productId) || products.find(item => item.id === state.productId) || orderProduct || products[0];
   const hiddenChecks = new Set(["Original price listed", "Admin price editable", "Product matched from supplied screenshot", "4+ DeoDap product photos linked", "4+ DODAP product photos linked"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
@@ -2796,8 +2644,8 @@ function renderProductDetail() {
       ${galleryImages.length > 1 ? `
         <div class="detail-thumbnails" aria-label="Product photos">
           ${galleryImages.map((image, index) => `
-            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(image)}" type="button" aria-label="Show product photo ${index + 1}">
-              <img src="${escapeHtml(image)}" alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" />
+            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(optimizedImageUrl(image, 900))}" type="button" aria-label="Show product photo ${index + 1}">
+              <img src="${escapeHtml(optimizedImageUrl(image, 160))}" alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
             </button>
           `).join("")}
         </div>
@@ -3953,6 +3801,16 @@ function navigate(rawHash, shouldScroll = true) {
   });
   renderProducts();
   renderProductDetail();
+  if (state.route === "product" && state.productId) {
+    const productId = state.productId;
+    loadProductDetail(productId)
+      .then(() => {
+        if (state.route === "product" && state.productId === productId) renderProductDetail();
+      })
+      .catch(error => {
+        console.warn(`Could not load product gallery: ${error.message}`);
+      });
+  }
   renderCart();
   renderOrders();
   renderAccount();

@@ -100,6 +100,14 @@ function sortProducts(list, sort) {
   return [...list].sort(sorters[sort] || sorters.trending);
 }
 
+function productSummary(product) {
+  const { images, checks, supplierUrl, ...summary } = product;
+  return {
+    ...summary,
+    imageCount: Array.isArray(images) ? images.length : 0
+  };
+}
+
 function serviceableCity(db, city) {
   return db.meta.serviceCities.some(item => item.toLowerCase() === String(city || "").toLowerCase());
 }
@@ -420,7 +428,7 @@ async function handleApi(req, res) {
       const searchable = `${product.title} ${product.city} ${product.source} ${product.condition}`.toLowerCase();
       const matchQuery = !q || searchable.includes(q);
       return product.status === "listed" && matchCategory && matchCity && matchQuery;
-    }), sort);
+    }), sort).map(productSummary);
     return sendJson(res, 200, { products });
   }
 
