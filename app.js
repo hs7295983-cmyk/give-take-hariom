@@ -6,7 +6,9 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
-const CATALOG_CACHE_KEY = "give_take_catalog_cache";
+const CATALOG_CACHE_VERSION = 2;
+const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
+const LEGACY_CATALOG_CACHE_KEYS = ["give_take_catalog_cache"];
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
 const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -2623,12 +2625,13 @@ const fallbackElectronicsProducts = [
 
 fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackElectronicsProducts, ...fallbackProducts.filter(product => !["home", "electronics"].includes(product.category)));
 
+purgeLegacyCatalogCache();
 const cachedCatalog = loadCachedCatalog();
 let categories = cachedCatalog?.categories || [...fallbackCategories];
 let products = cachedCatalog?.products || [...fallbackProducts];
 let productDetails = new Map();
 let productDetailRequests = new Map();
-let backendDataReady = false;
+let backendDataReady = true;
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
@@ -2799,6 +2802,7 @@ function loadCachedCatalog() {
     const cached = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
     const maxAgeMs = 6 * 60 * 60 * 1000;
     if (!cached || Date.now() - Number(cached.savedAt || 0) > maxAgeMs) return null;
+    if (cached.version !== CATALOG_CACHE_VERSION) return null;
     if (!Array.isArray(cached.categories) || !Array.isArray(cached.products) || !cached.products.length) return null;
     return {
       categories: cached.categories,
@@ -2809,9 +2813,16 @@ function loadCachedCatalog() {
   }
 }
 
+function purgeLegacyCatalogCache() {
+  try {
+    LEGACY_CATALOG_CACHE_KEYS.forEach(key => localStorage.removeItem(key));
+  } catch {}
+}
+
 function cacheCatalog() {
   try {
     localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({
+      version: CATALOG_CACHE_VERSION,
       savedAt: Date.now(),
       categories,
       products,
@@ -3220,6 +3231,17 @@ function getFilteredProducts() {
 }
 
 function renderProducts() {
+  if (!backendDataReady) {
+    const loading = loadingPanel("Loading latest prices...");
+    els.featuredProducts.innerHTML = loading;
+    els.productGrid.innerHTML = loading;
+    if (state.category) {
+      const category = categories.find(item => item.id === state.category);
+      els.categoryTitle.textContent = category?.name || "Category";
+      els.categoryProducts.innerHTML = loading;
+    }
+    return;
+  }
   els.featuredProducts.innerHTML = products.slice(0, 8).map(card).join("");
   els.productGrid.innerHTML = getFilteredProducts().map(card).join("");
   if (state.category) {
@@ -3235,6 +3257,10 @@ function renderProducts() {
 function renderProductDetail() {
   if (!state.productId) {
     els.productDetail.innerHTML = loadingPanel("Select a product to view details.");
+    return;
+  }
+  if (!backendDataReady) {
+    els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
     return;
   }
   const orderProduct = orders
@@ -4130,10 +4156,10 @@ function renderCart() {
   if (!state.cart.length) {
     state.checkoutStep = "cart";
     state.pendingRemoveCartId = null;
-    const recommended = products
+    const recommended = backendDataReady ? products
       .filter(product => product.status === "listed")
-      .slice(0, 4);
-    const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
+      .slice(0, 4) : [];
+    const cards = recommended.map(product => `
       <article class="empty-cart-product">
         ${productVisual(product, "empty-cart-product-image")}
         <div>
@@ -4169,11 +4195,15 @@ function renderCart() {
             <h2>Recommended For You</h2>
           </div>
           <div class="empty-cart-products">
-            ${cards}
+            ${backendDataReady ? cards : loadingPanel("Loading latest prices...")}
           </div>
         </section>
       </section>
     `;
+    return;
+  }
+  if (!backendDataReady) {
+    els.cartView.innerHTML = loadingPanel("Loading latest cart prices...");
     return;
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
