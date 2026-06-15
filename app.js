@@ -6,6 +6,7 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
+const CATALOG_CACHE_KEY = "give_take_catalog_cache";
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
 const authClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
@@ -2622,8 +2623,9 @@ const fallbackElectronicsProducts = [
 
 fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackElectronicsProducts, ...fallbackProducts.filter(product => !["home", "electronics"].includes(product.category)));
 
-let categories = [...fallbackCategories];
-let products = [...fallbackProducts];
+const cachedCatalog = loadCachedCatalog();
+let categories = cachedCatalog?.categories || [...fallbackCategories];
+let products = cachedCatalog?.products || [...fallbackProducts];
 let productDetails = new Map();
 let productDetailRequests = new Map();
 let backendDataReady = false;
@@ -2792,6 +2794,31 @@ function loadCachedCustomerUser() {
   }
 }
 
+function loadCachedCatalog() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
+    const maxAgeMs = 6 * 60 * 60 * 1000;
+    if (!cached || Date.now() - Number(cached.savedAt || 0) > maxAgeMs) return null;
+    if (!Array.isArray(cached.categories) || !Array.isArray(cached.products) || !cached.products.length) return null;
+    return {
+      categories: cached.categories,
+      products: cached.products,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function cacheCatalog() {
+  try {
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      categories,
+      products,
+    }));
+  } catch {}
+}
+
 async function loadBackendData() {
   try {
     const userId = getCurrentUserId();
@@ -2805,6 +2832,7 @@ async function loadBackendData() {
     ]);
     categories = categoryData.categories;
     products = productData.products;
+    cacheCatalog();
     productDetails = new Map(
       products
         .filter(product => Array.isArray(product.images) && product.images.length)
@@ -3192,16 +3220,6 @@ function getFilteredProducts() {
 }
 
 function renderProducts() {
-  if (!backendDataReady) {
-    els.featuredProducts.innerHTML = loadingPanel();
-    els.productGrid.innerHTML = loadingPanel();
-    if (state.category) {
-      const category = categories.find(item => item.id === state.category);
-      els.categoryTitle.textContent = category?.name || "Category";
-      els.categoryProducts.innerHTML = loadingPanel();
-    }
-    return;
-  }
   els.featuredProducts.innerHTML = products.slice(0, 8).map(card).join("");
   els.productGrid.innerHTML = getFilteredProducts().map(card).join("");
   if (state.category) {
@@ -3224,7 +3242,7 @@ function renderProductDetail() {
     .find(item => (item.productId || item.id) === state.productId);
   const detailProduct = productDetails.get(state.productId);
   const listProduct = products.find(item => item.id === state.productId);
-  if (!detailProduct && !orderProduct && (!backendDataReady || productDetailRequests.has(state.productId))) {
+  if (!detailProduct && !orderProduct && !listProduct && (!backendDataReady || productDetailRequests.has(state.productId))) {
     els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
     return;
   }
