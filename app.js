@@ -2974,10 +2974,6 @@ async function loadProductDetail(productId) {
   if (!productId || productDetails.has(productId)) return productDetails.get(productId);
   if (productDetailRequests.has(productId)) return productDetailRequests.get(productId);
   const existing = products.find(product => product.id === productId);
-  if (!backendDataReady && existing && Array.isArray(existing.images) && existing.images.length > 1) {
-    productDetails.set(productId, existing);
-    return existing;
-  }
   const request = api(`/api/products/${encodeURIComponent(productId)}`)
     .then(data => {
       if (!data.product) return existing;
@@ -3228,7 +3224,7 @@ function renderProductDetail() {
     .find(item => (item.productId || item.id) === state.productId);
   const detailProduct = productDetails.get(state.productId);
   const listProduct = products.find(item => item.id === state.productId);
-  if (!detailProduct && !orderProduct && (!backendDataReady || productDetailRequests.has(state.productId) || listProduct)) {
+  if (!detailProduct && !orderProduct && (!backendDataReady || productDetailRequests.has(state.productId))) {
     els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
     return;
   }
