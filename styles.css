@@ -851,6 +851,40 @@ main {
   overflow: hidden;
 }
 
+.loading-panel {
+  display: grid;
+  grid-column: 1 / -1;
+  place-items: center;
+  gap: 12px;
+  min-height: 220px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  color: var(--muted);
+  text-align: center;
+}
+
+.loading-panel strong {
+  font-size: 15px;
+}
+
+.loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--paper-soft);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .product-visual {
   aspect-ratio: 1 / 1;
   height: auto;

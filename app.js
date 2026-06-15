@@ -2626,6 +2626,7 @@ let categories = [...fallbackCategories];
 let products = [...fallbackProducts];
 let productDetails = new Map();
 let productDetailRequests = new Map();
+let backendDataReady = false;
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
@@ -2816,9 +2817,11 @@ async function loadBackendData() {
     sellRequests = sellRequestData.sellRequests || [];
     platformConfig = configData;
     if (adminToken) await loadProtectedData();
+    backendDataReady = true;
     return true;
   } catch (error) {
     console.warn("Using local fallback data:", error.message);
+    backendDataReady = true;
     return false;
   }
 }
@@ -2971,7 +2974,7 @@ async function loadProductDetail(productId) {
   if (!productId || productDetails.has(productId)) return productDetails.get(productId);
   if (productDetailRequests.has(productId)) return productDetailRequests.get(productId);
   const existing = products.find(product => product.id === productId);
-  if (existing && Array.isArray(existing.images) && existing.images.length > 1) {
+  if (!backendDataReady && existing && Array.isArray(existing.images) && existing.images.length > 1) {
     productDetails.set(productId, existing);
     return existing;
   }
@@ -2981,6 +2984,13 @@ async function loadProductDetail(productId) {
       productDetails.set(productId, data.product);
       products = products.map(product => product.id === productId ? { ...product, ...data.product } : product);
       return data.product;
+    })
+    .catch(error => {
+      if (existing) {
+        productDetails.set(productId, existing);
+        return existing;
+      }
+      throw error;
     })
     .finally(() => productDetailRequests.delete(productId));
   productDetailRequests.set(productId, request);
@@ -3131,6 +3141,15 @@ function card(product) {
   `;
 }
 
+function loadingPanel(message = "Loading latest prices...") {
+  return `
+    <article class="loading-panel" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <strong>${escapeHtml(message)}</strong>
+    </article>
+  `;
+}
+
 function renderCategories() {
   const homeCategories = homeCategoryIds
     .map(id => categories.find(category => category.id === id))
@@ -3177,20 +3196,47 @@ function getFilteredProducts() {
 }
 
 function renderProducts() {
+  if (!backendDataReady) {
+    els.featuredProducts.innerHTML = loadingPanel();
+    els.productGrid.innerHTML = loadingPanel();
+    if (state.category) {
+      const category = categories.find(item => item.id === state.category);
+      els.categoryTitle.textContent = category?.name || "Category";
+      els.categoryProducts.innerHTML = loadingPanel();
+    }
+    return;
+  }
   els.featuredProducts.innerHTML = products.slice(0, 8).map(card).join("");
   els.productGrid.innerHTML = getFilteredProducts().map(card).join("");
   if (state.category) {
     const category = categories.find(item => item.id === state.category);
-    els.categoryTitle.textContent = category.name;
-    els.categoryProducts.innerHTML = products.filter(product => product.category === state.category || (state.category === "electronics" && product.category === "mobiles")).map(card).join("");
+    const categoryProducts = products.filter(product => product.category === state.category || (state.category === "electronics" && product.category === "mobiles"));
+    els.categoryTitle.textContent = category?.name || "Category";
+    els.categoryProducts.innerHTML = categoryProducts.length
+      ? categoryProducts.map(card).join("")
+      : loadingPanel("No products available in this category yet.");
   }
 }
 
 function renderProductDetail() {
+  if (!state.productId) {
+    els.productDetail.innerHTML = loadingPanel("Select a product to view details.");
+    return;
+  }
   const orderProduct = orders
     .flatMap(order => order.products || [])
     .find(item => (item.productId || item.id) === state.productId);
-  const product = productDetails.get(state.productId) || products.find(item => item.id === state.productId) || orderProduct || products[0];
+  const detailProduct = productDetails.get(state.productId);
+  const listProduct = products.find(item => item.id === state.productId);
+  if (!detailProduct && !orderProduct && (!backendDataReady || productDetailRequests.has(state.productId) || listProduct)) {
+    els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
+    return;
+  }
+  const product = detailProduct || orderProduct || listProduct;
+  if (!product) {
+    els.productDetail.innerHTML = loadingPanel("Product not found.");
+    return;
+  }
   const hiddenChecks = new Set(["Original price listed", "Admin price editable", "Product matched from supplied screenshot", "4+ DeoDap product photos linked", "4+ DODAP product photos linked"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
