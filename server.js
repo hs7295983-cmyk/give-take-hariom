@@ -19,6 +19,7 @@ const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "p
 const customerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 365);
 const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
+const blockedCustomerSellCategories = new Set(["fashion"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -731,6 +732,9 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
+    if (blockedCustomerSellCategories.has(String(body.category || "").trim().toLowerCase())) {
+      return sendError(res, 400, "Clothes and shoes are not accepted from customer sellers");
+    }
     const sellerPhone = String(body.sellerPhone || "").trim();
     if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
     const photos = Array.isArray(body.photos)

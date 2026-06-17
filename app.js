@@ -30,6 +30,7 @@ const fallbackCategories = [
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
+const customerSellBlockedCategoryIds = new Set(["fashion"]);
 const categoryIcons = {
   electronics: '<svg viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M11 18h2"/></svg>',
   books: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19a2.5 2.5 0 0 1 2.5-2H20"/><path d="M8 7h8"/></svg>',
@@ -3316,8 +3317,9 @@ function renderCategories() {
 
 function renderSelectors() {
   const selectableCategories = categories.filter(category => category.id !== "mobiles");
+  const sellableCategories = selectableCategories.filter(category => !customerSellBlockedCategoryIds.has(category.id));
   els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-  els.sellCategory.innerHTML = selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  els.sellCategory.innerHTML = sellableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
 function getFilteredProducts() {
