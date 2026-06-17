@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Owner AI Agent | GIVE & TAKE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="owner-agent.css" />
+  </head>
+  <body>
+    <header class="owner-header">
+      <a class="owner-brand" href="/" aria-label="GIVE & TAKE home">
+        <span class="brand-mark">G&T</span>
+        <span>
+          <strong>GIVE & TAKE</strong>
+          <small>Owner AI Agent</small>
+        </span>
+      </a>
+      <div class="owner-status" id="agentStatus">Private link</div>
+    </header>
+
+    <main class="owner-shell">
+      <section class="owner-lock" id="lockView">
+        <div>
+          <p class="kicker">Protected owner tool</p>
+          <h1>Login to open your private listing agent.</h1>
+          <p>This page is not linked from the public website. Product data and actions require your admin password.</p>
+        </div>
+        <form class="lock-form" id="ownerLoginForm">
+          <label>
+            Admin password
+            <input name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Unlock Agent</button>
+        </form>
+      </section>
+
+      <section class="owner-workspace is-hidden" id="workspaceView">
+        <div class="owner-title">
+          <div>
+            <p class="kicker">Product listing and price intelligence</p>
+            <h1>Owner AI Agent</h1>
+            <p>Draft listings, choose a customer-friendly coin price, scan duplicates, and apply GIVE & TAKE badges.</p>
+          </div>
+          <button class="secondary-button" id="refreshDataButton" type="button">Refresh Data</button>
+        </div>
+
+        <section class="agent-layout">
+          <form class="agent-panel product-agent-form" id="listingAgentForm">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">01</span>
+                <h2>Product Input</h2>
+              </div>
+              <span id="catalogCount">0 products loaded</span>
+            </div>
+
+            <label>
+              Product name or supplier title
+              <input name="title" placeholder="Example: Multi-purpose wall mounted mobile charging holder" required />
+            </label>
+
+            <label>
+              Product/source link
+              <input name="url" type="url" placeholder="https://..." />
+            </label>
+
+            <div class="two-col">
+              <label>
+                Category
+                <select name="category" id="ownerCategorySelect"></select>
+              </label>
+              <label>
+                Condition
+                <select name="condition">
+                  <option>New</option>
+                  <option>Like New</option>
+                  <option selected>Good</option>
+                  <option>Fair</option>
+                  <option>Used</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label>
+                Supplier cost
+                <input name="supplierCost" type="number" min="0" step="1" placeholder="Your buying cost" />
+              </label>
+              <label>
+                Market/MRP
+                <input name="marketPrice" type="number" min="0" step="1" placeholder="Normal market price" />
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label>
+                Image URL
+                <input name="imageUrl" type="url" placeholder="Main product image link" />
+              </label>
+              <label>
+                City
+                <select name="city">
+                  <option>Lucknow</option>
+                  <option>Ayodhya</option>
+                  <option>Gonda</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              Details, size, material, issue, margin note
+              <textarea name="details" placeholder="Mention color, pack count, size, material, issue, included items, or supplier notes"></textarea>
+            </label>
+
+            <button class="primary-button" type="submit">Generate Listing Draft</button>
+          </form>
+
+          <section class="agent-panel price-panel" aria-live="polite">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">02</span>
+                <h2>Coin Price Selector</h2>
+              </div>
+              <span id="dealStatus">Waiting for product</span>
+            </div>
+
+            <div id="priceSelectorEmpty" class="empty-state">
+              Add product details to get a market-style coin price range.
+            </div>
+
+            <div id="priceSelector" class="price-selector is-hidden">
+              <div class="price-hero">
+                <span>Recommended coin price</span>
+                <strong id="selectedPrice">0 G&T</strong>
+                <small id="priceReason">Balanced customer price</small>
+              </div>
+              <input id="priceRange" type="range" min="10" max="500" step="5" value="50" />
+              <div class="price-buttons">
+                <button type="button" data-price-mode="fast">Fast Sale</button>
+                <button type="button" data-price-mode="balanced">Balanced</button>
+                <button type="button" data-price-mode="profit">Better Margin</button>
+              </div>
+              <div class="price-metrics" id="priceMetrics"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="agent-results" id="agentResults">
+          <div class="agent-panel">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">03</span>
+                <h2>Listing Draft</h2>
+              </div>
+              <button class="secondary-button" id="copyDraftButton" type="button" disabled>Copy Draft</button>
+            </div>
+            <div id="draftOutput" class="empty-state">Your draft will appear here.</div>
+          </div>
+
+          <div class="agent-panel">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">04</span>
+                <h2>Duplicate Scan</h2>
+              </div>
+              <span id="duplicateStatus">No scan yet</span>
+            </div>
+            <div id="duplicateOutput" class="empty-state">Similar existing products will appear here.</div>
+          </div>
+
+          <div class="agent-panel">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">05</span>
+                <h2>Badge Preview</h2>
+              </div>
+              <span>G&T style</span>
+            </div>
+            <div id="badgeOutput" class="empty-state">Badges and checks will appear here.</div>
+          </div>
+
+          <div class="agent-panel">
+            <div class="panel-head">
+              <div>
+                <span class="step-pill">06</span>
+                <h2>Ask Listing Agent</h2>
+              </div>
+            </div>
+            <form class="ask-form" id="askAgentForm">
+              <textarea name="prompt" placeholder="Ask: price sahi hai? duplicate risk hai? badge kya lagana chahiye?"></textarea>
+              <button class="secondary-button" type="submit">Ask Agent</button>
+            </form>
+            <div id="agentAnswer" class="agent-answer"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="owner-agent.js"></script>
+  </body>
+</html>

@@ -6,7 +6,7 @@ const { URL } = require("url");
 const fs = require("fs");
 const { ensureDb, readDb, writeDb, getStorageInfo } = require("./stateStore");
 
-const rootDir = path.resolve(__dirname, "..");
+const rootDir = fs.existsSync(path.join(__dirname, "index.html")) ? __dirname : path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 4173);
 const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : "local-admin-1234");
 const adminToken = adminPassword
@@ -1245,6 +1245,7 @@ function serveStatic(req, res) {
   const { url } = parsePath(req);
   let filePath = decodeURIComponent(url.pathname);
   if (filePath === "/") filePath = "/index.html";
+  if (filePath === "/owner-agent") filePath = "/owner-agent.html";
   const resolved = path.normalize(path.join(rootDir, filePath));
   if (!resolved.startsWith(rootDir)) {
     res.writeHead(403);
