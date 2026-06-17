@@ -452,10 +452,11 @@ async function callOpenAiAdminAgent({ action, prompt, localReport, listingInput,
       "You are GIVE & TAKE Admin Ops Agent for a coin-based reuse marketplace in India.",
       "Be operational, concise, and action-first. Do not invent private data.",
       "Use supplied products, orders, inventory diagnostics, and listing input only.",
-      "Return only valid JSON with keys: summary, priority, insights, actions, inventoryIssues, duplicateGroups, orderSummaries, priceHealth, listingDraft, supportDrafts.",
+      "Return only valid json with keys: summary, priority, insights, actions, inventoryIssues, duplicateGroups, orderSummaries, priceHealth, listingDraft, supportDrafts.",
       "Keep customer-facing support drafts polite and short."
     ].join(" "),
     input: JSON.stringify({
+      response_format: "json",
       action,
       adminPrompt: prompt || "",
       localReport,
