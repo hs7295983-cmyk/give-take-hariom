@@ -987,13 +987,17 @@ main {
 
 .card-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   margin-top: 10px;
 }
 
 .card-actions button {
   min-height: 40px;
+}
+
+.card-actions .share-button {
+  min-width: 86px;
 }
 
 .toolbar {
@@ -1084,7 +1088,7 @@ textarea {
 
 .detail-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }

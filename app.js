@@ -3215,6 +3215,32 @@ function addProductToCart(productId) {
   showToast("Item added to cart");
 }
 
+function productShareUrl(productId) {
+  const baseUrl = location.origin && location.origin !== "null"
+    ? `${location.origin}${location.pathname}`
+    : "https://give-take-beckend.onrender.com/";
+  return `${baseUrl}#product/${encodeURIComponent(productId)}`;
+}
+
+async function shareProduct(productId) {
+  const product = productDetails.get(productId) || products.find(item => item.id === productId);
+  if (!product) {
+    showToast("Product not ready to share");
+    return;
+  }
+  const url = productShareUrl(product.id);
+  const text = `${product.title} - ${formatCoins(product.price)} on GIVE & TAKE`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: product.title, text, url });
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+    }
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, "_blank", "noopener");
+}
+
 function card(product) {
   return `
     <article class="product-card">
@@ -3230,6 +3256,7 @@ function card(product) {
         <p>${escapeHtml(displayCategoryName(product.category))}</p>
         <div class="card-actions">
           <button class="primary-button" data-add="${product.id}" type="button">Add to Cart</button>
+          <button class="secondary-button share-button" data-share-product="${product.id}" type="button">Share</button>
         </div>
       </div>
     </article>
@@ -3371,6 +3398,7 @@ function renderProductDetail() {
       <div class="detail-actions">
         <button class="primary-button" data-buy-now="${product.id}" type="button">Buy with Coins</button>
         <button class="secondary-button" data-add-stay="${product.id}" type="button">Add to Cart</button>
+        <button class="secondary-button share-button" data-share-product="${product.id}" type="button">Share Product</button>
       </div>
     </article>
   `;
@@ -4843,17 +4871,28 @@ function wireEvents() {
     const category = event.target.closest("[data-category]");
     if (category) location.hash = `category/${category.dataset.category}`;
 
+    const share = event.target.closest("[data-share-product]");
+    if (share) {
+      await shareProduct(share.dataset.shareProduct);
+      return;
+    }
+
     const product = event.target.closest("[data-product]");
-    if (product?.dataset.product) location.hash = `product/${product.dataset.product}`;
+    if (product?.dataset.product) {
+      location.hash = `product/${product.dataset.product}`;
+      return;
+    }
 
     const add = event.target.closest("[data-add]");
     if (add) {
       addProductToCart(add.dataset.add);
+      return;
     }
 
     const addStay = event.target.closest("[data-add-stay]");
     if (addStay) {
       addProductToCart(addStay.dataset.addStay);
+      return;
     }
 
     const buyNow = event.target.closest("[data-buy-now]");
@@ -4865,6 +4904,7 @@ function wireEvents() {
       saveCartState();
       renderAuthStatus();
       location.hash = "cart";
+      return;
     }
 
     const removeCart = event.target.closest("[data-remove-cart]");
