@@ -497,7 +497,16 @@ async function handleApi(req, res) {
   if (method === "OPTIONS") return sendJson(res, 200, { ok: true });
 
   if (method === "GET" && parts[1] === "health") {
-    return sendJson(res, 200, { ok: true, phase: db.meta.phase, updatedAt: db.meta.updatedAt, storage: getStorageInfo() });
+    return sendJson(res, 200, {
+      ok: true,
+      phase: db.meta.phase,
+      updatedAt: db.meta.updatedAt,
+      storage: getStorageInfo(),
+      openai: {
+        configured: Boolean(process.env.OPENAI_API_KEY),
+        model: process.env.OPENAI_MODEL || "gpt-4.1-mini"
+      }
+    });
   }
 
   if (method === "POST" && parts[1] === "auth" && parts[2] === "request-otp") {
