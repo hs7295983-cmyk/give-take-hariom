@@ -3401,6 +3401,18 @@ textarea {
   grid-column: span 2;
 }
 
+.admin-file-field {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-file-field input {
+  width: 100%;
+}
+
 .admin-product-manager {
   display: grid;
   gap: 10px;

@@ -4404,6 +4404,9 @@ function renderAdmin() {
         </select>
         <input name="quantity" type="number" min="1" step="1" value="1" placeholder="Quantity" />
         <input name="imageUrl" class="span-2" type="url" placeholder="Product image URL" />
+        <label class="admin-file-field span-2">Upload product image from laptop/Mac
+          <input name="imageFile" type="file" accept="image/*" />
+        </label>
         <input name="checks" class="span-2" placeholder="Checks, comma separated: Warehouse checked, Cleaned, Tested" />
         <button class="primary-button" type="submit">Add Product</button>
       </form>
@@ -5826,6 +5829,12 @@ function wireEvents() {
         .filter(Boolean);
       try {
         setSubmitState(event.target, true, "Adding...");
+        const imageFile = event.target.elements.imageFile?.files?.[0];
+        let imageUrl = String(form.get("imageUrl") || "").trim();
+        if (imageFile) {
+          if (!imageFile.type.startsWith("image/")) throw new Error("Please choose an image file.");
+          imageUrl = await fileToCompressedDataUrl(imageFile);
+        }
         await api("/api/admin/products", {
           method: "POST",
           admin: true,
@@ -5836,7 +5845,7 @@ function wireEvents() {
             price: form.get("price"),
             condition: form.get("condition"),
             quantity: form.get("quantity"),
-            imageUrl: form.get("imageUrl"),
+            imageUrl,
             checks: checks.length ? checks : ["Warehouse checked"],
           }),
         });
