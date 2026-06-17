@@ -1025,10 +1025,14 @@ async function handleApi(req, res) {
         error: error.message
       };
     }
+    const openAiConfigured = Boolean(process.env.OPENAI_API_KEY);
     const fallbackReport = {
-      summary: "Local admin diagnostics are ready. Configure OPENAI_API_KEY for AI-written recommendations.",
+      summary: openAiConfigured
+        ? "Local admin diagnostics are ready. AI call failed, so fallback diagnostics are shown."
+        : "Local admin diagnostics are ready. Configure OPENAI_API_KEY for AI-written recommendations.",
       priority: localReport.inventoryIssues.length || localReport.priceHealth.length ? "Review inventory issues" : "Healthy",
       insights: [
+        ...(ai?.error ? [`AI error: ${ai.error}`] : []),
         `${localReport.counts.zeroPriceProducts} products have zero or invalid price.`,
         `${localReport.duplicateGroups.length} possible duplicate product groups found.`,
         `${localReport.counts.pendingOrders} active orders need admin action.`
