@@ -446,29 +446,14 @@ async function callOpenAiAdminAgent({ action, prompt, localReport, listingInput,
     return { enabled: false, model: null, report: null, error: "OPENAI_API_KEY is not configured" };
   }
   const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
-  const schema = {
-    type: "object",
-    additionalProperties: true,
-    properties: {
-      summary: { type: "string" },
-      priority: { type: "string" },
-      insights: { type: "array", items: { type: "string" } },
-      actions: { type: "array", items: { type: "string" } },
-      inventoryIssues: { type: "array", items: { type: "object", additionalProperties: true } },
-      duplicateGroups: { type: "array", items: { type: "object", additionalProperties: true } },
-      orderSummaries: { type: "array", items: { type: "object", additionalProperties: true } },
-      priceHealth: { type: "array", items: { type: "object", additionalProperties: true } },
-      listingDraft: { type: "object", additionalProperties: true },
-      supportDrafts: { type: "array", items: { type: "object", additionalProperties: true } }
-    }
-  };
   const payload = {
     model,
     instructions: [
       "You are GIVE & TAKE Admin Ops Agent for a coin-based reuse marketplace in India.",
       "Be operational, concise, and action-first. Do not invent private data.",
       "Use supplied products, orders, inventory diagnostics, and listing input only.",
-      "Return JSON matching the schema. Keep customer-facing support drafts polite and short."
+      "Return only valid JSON with keys: summary, priority, insights, actions, inventoryIssues, duplicateGroups, orderSummaries, priceHealth, listingDraft, supportDrafts.",
+      "Keep customer-facing support drafts polite and short."
     ].join(" "),
     input: JSON.stringify({
       action,
@@ -480,9 +465,7 @@ async function callOpenAiAdminAgent({ action, prompt, localReport, listingInput,
     max_output_tokens: 1800,
     text: {
       format: {
-        type: "json_schema",
-        name: "admin_ops_agent_result",
-        schema
+        type: "json_object"
       }
     }
   };
