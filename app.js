@@ -3062,6 +3062,19 @@ function buildUpiPayUrl(amount) {
   return `upi://pay?${params.toString()}`;
 }
 
+async function getConfiguredUpi() {
+  let upi = platformConfig.integrations?.payments?.upi || {};
+  if (upi.upiId) return upi;
+  try {
+    const configData = await api("/api/config");
+    platformConfig = configData;
+    upi = platformConfig.integrations?.payments?.upi || {};
+  } catch (error) {
+    console.warn("Could not refresh payment config:", error.message);
+  }
+  return upi;
+}
+
 function getProductImages(product) {
   return [...new Set([
     product.imageUrl,
@@ -5022,7 +5035,7 @@ function wireEvents() {
     const recharge = event.target.closest("[data-recharge]");
     if (recharge) {
       if (!requireCustomerLogin()) return;
-      const upi = platformConfig.integrations?.payments?.upi || {};
+      const upi = await getConfiguredUpi();
       if (!upi.upiId) {
         alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
         return;
@@ -5840,7 +5853,7 @@ function wireEvents() {
     if (event.target.id === "customRechargeForm") {
       event.preventDefault();
       if (!requireCustomerLogin()) return;
-      const upi = platformConfig.integrations?.payments?.upi || {};
+      const upi = await getConfiguredUpi();
       if (!upi.upiId) {
         alert("Admin UPI ID is not configured yet. Add it from the Admin page first.");
         return;
