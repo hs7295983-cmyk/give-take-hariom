@@ -6,7 +6,7 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
-const CATALOG_CACHE_VERSION = 3;
+const CATALOG_CACHE_VERSION = 4;
 const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
 const LEGACY_CATALOG_CACHE_KEYS = ["give_take_catalog_cache"];
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
@@ -2627,11 +2627,11 @@ fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProduc
 
 purgeLegacyCatalogCache();
 const cachedCatalog = loadCachedCatalog();
-let categories = cachedCatalog?.categories || [...fallbackCategories];
-let products = cachedCatalog?.products || [...fallbackProducts];
+let categories = [...fallbackCategories];
+let products = cachedCatalog?.products || [];
 let productDetails = new Map();
 let productDetailRequests = new Map();
-let backendDataReady = true;
+let backendDataReady = Boolean(cachedCatalog);
 let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
@@ -2866,8 +2866,12 @@ async function loadBackendData() {
     backendDataReady = true;
     return true;
   } catch (error) {
-    console.warn("Using local fallback data:", error.message);
-    backendDataReady = true;
+    console.warn("Could not load latest backend catalog:", error.message);
+    if (!products.length) {
+      productDetails.clear();
+      productDetailRequests.clear();
+      backendDataReady = false;
+    }
     return false;
   }
 }
