@@ -5471,6 +5471,34 @@ function wireEvents() {
       setSubmitState(joinForm, false);
     }
   });
+  document.getElementById("feedbackForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const feedbackForm = event.currentTarget;
+    const submitButton = feedbackForm.querySelector("button[type='submit']");
+    if (submitButton?.disabled) return;
+    const form = new FormData(feedbackForm);
+    try {
+      setSubmitState(feedbackForm, true, "Submitting...");
+      await api("/api/feedbacks", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: getCurrentUserId() || "",
+          userEmail: currentUser?.email || "",
+          overallRating: Number(form.get("overallRating") || 0),
+          browsingExperience: form.get("browsingExperience"),
+          priceFeeling: form.get("priceFeeling"),
+          paymentClarity: form.get("paymentClarity"),
+          improvement: form.get("improvement"),
+        }),
+      });
+      feedbackForm.reset();
+      alert("Thank you. Your feedback has been submitted.");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setSubmitState(feedbackForm, false);
+    }
+  });
   document.body.addEventListener("submit", async event => {
     if (event.target.id === "adminAgentListingForm") {
       event.preventDefault();

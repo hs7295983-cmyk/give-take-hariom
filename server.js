@@ -893,6 +893,37 @@ async function handleApi(req, res) {
     return sendJson(res, 201, { returnRequest: request });
   }
 
+  if (method === "POST" && parts[1] === "feedbacks") {
+    const body = await readBody(req);
+    const overallRating = Number(body.overallRating);
+    const browsingExperience = String(body.browsingExperience || "").trim();
+    const priceFeeling = String(body.priceFeeling || "").trim();
+    const paymentClarity = String(body.paymentClarity || "").trim();
+    const improvement = String(body.improvement || "").trim();
+    if (!Number.isInteger(overallRating) || overallRating < 1 || overallRating > 5) {
+      return sendError(res, 400, "Select an overall rating");
+    }
+    if (!browsingExperience || !priceFeeling || !paymentClarity || !improvement) {
+      return sendError(res, 400, "Please answer all feedback questions");
+    }
+    const feedback = {
+      id: id("GT-F"),
+      userId: String(body.userId || "").trim(),
+      userEmail: normalizeEmail(body.userEmail || ""),
+      overallRating,
+      browsingExperience,
+      priceFeeling,
+      paymentClarity,
+      improvement: improvement.slice(0, 1000),
+      createdAt: new Date().toISOString()
+    };
+    db.feedbacks = db.feedbacks || [];
+    db.feedbacks.unshift(feedback);
+    db.feedbacks = db.feedbacks.slice(0, 500);
+    await writeDb(db);
+    return sendJson(res, 201, { feedback: { id: feedback.id, createdAt: feedback.createdAt } });
+  }
+
   if (method === "POST" && parts[1] === "join-applications") {
     const body = await readBody(req);
     const application = {
@@ -993,7 +1024,8 @@ async function handleApi(req, res) {
         orders: visibleOrders.length,
         returns: db.returns.length,
         rechargeRequests: visibleRechargeRequests.length,
-        joinApplications: visibleJoinApplications.length
+        joinApplications: visibleJoinApplications.length,
+        feedbacks: (db.feedbacks || []).length
       },
       maintenance: db.maintenance,
       integrations: db.integrations,
