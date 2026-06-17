@@ -854,34 +854,49 @@ main {
 .loading-panel {
   display: grid;
   grid-column: 1 / -1;
-  place-items: center;
-  gap: 12px;
+  align-content: start;
+  gap: 14px;
   min-height: 220px;
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--panel);
   box-shadow: var(--shadow-soft);
-  color: var(--muted);
-  text-align: center;
 }
 
-.loading-panel strong {
-  font-size: 15px;
+.loading-skeleton {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #eef3ee 0%, #f8fbf8 45%, #eef3ee 90%);
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.15s ease-in-out infinite;
 }
 
-.loading-spinner {
-  width: 34px;
-  height: 34px;
-  border: 3px solid var(--paper-soft);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.loading-skeleton-image {
+  width: 100%;
+  min-height: 132px;
+  border-radius: 14px;
 }
 
-@keyframes spin {
+.loading-skeleton-line {
+  width: 66%;
+  height: 14px;
+}
+
+.loading-skeleton-line.wide {
+  width: 88%;
+}
+
+.loading-skeleton-pill {
+  width: 118px;
+  height: 32px;
+  border-radius: 999px;
+}
+
+@keyframes skeleton-shimmer {
   to {
-    transform: rotate(360deg);
+    background-position: -220% 0;
   }
 }
 
@@ -3099,6 +3114,189 @@ textarea {
   padding: 0 14px;
 }
 
+.admin-ops-agent {
+  gap: 14px;
+  border-color: rgba(23, 108, 79, 0.22);
+  background: #fbfcf8;
+}
+
+.admin-ops-hero,
+.admin-agent-summary,
+.admin-agent-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-ops-hero > div {
+  display: grid;
+  gap: 5px;
+}
+
+.admin-ops-hero p,
+.admin-agent-summary span,
+.admin-agent-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.admin-agent-kicker,
+.admin-agent-status {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-agent-status {
+  padding: 8px 10px;
+  border: 1px solid rgba(23, 108, 79, 0.18);
+  border-radius: 999px;
+  background: #eef9e7;
+  text-align: right;
+  text-transform: none;
+}
+
+.admin-agent-actions,
+.admin-agent-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-agent-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-agent-form.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-agent-form strong,
+.admin-agent-form .span-2,
+.admin-agent-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-agent-form textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+
+.admin-agent-loading,
+.admin-agent-error {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.admin-agent-loading {
+  background: #eef9e7;
+  color: var(--green);
+}
+
+.admin-agent-error {
+  background: #fff3f1;
+  color: var(--red);
+}
+
+.admin-agent-result,
+.admin-agent-grid section,
+.admin-agent-mini-card,
+.admin-agent-draft,
+.admin-agent-support-draft {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-agent-result {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-agent-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fbfcf8;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.admin-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-agent-grid section {
+  align-content: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.admin-agent-grid h4 {
+  margin: 0;
+}
+
+.admin-agent-grid ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.admin-agent-mini-card {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-agent-mini-card span {
+  color: var(--muted);
+}
+
+.admin-agent-draft {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-agent-draft label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.admin-agent-draft input,
+.admin-agent-draft textarea,
+.admin-agent-support-draft textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.admin-agent-draft textarea,
+.admin-agent-support-draft textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
 .inline-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
@@ -3908,6 +4106,10 @@ textarea {
   }
 
   .inline-form,
+  .admin-agent-form,
+  .admin-agent-form.two-col,
+  .admin-agent-grid,
+  .admin-agent-draft,
   .admin-product-form,
   .checkout-fields,
   .upi-reference-form,
@@ -3917,11 +4119,20 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .admin-ops-hero,
+  .admin-agent-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .admin-product-actions {
     justify-content: flex-start;
   }
 
   .admin-product-form .span-2,
+  .admin-agent-form .span-2,
+  .admin-agent-grid .span-2,
+  .admin-agent-draft .span-2,
   .checkout-fields .span-2 {
     grid-column: span 1;
   }

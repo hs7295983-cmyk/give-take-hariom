@@ -2748,6 +2748,12 @@ const state = {
   adminOrderView: "active",
   adminSearch: "",
   adminShowProducts: false,
+  adminAgent: {
+    loading: false,
+    action: "audit",
+    result: null,
+    error: "",
+  },
 };
 
 const els = {
@@ -3860,6 +3866,189 @@ function renderAccount() {
   `;
 }
 
+function getCompactClientCatalog() {
+  return products.slice(0, 300).map(product => ({
+    id: product.id,
+    title: product.title,
+    category: product.category,
+    price: product.price,
+    status: product.status,
+    imageUrl: product.imageUrl || "",
+  }));
+}
+
+async function runAdminOpsAgent(action, payload = {}) {
+  if (!adminToken || state.adminAgent.loading) return;
+  state.adminAgent = {
+    ...state.adminAgent,
+    loading: true,
+    action,
+    error: "",
+  };
+  renderAdmin();
+  try {
+    const data = await api("/api/admin/ops-agent", {
+      method: "POST",
+      admin: true,
+      body: JSON.stringify({
+        action,
+        prompt: payload.prompt || "",
+        listingInput: payload.listingInput || {},
+        supportInput: payload.supportInput || {},
+        clientCatalog: getCompactClientCatalog(),
+      }),
+    });
+    state.adminAgent = {
+      loading: false,
+      action,
+      result: data,
+      error: "",
+    };
+  } catch (error) {
+    state.adminAgent = {
+      ...state.adminAgent,
+      loading: false,
+      error: error.message,
+    };
+  }
+  renderAdmin();
+}
+
+function renderAgentTextList(items, emptyText) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (!list.length) return `<p class="admin-agent-empty">${escapeHtml(emptyText)}</p>`;
+  return `<ul>${list.slice(0, 8).map(item => `<li>${escapeHtml(typeof item === "string" ? item : JSON.stringify(item))}</li>`).join("")}</ul>`;
+}
+
+function renderAgentIssueCards(items, type) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (!list.length) return `<p class="admin-agent-empty">No ${type} found.</p>`;
+  return list.slice(0, 8).map(item => {
+    if (type === "duplicates") {
+      const productList = (item.products || []).map(product => `${product.title || product.id} (${product.price || 0})`).join(" | ");
+      return `<div class="admin-agent-mini-card"><strong>${escapeHtml(item.title || "Duplicate group")}</strong><span>${escapeHtml(productList)}</span></div>`;
+    }
+    if (type === "orders") {
+      return `<div class="admin-agent-mini-card"><strong>${escapeHtml(item.id || "Order")}: ${escapeHtml(item.nextAction || item.status || "Review")}</strong><span>${escapeHtml(item.customer || "")} • ${escapeHtml(item.city || "")} • ${formatCoins(item.coins || 0)}</span></div>`;
+    }
+    if (type === "prices") {
+      return `<div class="admin-agent-mini-card"><strong>${escapeHtml(item.title || item.id || "Product")}</strong><span>Backend: ${formatCoins(item.backendPrice || 0)}${item.browserPrice !== null && item.browserPrice !== undefined ? ` • Browser: ${formatCoins(item.browserPrice || 0)}` : ""} • ${escapeHtml(item.note || "")}</span></div>`;
+    }
+    return `<div class="admin-agent-mini-card"><strong>${escapeHtml(item.title || item.id || "Issue")}</strong><span>${escapeHtml((item.tags || item.actions || []).join(", ") || item.status || "Review required")}</span></div>`;
+  }).join("");
+}
+
+function renderListingDraft(draft) {
+  if (!draft || !Object.keys(draft).length) return `<p class="admin-agent-empty">No listing draft yet.</p>`;
+  return `
+    <div class="admin-agent-draft">
+      <label>Title <input readonly value="${escapeHtml(draft.title || "")}" /></label>
+      <label>Category <input readonly value="${escapeHtml(draft.category || "")}" /></label>
+      <label>Coin Price <input readonly value="${escapeHtml(draft.price || "")}" /></label>
+      <label>Condition <input readonly value="${escapeHtml(draft.condition || "")}" /></label>
+      <label class="span-2">Checks <input readonly value="${escapeHtml((draft.checks || []).join(", "))}" /></label>
+      <label class="span-2">Badges <input readonly value="${escapeHtml((draft.badges || []).join(", "))}" /></label>
+      <label class="span-2">Description <textarea readonly>${escapeHtml(draft.description || "")}</textarea></label>
+    </div>
+  `;
+}
+
+function renderSupportDrafts(drafts) {
+  const list = Array.isArray(drafts) ? drafts : [];
+  if (!list.length) return `<p class="admin-agent-empty">No support draft yet.</p>`;
+  return list.slice(0, 3).map(draft => `
+    <div class="admin-agent-support-draft">
+      <strong>${escapeHtml(draft.title || "Support reply")}</strong>
+      <textarea readonly>${escapeHtml(draft.text || draft.reply || JSON.stringify(draft))}</textarea>
+    </div>
+  `).join("");
+}
+
+function renderAdminOpsAgent() {
+  const agent = state.adminAgent;
+  const result = agent.result;
+  const report = result?.ai?.report || null;
+  const localReport = result?.localReport || null;
+  const aiStatus = result
+    ? result.ai?.enabled
+      ? result.ai?.error
+        ? `AI fallback: ${result.ai.error}`
+        : `AI active${result.ai.model ? ` • ${result.ai.model}` : ""}`
+      : "AI key not configured • local diagnostics active"
+    : "Ready";
+  return `
+    <article class="wide-card admin-ops-agent">
+      <div class="admin-ops-hero">
+        <div>
+          <span class="admin-agent-kicker">AI Admin Assistant</span>
+          <strong>Admin Ops Agent</strong>
+          <p>Runs inventory checks, duplicate detection, order summaries, price health, listing drafts, and support replies.</p>
+        </div>
+        <span class="admin-agent-status">${escapeHtml(aiStatus)}</span>
+      </div>
+      <div class="admin-agent-actions">
+        <button class="primary-button" data-admin-agent-action="audit" type="button" ${agent.loading ? "disabled" : ""}>Full AI Audit</button>
+        <button class="secondary-button" data-admin-agent-action="inventory" type="button" ${agent.loading ? "disabled" : ""}>Inventory Issues</button>
+        <button class="secondary-button" data-admin-agent-action="price-health" type="button" ${agent.loading ? "disabled" : ""}>Price Health</button>
+        <button class="secondary-button" data-admin-agent-action="orders" type="button" ${agent.loading ? "disabled" : ""}>Order Summary</button>
+      </div>
+      <form class="admin-agent-form" id="adminAgentListingForm">
+        <strong>Create Listing Draft</strong>
+        <input name="title" placeholder="Product name or supplier title" required />
+        <input name="url" type="url" placeholder="Product/source link" />
+        <input name="price" type="number" min="0" step="1" placeholder="Target coin price" />
+        <select name="condition">
+          <option>New</option>
+          <option>Excellent</option>
+          <option selected>Good</option>
+          <option>Fair</option>
+        </select>
+        <textarea name="details" class="span-2" placeholder="Details, image notes, size, material, issue, or supplier notes"></textarea>
+        <button class="primary-button" type="submit" ${agent.loading ? "disabled" : ""}>Generate Listing</button>
+      </form>
+      <form class="admin-agent-form two-col" id="adminAgentSupportForm">
+        <strong>Support Reply Draft</strong>
+        <input name="orderId" placeholder="Order ID optional" />
+        <textarea name="query" class="span-2" placeholder="Customer question or situation" required></textarea>
+        <button class="primary-button" type="submit" ${agent.loading ? "disabled" : ""}>Draft Reply</button>
+      </form>
+      <form class="admin-agent-form two-col" id="adminAgentPromptForm">
+        <strong>Ask Admin Agent</strong>
+        <textarea name="prompt" class="span-2" placeholder="Ask anything about products, orders, price health, or next admin actions" required></textarea>
+        <button class="secondary-button" type="submit" ${agent.loading ? "disabled" : ""}>Ask Agent</button>
+      </form>
+      ${agent.loading ? `<div class="admin-agent-loading">Agent is checking your admin data...</div>` : ""}
+      ${agent.error ? `<div class="admin-agent-error">${escapeHtml(agent.error)}</div>` : ""}
+      ${report ? `
+        <section class="admin-agent-result">
+          <div class="admin-agent-summary">
+            <strong>${escapeHtml(report.summary || "Admin Ops report")}</strong>
+            <span>${escapeHtml(report.priority || "Review recommended")}</span>
+          </div>
+          ${localReport ? `
+            <div class="admin-agent-metrics">
+              <span><strong>${localReport.counts.zeroPriceProducts}</strong> zero price</span>
+              <span><strong>${localReport.duplicateGroups.length}</strong> duplicate groups</span>
+              <span><strong>${localReport.counts.pendingOrders}</strong> pending orders</span>
+              <span><strong>${localReport.priceHealth.length}</strong> price checks</span>
+            </div>
+          ` : ""}
+          <div class="admin-agent-grid">
+            <section><h4>Insights</h4>${renderAgentTextList(report.insights, "No insights yet.")}</section>
+            <section><h4>Next Actions</h4>${renderAgentTextList(report.actions, "No actions suggested.")}</section>
+            <section><h4>Inventory Issues</h4>${renderAgentIssueCards(report.inventoryIssues || localReport?.inventoryIssues, "inventory issues")}</section>
+            <section><h4>Duplicates</h4>${renderAgentIssueCards(report.duplicateGroups || localReport?.duplicateGroups, "duplicates")}</section>
+            <section><h4>Orders</h4>${renderAgentIssueCards(report.orderSummaries || localReport?.orderSummaries, "orders")}</section>
+            <section><h4>Price Health</h4>${renderAgentIssueCards(report.priceHealth || localReport?.priceHealth, "prices")}</section>
+            <section class="span-2"><h4>Listing Draft</h4>${renderListingDraft(report.listingDraft || localReport?.listingDraft)}</section>
+            <section class="span-2"><h4>Support Drafts</h4>${renderSupportDrafts(report.supportDrafts)}</section>
+          </div>
+        </section>
+      ` : ""}
+    </article>
+  `;
+}
+
 function renderAdmin() {
   if (!adminToken) {
     els.adminGrid.innerHTML = `
@@ -4014,6 +4203,7 @@ function renderAdmin() {
       </button>
     </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
+    ${renderAdminOpsAgent()}
     <article class="wide-card">
       ${adminSectionHeader("sellRequests", "Sell Item Requests", adminSellRequests.length, "Review seller uploads, schedule pickup, and credit coins after final check.")}
       <div class="admin-list ${state.adminCollapsed.sellRequests ? "is-collapsed" : ""}">
@@ -4807,6 +4997,12 @@ function wireEvents() {
       return;
     }
 
+    const adminAgentAction = event.target.closest("[data-admin-agent-action]");
+    if (adminAgentAction) {
+      await runAdminOpsAgent(adminAgentAction.dataset.adminAgentAction || "audit");
+      return;
+    }
+
     const adminArchive = event.target.closest("[data-admin-archive]");
     if (adminArchive) {
       const archiveLabel = adminArchive.textContent.trim().toLowerCase() === "archive";
@@ -5255,6 +5451,39 @@ function wireEvents() {
     }
   });
   document.body.addEventListener("submit", async event => {
+    if (event.target.id === "adminAgentListingForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      await runAdminOpsAgent("listing", {
+        listingInput: {
+          title: form.get("title"),
+          url: form.get("url"),
+          price: form.get("price"),
+          condition: form.get("condition"),
+          details: form.get("details"),
+        },
+      });
+      return;
+    }
+    if (event.target.id === "adminAgentSupportForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      await runAdminOpsAgent("support", {
+        supportInput: {
+          orderId: form.get("orderId"),
+          query: form.get("query"),
+        },
+      });
+      return;
+    }
+    if (event.target.id === "adminAgentPromptForm") {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      await runAdminOpsAgent("ask", {
+        prompt: form.get("prompt"),
+      });
+      return;
+    }
     if (event.target.id === "loginEmailForm") {
       event.preventDefault();
       const submitButton = event.target.querySelector("button[type='submit']");

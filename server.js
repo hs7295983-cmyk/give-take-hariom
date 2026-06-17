@@ -256,6 +256,256 @@ GIVE & TAKE`
   });
 }
 
+function normalizeComparableTitle(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .filter(word => word.length > 2 && !["with", "for", "and", "the", "new", "pcs", "piece", "pack", "set"].includes(word))
+    .join(" ")
+    .trim();
+}
+
+function similarityScore(a, b) {
+  const aWords = new Set(normalizeComparableTitle(a).split(" ").filter(Boolean));
+  const bWords = new Set(normalizeComparableTitle(b).split(" ").filter(Boolean));
+  if (!aWords.size || !bWords.size) return 0;
+  const intersection = [...aWords].filter(word => bWords.has(word)).length;
+  const union = new Set([...aWords, ...bWords]).size;
+  return intersection / union;
+}
+
+function buildInventoryIssues(products) {
+  const issues = [];
+  (products || []).forEach(product => {
+    const tags = [];
+    if (!String(product.title || "").trim()) tags.push("missing-title");
+    if (!String(product.category || "").trim()) tags.push("missing-category");
+    if (!Number.isFinite(Number(product.price)) || Number(product.price) <= 0) tags.push("zero-or-invalid-price");
+    if (!String(product.imageUrl || "").trim() && !(Array.isArray(product.images) && product.images.length)) tags.push("missing-image");
+    if (product.status && product.status !== "listed") tags.push(product.status === "sold" ? "sold-product" : "not-listed");
+    if (tags.length) {
+      issues.push({
+        id: product.id,
+        title: product.title || "Untitled product",
+        category: product.category || "",
+        price: Number(product.price || 0),
+        status: product.status || "unknown",
+        tags
+      });
+    }
+  });
+  return issues;
+}
+
+function buildDuplicateGroups(products) {
+  const groups = [];
+  const used = new Set();
+  const list = products || [];
+  for (let i = 0; i < list.length; i += 1) {
+    const first = list[i];
+    if (!first?.id || used.has(first.id)) continue;
+    const matches = [];
+    for (let j = i + 1; j < list.length; j += 1) {
+      const second = list[j];
+      if (!second?.id || used.has(second.id)) continue;
+      const score = similarityScore(first.title, second.title);
+      if (score >= 0.72) {
+        matches.push({
+          id: second.id,
+          title: second.title,
+          price: Number(second.price || 0),
+          status: second.status || "unknown",
+          score: Number(score.toFixed(2))
+        });
+      }
+    }
+    if (matches.length) {
+      used.add(first.id);
+      matches.forEach(match => used.add(match.id));
+      groups.push({
+        title: first.title,
+        products: [
+          { id: first.id, title: first.title, price: Number(first.price || 0), status: first.status || "unknown", score: 1 },
+          ...matches
+        ]
+      });
+    }
+  }
+  return groups.slice(0, 20);
+}
+
+function summarizeAdminOrders(orders) {
+  return (orders || [])
+    .filter(order => !["delivered", "cancelled"].includes(String(order.status || "").toLowerCase()))
+    .slice(0, 20)
+    .map(order => {
+      const details = order.deliveryDetails || {};
+      const status = String(order.status || "new-order").toLowerCase();
+      const nextAction = status === "new-order"
+        ? "Confirm order"
+        : status === "confirmed"
+          ? "Pack order"
+          : status === "packed"
+            ? "Mark out for delivery"
+            : status === "out-for-delivery"
+              ? "Follow up until delivered"
+              : "Review status";
+      return {
+        id: order.id,
+        status,
+        customer: details.name || order.userEmail || order.userId || "Customer",
+        phone: details.phone || "",
+        city: details.city || order.deliveryCity || "",
+        coins: Number(order.totalCoins || 0),
+        products: (order.products || []).map(product => product.title || product.id).filter(Boolean),
+        nextAction
+      };
+    });
+}
+
+function buildPriceHealth(products, clientCatalog) {
+  const clientById = new Map((clientCatalog || []).map(product => [product.id, product]));
+  return (products || []).map(product => {
+    const clientProduct = clientById.get(product.id);
+    const backendPrice = Number(product.price || 0);
+    const browserPrice = clientProduct ? Number(clientProduct.price || 0) : null;
+    return {
+      id: product.id,
+      title: product.title || "Untitled product",
+      backendPrice,
+      browserPrice,
+      status: product.status || "unknown",
+      ok: browserPrice === null || backendPrice === browserPrice,
+      note: browserPrice === null
+        ? "Not present in browser catalog snapshot"
+        : backendPrice === browserPrice
+          ? "Browser and backend match"
+          : "Browser cached price differs from backend"
+    };
+  }).filter(item => !item.ok || item.backendPrice <= 0).slice(0, 30);
+}
+
+function draftListingFallback(input, categories) {
+  const rawTitle = String(input?.title || input?.name || input?.details || "New product").trim();
+  const title = rawTitle
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, char => char.toUpperCase())
+    .slice(0, 110);
+  const details = `${rawTitle} ${input?.details || ""} ${input?.url || ""}`.toLowerCase();
+  const category = (categories || []).find(item => details.includes(item.id) || details.includes(String(item.name || "").toLowerCase()))?.id
+    || (details.includes("phone") || details.includes("earbud") || details.includes("usb") || details.includes("bluetooth") ? "electronics"
+      : details.includes("kitchen") || details.includes("bottle") || details.includes("lamp") ? "home"
+        : "home");
+  const price = Number(input?.price || input?.targetPrice || 0) || 50;
+  return {
+    title,
+    category,
+    price,
+    condition: input?.condition || "New",
+    checks: ["Warehouse checked", "Image verified", "Admin price editable"],
+    badges: ["GIVE & TAKE Verified", "AI Draft"],
+    description: String(input?.details || "Useful verified product for GIVE & TAKE customers.").slice(0, 240)
+  };
+}
+
+function buildOpsSnapshot(db, clientCatalog, listingInput) {
+  const products = db.products || [];
+  const activeOrders = (db.orders || []).filter(order => !order.adminArchived);
+  const localReport = {
+    counts: {
+      products: products.length,
+      listedProducts: products.filter(product => product.status === "listed").length,
+      activeOrders: activeOrders.length,
+      pendingOrders: activeOrders.filter(order => !["delivered", "cancelled"].includes(String(order.status || "").toLowerCase())).length,
+      zeroPriceProducts: products.filter(product => Number(product.price || 0) <= 0).length
+    },
+    inventoryIssues: buildInventoryIssues(products).slice(0, 40),
+    duplicateGroups: buildDuplicateGroups(products),
+    orderSummaries: summarizeAdminOrders(activeOrders),
+    priceHealth: buildPriceHealth(products, clientCatalog),
+    listingDraft: draftListingFallback(listingInput || {}, db.categories || [])
+  };
+  return localReport;
+}
+
+function extractResponseText(response) {
+  if (typeof response.output_text === "string") return response.output_text;
+  return (response.output || [])
+    .flatMap(item => item.content || [])
+    .filter(content => content.type === "output_text" && typeof content.text === "string")
+    .map(content => content.text)
+    .join("\n")
+    .trim();
+}
+
+async function callOpenAiAdminAgent({ action, prompt, localReport, listingInput, supportInput }) {
+  const apiKey = process.env.OPENAI_API_KEY || "";
+  if (!apiKey) {
+    return { enabled: false, model: null, report: null, error: "OPENAI_API_KEY is not configured" };
+  }
+  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  const schema = {
+    type: "object",
+    additionalProperties: true,
+    properties: {
+      summary: { type: "string" },
+      priority: { type: "string" },
+      insights: { type: "array", items: { type: "string" } },
+      actions: { type: "array", items: { type: "string" } },
+      inventoryIssues: { type: "array", items: { type: "object", additionalProperties: true } },
+      duplicateGroups: { type: "array", items: { type: "object", additionalProperties: true } },
+      orderSummaries: { type: "array", items: { type: "object", additionalProperties: true } },
+      priceHealth: { type: "array", items: { type: "object", additionalProperties: true } },
+      listingDraft: { type: "object", additionalProperties: true },
+      supportDrafts: { type: "array", items: { type: "object", additionalProperties: true } }
+    }
+  };
+  const payload = {
+    model,
+    instructions: [
+      "You are GIVE & TAKE Admin Ops Agent for a coin-based reuse marketplace in India.",
+      "Be operational, concise, and action-first. Do not invent private data.",
+      "Use supplied products, orders, inventory diagnostics, and listing input only.",
+      "Return JSON matching the schema. Keep customer-facing support drafts polite and short."
+    ].join(" "),
+    input: JSON.stringify({
+      action,
+      adminPrompt: prompt || "",
+      localReport,
+      listingInput: listingInput || {},
+      supportInput: supportInput || {}
+    }),
+    max_output_tokens: 1800,
+    text: {
+      format: {
+        type: "json_schema",
+        name: "admin_ops_agent_result",
+        schema
+      }
+    }
+  };
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  const body = await response.text();
+  if (!response.ok) throw new Error(`OpenAI API failed: ${body || response.status}`);
+  const data = JSON.parse(body);
+  const text = extractResponseText(data);
+  return {
+    enabled: true,
+    model,
+    report: text ? JSON.parse(text) : null,
+    usage: data.usage || null
+  };
+}
+
 async function handleApi(req, res) {
   const db = await readDb();
   const { url, parts } = parsePath(req);
@@ -760,6 +1010,56 @@ async function handleApi(req, res) {
       rechargeRequests: visibleRechargeRequests,
       joinApplications: visibleJoinApplications,
       archived: summaryOnly ? summarizeArchive(archived) : archived
+    });
+  }
+
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "ops-agent") {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const action = String(body.action || "audit").trim() || "audit";
+    const listingInput = body.listingInput || {};
+    const supportInput = body.supportInput || {};
+    const prompt = String(body.prompt || "").trim();
+    const clientCatalog = Array.isArray(body.clientCatalog) ? body.clientCatalog.slice(0, 300) : [];
+    const localReport = buildOpsSnapshot(db, clientCatalog, listingInput);
+    let ai = null;
+    try {
+      ai = await callOpenAiAdminAgent({ action, prompt, localReport, listingInput, supportInput });
+    } catch (error) {
+      ai = {
+        enabled: Boolean(process.env.OPENAI_API_KEY),
+        model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+        report: null,
+        error: error.message
+      };
+    }
+    const fallbackReport = {
+      summary: "Local admin diagnostics are ready. Configure OPENAI_API_KEY for AI-written recommendations.",
+      priority: localReport.inventoryIssues.length || localReport.priceHealth.length ? "Review inventory issues" : "Healthy",
+      insights: [
+        `${localReport.counts.zeroPriceProducts} products have zero or invalid price.`,
+        `${localReport.duplicateGroups.length} possible duplicate product groups found.`,
+        `${localReport.counts.pendingOrders} active orders need admin action.`
+      ],
+      actions: localReport.orderSummaries.slice(0, 5).map(order => `${order.id}: ${order.nextAction}`),
+      inventoryIssues: localReport.inventoryIssues,
+      duplicateGroups: localReport.duplicateGroups,
+      orderSummaries: localReport.orderSummaries,
+      priceHealth: localReport.priceHealth,
+      listingDraft: localReport.listingDraft,
+      supportDrafts: supportInput?.query ? [{
+        title: "Support reply draft",
+        text: `Hi, thanks for contacting GIVE & TAKE. We are checking your request: ${String(supportInput.query).slice(0, 160)}. We will update you shortly.`
+      }] : []
+    };
+    return sendJson(res, 200, {
+      action,
+      generatedAt: new Date().toISOString(),
+      ai: {
+        ...ai,
+        report: ai?.report || fallbackReport
+      },
+      localReport
     });
   }
 

@@ -51,7 +51,11 @@ window.GIVE_TAKE_API_BASE = "https://your-backend-url";
 ```text
 DATABASE_URL=your-supabase-postgres-url
 ADMIN_PASSWORD=your-private-admin-password
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4.1-mini
 ```
+
+`OPENAI_API_KEY` enables the Admin Ops Agent's AI-written recommendations, listing drafts, and support reply drafts. If it is missing, the agent still shows local inventory/order/price diagnostics without paid AI calls.
 
 6. Deploy the frontend to Vercel.
 7. Keep external delivery apps disabled until you decide otherwise.
