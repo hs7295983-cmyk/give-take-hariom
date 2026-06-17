@@ -8,6 +8,8 @@ const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
 const CATALOG_CACHE_VERSION = 4;
 const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
+const LATEST_CATALOG_CACHE_KEY = "give_take_catalog_cache_latest";
+const CATALOG_CACHE_PREFIX = "give_take_catalog_cache_v";
 const LEGACY_CATALOG_CACHE_KEYS = ["give_take_catalog_cache"];
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.GIVE_TAKE_SUPABASE_ANON_KEY || "";
@@ -2627,7 +2629,7 @@ fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProduc
 
 purgeLegacyCatalogCache();
 const cachedCatalog = loadCachedCatalog();
-let categories = [...fallbackCategories];
+let categories = cachedCatalog?.categories || [...fallbackCategories];
 let products = cachedCatalog?.products || [];
 let productDetails = new Map();
 let productDetailRequests = new Map();
@@ -2799,11 +2801,31 @@ function loadCachedCustomerUser() {
 
 function loadCachedCatalog() {
   try {
-    const cached = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
-    const maxAgeMs = 6 * 60 * 60 * 1000;
-    if (!cached || Date.now() - Number(cached.savedAt || 0) > maxAgeMs) return null;
-    if (cached.version !== CATALOG_CACHE_VERSION) return null;
-    if (!Array.isArray(cached.categories) || !Array.isArray(cached.products) || !cached.products.length) return null;
+    const cacheKeys = [LATEST_CATALOG_CACHE_KEY, CATALOG_CACHE_KEY];
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith(CATALOG_CACHE_PREFIX) && !cacheKeys.includes(key)) cacheKeys.push(key);
+    }
+    const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+    const cached = cacheKeys
+      .map(key => {
+        try {
+          const catalog = JSON.parse(localStorage.getItem(key) || "null");
+          return catalog ? { key, catalog } : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter(item => {
+        const catalog = item?.catalog;
+        return catalog
+          && Date.now() - Number(catalog.savedAt || 0) <= maxAgeMs
+          && Array.isArray(catalog.categories)
+          && Array.isArray(catalog.products)
+          && catalog.products.length;
+      })
+      .sort((a, b) => Number(b.catalog.savedAt || 0) - Number(a.catalog.savedAt || 0))[0]?.catalog;
+    if (!cached) return null;
     return {
       categories: cached.categories,
       products: cached.products,
@@ -2822,19 +2844,35 @@ function purgeLegacyCatalogCache() {
 function clearCatalogCache() {
   try {
     localStorage.removeItem(CATALOG_CACHE_KEY);
+    localStorage.removeItem(LATEST_CATALOG_CACHE_KEY);
     LEGACY_CATALOG_CACHE_KEYS.forEach(key => localStorage.removeItem(key));
   } catch {}
 }
 
 function cacheCatalog() {
   try {
-    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({
+    const catalog = JSON.stringify({
       version: CATALOG_CACHE_VERSION,
       savedAt: Date.now(),
       categories,
       products,
-    }));
+    });
+    localStorage.setItem(CATALOG_CACHE_KEY, catalog);
+    localStorage.setItem(LATEST_CATALOG_CACHE_KEY, catalog);
   } catch {}
+}
+
+function saveProductToCachedCatalog(updatedProduct) {
+  if (!updatedProduct?.id) return;
+  const productIndex = products.findIndex(product => product.id === updatedProduct.id);
+  if (productIndex === -1) {
+    products = [updatedProduct, ...products];
+  } else {
+    products = products.map(product => product.id === updatedProduct.id ? { ...product, ...updatedProduct } : product);
+  }
+  productDetails.set(updatedProduct.id, { ...(productDetails.get(updatedProduct.id) || {}), ...updatedProduct });
+  backendDataReady = Boolean(products.length);
+  cacheCatalog();
 }
 
 async function loadBackendData() {
@@ -3193,9 +3231,11 @@ function card(product) {
 
 function loadingPanel(message = "Loading latest prices...") {
   return `
-    <article class="loading-panel" aria-live="polite">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <strong>${escapeHtml(message)}</strong>
+    <article class="loading-panel" aria-live="polite" aria-label="${escapeHtml(message)}">
+      <span class="loading-skeleton loading-skeleton-image" aria-hidden="true"></span>
+      <span class="loading-skeleton loading-skeleton-line wide" aria-hidden="true"></span>
+      <span class="loading-skeleton loading-skeleton-line" aria-hidden="true"></span>
+      <span class="loading-skeleton loading-skeleton-pill" aria-hidden="true"></span>
     </article>
   `;
 }
@@ -5041,11 +5081,14 @@ function wireEvents() {
       }
 
       try {
-        await api(`/api/admin/products/${productId}`, {
+        const data = await api(`/api/admin/products/${productId}`, {
           method: "PATCH",
           admin: true,
           body: JSON.stringify(payload),
         });
+        saveProductToCachedCatalog(data.product);
+        renderProducts();
+        renderProductDetail();
         await refreshAdminProducts();
         alert("Product updated.");
       } catch (error) {
