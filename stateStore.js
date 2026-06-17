@@ -25,6 +25,8 @@ function getPool() {
     const { Pool } = require("pg");
     pool = new Pool({
       connectionString: databaseUrl,
+      connectionTimeoutMillis: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
+      query_timeout: Number(process.env.DB_QUERY_TIMEOUT_MS || 15000),
       ssl: process.env.DB_SSL === "false" ? false : { rejectUnauthorized: false }
     });
   }

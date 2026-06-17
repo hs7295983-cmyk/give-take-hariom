@@ -1285,8 +1285,10 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+console.log("Initializing GIVE & TAKE storage...");
 ensureDb()
   .then(() => {
+    console.log("Storage initialized.");
     server.listen(port, () => {
       console.log(`GIVE & TAKE backend running at http://localhost:${port}`);
       console.log(`Storage mode: ${getStorageInfo().mode}`);
