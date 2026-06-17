@@ -4,8 +4,8 @@
   "private": true,
   "description": "GIVE & TAKE phase 2 backend-backed website prototype",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "pg": "^8.13.1"
