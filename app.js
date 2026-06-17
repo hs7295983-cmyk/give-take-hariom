@@ -3532,11 +3532,13 @@ function renderOrders() {
       .slice(0, 4);
     const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
       <article class="empty-cart-product">
-        ${productVisual(product, "empty-cart-product-image")}
-        <div>
-          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
-          <span>${formatCoins(product.price || 0)}</span>
-        </div>
+        <button class="empty-cart-product-link" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
+          ${productVisual(product, "empty-cart-product-image")}
+          <span>
+            <strong>${escapeHtml(product.title || "Recommended item")}</strong>
+            <em>${formatCoins(product.price || 0)}</em>
+          </span>
+        </button>
         <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
       </article>
     `).join("");
@@ -4448,11 +4450,13 @@ function renderCart() {
       .slice(0, 4) : [];
     const cards = recommended.map(product => `
       <article class="empty-cart-product">
-        ${productVisual(product, "empty-cart-product-image")}
-        <div>
-          <strong>${escapeHtml(product.title || "Recommended item")}</strong>
-          <span>${formatCoins(product.price || 0)}</span>
-        </div>
+        <button class="empty-cart-product-link" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
+          ${productVisual(product, "empty-cart-product-image")}
+          <span>
+            <strong>${escapeHtml(product.title || "Recommended item")}</strong>
+            <em>${formatCoins(product.price || 0)}</em>
+          </span>
+        </button>
         <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
       </article>
     `).join("");

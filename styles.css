@@ -1959,6 +1959,23 @@ textarea {
   box-shadow: var(--shadow-soft);
 }
 
+.empty-cart-product-link {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.empty-cart-product-link:hover strong {
+  color: var(--green);
+}
+
 .empty-cart-product-image {
   position: relative;
   overflow: hidden;
@@ -1967,7 +1984,7 @@ textarea {
   background: linear-gradient(135deg, var(--art-a), var(--art-b));
 }
 
-.empty-cart-product div:not(.empty-cart-product-image) {
+.empty-cart-product-link > span {
   display: grid;
   gap: 5px;
   min-width: 0;
@@ -1983,8 +2000,9 @@ textarea {
   line-height: 1.35;
 }
 
-.empty-cart-product span {
+.empty-cart-product em {
   color: var(--green);
+  font-style: normal;
   font-weight: 900;
 }
 
