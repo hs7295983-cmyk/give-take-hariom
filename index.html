@@ -210,7 +210,16 @@
       </section>
 
       <section class="page" id="page-product" data-page="product">
-        <button class="back-button" data-route="market" type="button">Back to marketplace</button>
+        <div class="product-page-topbar">
+          <button class="back-button" data-route="market" type="button">Back to marketplace</button>
+          <button class="product-share-icon-button" id="productPageShare" data-share-product="" type="button" aria-label="Share product" title="Share product" hidden>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/>
+              <path d="M12 16V4"/>
+              <path d="m7 9 5-5 5 5"/>
+            </svg>
+          </button>
+        </div>
         <div id="productDetail" class="product-detail"></div>
       </section>
 

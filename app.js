@@ -3241,6 +3241,20 @@ async function shareProduct(productId) {
   window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, "_blank", "noopener");
 }
 
+function updateProductPageShare(productId = "") {
+  const button = document.getElementById("productPageShare");
+  if (!button) return;
+  if (!productId) {
+    button.hidden = true;
+    button.disabled = true;
+    button.dataset.shareProduct = "";
+    return;
+  }
+  button.hidden = false;
+  button.disabled = false;
+  button.dataset.shareProduct = productId;
+}
+
 function card(product) {
   return `
     <article class="product-card">
@@ -3256,7 +3270,6 @@ function card(product) {
         <p>${escapeHtml(displayCategoryName(product.category))}</p>
         <div class="card-actions">
           <button class="primary-button" data-add="${product.id}" type="button">Add to Cart</button>
-          <button class="secondary-button share-button" data-share-product="${product.id}" type="button">Share</button>
         </div>
       </div>
     </article>
@@ -3345,10 +3358,12 @@ function renderProducts() {
 
 function renderProductDetail() {
   if (!state.productId) {
+    updateProductPageShare();
     els.productDetail.innerHTML = loadingPanel("Select a product to view details.");
     return;
   }
   if (!backendDataReady) {
+    updateProductPageShare();
     els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
     return;
   }
@@ -3358,14 +3373,17 @@ function renderProductDetail() {
   const detailProduct = productDetails.get(state.productId);
   const listProduct = products.find(item => item.id === state.productId);
   if (!detailProduct && !orderProduct && !listProduct && (!backendDataReady || productDetailRequests.has(state.productId))) {
+    updateProductPageShare();
     els.productDetail.innerHTML = loadingPanel("Loading latest product price...");
     return;
   }
   const product = detailProduct || orderProduct || listProduct;
   if (!product) {
+    updateProductPageShare();
     els.productDetail.innerHTML = loadingPanel("Product not found.");
     return;
   }
+  updateProductPageShare(product.id);
   const hiddenChecks = new Set(["Original price listed", "Admin price editable", "Product matched from supplied screenshot", "4+ DeoDap product photos linked", "4+ DODAP product photos linked"]);
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
@@ -3398,7 +3416,6 @@ function renderProductDetail() {
       <div class="detail-actions">
         <button class="primary-button" data-buy-now="${product.id}" type="button">Buy with Coins</button>
         <button class="secondary-button" data-add-stay="${product.id}" type="button">Add to Cart</button>
-        <button class="secondary-button share-button" data-share-product="${product.id}" type="button">Share Product</button>
       </div>
     </article>
   `;
