@@ -6,7 +6,7 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
-const CATALOG_CACHE_VERSION = 2;
+const CATALOG_CACHE_VERSION = 3;
 const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
 const LEGACY_CATALOG_CACHE_KEYS = ["give_take_catalog_cache"];
 const SUPABASE_URL = window.GIVE_TAKE_SUPABASE_URL || "";
@@ -2819,6 +2819,13 @@ function purgeLegacyCatalogCache() {
   } catch {}
 }
 
+function clearCatalogCache() {
+  try {
+    localStorage.removeItem(CATALOG_CACHE_KEY);
+    LEGACY_CATALOG_CACHE_KEYS.forEach(key => localStorage.removeItem(key));
+  } catch {}
+}
+
 function cacheCatalog() {
   try {
     localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({
@@ -2977,6 +2984,10 @@ async function refreshAdminProducts() {
   ]);
   adminDashboard = adminData;
   products = productData.products;
+  productDetails.clear();
+  productDetailRequests.clear();
+  clearCatalogCache();
+  cacheCatalog();
   renderAdmin();
   renderProducts();
   renderProductDetail();
