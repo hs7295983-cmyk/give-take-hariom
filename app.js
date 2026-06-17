@@ -2747,6 +2747,7 @@ const state = {
   },
   adminOrderView: "active",
   adminSearch: "",
+  adminSection: "overview",
   adminShowProducts: false,
   adminAgent: {
     loading: false,
@@ -4171,7 +4172,21 @@ function renderAdmin() {
       </div>
     `;
   };
+  const adminSectionSwitcher = `
+    <article class="wide-card admin-section-switcher">
+      <button class="${state.adminSection === "overview" ? "active" : ""}" data-admin-section="overview" type="button">Admin Overview</button>
+      <button class="${state.adminSection === "ops-agent" ? "active" : ""}" data-admin-section="ops-agent" type="button">Ops Agent</button>
+    </article>
+  `;
+  if (state.adminSection === "ops-agent") {
+    els.adminGrid.innerHTML = `
+      ${adminSectionSwitcher}
+      ${renderAdminOpsAgent()}
+    `;
+    return;
+  }
   els.adminGrid.innerHTML = `
+    ${adminSectionSwitcher}
     <article class="wide-card admin-today-summary">
       <div>
         <span>Orders Today</span>
@@ -4203,7 +4218,6 @@ function renderAdmin() {
       </button>
     </article>
     <article><strong>Integrations</strong><span>UPI-only payment • external delivery apps disabled</span></article>
-    ${renderAdminOpsAgent()}
     <article class="wide-card">
       ${adminSectionHeader("sellRequests", "Sell Item Requests", adminSellRequests.length, "Review seller uploads, schedule pickup, and credit coins after final check.")}
       <div class="admin-list ${state.adminCollapsed.sellRequests ? "is-collapsed" : ""}">
@@ -4986,6 +5000,13 @@ function wireEvents() {
     const adminOrderView = event.target.closest("[data-admin-order-view]");
     if (adminOrderView) {
       state.adminOrderView = adminOrderView.dataset.adminOrderView;
+      renderAdmin();
+      return;
+    }
+
+    const adminSection = event.target.closest("[data-admin-section]");
+    if (adminSection) {
+      state.adminSection = adminSection.dataset.adminSection || "overview";
       renderAdmin();
       return;
     }

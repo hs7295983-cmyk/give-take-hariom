@@ -3114,6 +3114,32 @@ textarea {
   padding: 0 14px;
 }
 
+.admin-section-switcher {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.admin-section-switcher button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.admin-section-switcher button.active {
+  border-color: rgba(23, 108, 79, 0.24);
+  background: var(--green);
+  color: #fff;
+}
+
 .admin-ops-agent {
   gap: 14px;
   border-color: rgba(23, 108, 79, 0.22);
@@ -4123,6 +4149,11 @@ textarea {
   .admin-agent-summary {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .admin-section-switcher {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-product-actions {
