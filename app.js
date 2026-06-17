@@ -30,7 +30,7 @@ const fallbackCategories = [
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
-const customerSellBlockedCategoryIds = new Set(["fashion"]);
+const customerSellBlockedCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const categoryIcons = {
   electronics: '<svg viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M11 18h2"/></svg>',
   books: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19a2.5 2.5 0 0 1 2.5-2H20"/><path d="M8 7h8"/></svg>',
@@ -3317,9 +3317,15 @@ function renderCategories() {
 
 function renderSelectors() {
   const selectableCategories = categories.filter(category => category.id !== "mobiles");
-  const sellableCategories = selectableCategories.filter(category => !customerSellBlockedCategoryIds.has(category.id));
+  const sellableCategories = selectableCategories.filter(category => !isCustomerSellBlockedCategory(category));
   els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
   els.sellCategory.innerHTML = sellableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+}
+
+function isCustomerSellBlockedCategory(category) {
+  const id = String(category?.id || category || "").trim().toLowerCase();
+  const name = String(category?.name || "").trim().toLowerCase();
+  return customerSellBlockedCategoryIds.has(id) || /fashion|clothes|shoes/.test(name);
 }
 
 function getFilteredProducts() {
@@ -3438,13 +3444,16 @@ function renderProductDetail() {
 }
 
 function renderFormFields() {
+  if (isCustomerSellBlockedCategory(els.sellCategory.value)) {
+    els.dynamicFields.innerHTML = "";
+    return;
+  }
   const category = els.sellCategory.value;
   const fieldMap = {
     mobiles: ["Brand and model", "Storage/RAM", "IMEI available?", "Bill/warranty", "Battery/display issues"],
     electronics: ["Brand/model/serial", "Power and charging status", "Accessories included", "Known defects"],
     books: ["Class/course/subject", "Edition/year", "Pages missing?", "Writing/highlighting condition"],
     furniture: ["Material", "Cracks/scratches"],
-    fashion: ["Size", "Brand", "Cleanliness", "Stains/tears"],
     home: ["Brand if any", "Working condition", "Missing parts", "Hygiene/safety condition"],
     bags: ["Size/type", "Zip/handle condition", "Tears or stains", "Brand if any"],
     toys: ["Age group", "Set completeness", "Missing pieces", "Cleanliness"],
@@ -5480,6 +5489,10 @@ function wireEvents() {
     if (submitButton?.disabled) return;
     const form = new FormData(sellForm);
     const photoError = document.getElementById("sellPhotoError");
+    if (isCustomerSellBlockedCategory(els.sellCategory.value)) {
+      alert("Clothes and shoes are not accepted from customer sellers.");
+      return;
+    }
     if (photoError) {
       photoError.hidden = true;
       photoError.textContent = "";

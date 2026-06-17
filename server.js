@@ -19,7 +19,7 @@ const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "p
 const customerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 365);
 const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
-const blockedCustomerSellCategories = new Set(["fashion"]);
+const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -142,6 +142,11 @@ function hashSession(token) {
 
 function publicUser(user) {
   return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
+}
+
+function isBlockedCustomerSellCategory(value) {
+  const category = String(value || "").trim().toLowerCase();
+  return blockedCustomerSellCategories.has(category) || /fashion|clothes|shoes/.test(category);
 }
 
 function escapeHtml(value) {
@@ -732,7 +737,7 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
-    if (blockedCustomerSellCategories.has(String(body.category || "").trim().toLowerCase())) {
+    if (isBlockedCustomerSellCategory(body.category)) {
       return sendError(res, 400, "Clothes and shoes are not accepted from customer sellers");
     }
     const sellerPhone = String(body.sellerPhone || "").trim();
