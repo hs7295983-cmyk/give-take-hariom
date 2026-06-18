@@ -3667,9 +3667,18 @@ function renderOrders() {
           ? orderedProductIds.reduce((map, productId) => map.set(productId, (map.get(productId) || 0) + 1), new Map())
           : sourceItems.reduce((map, item) => map.set(item.id, (map.get(item.id) || 0) + 1), new Map());
         const groupedItems = [...itemCounts.entries()].map(([productId, qty]) => {
-          const product = sourceItems.find(item => (item.productId || item.id) === productId)
-            || products.find(item => item.id === productId)
-            || { id: productId, title: "Product title", price: 0 };
+          const orderProduct = sourceItems.find(item => (item.productId || item.id) === productId);
+          const catalogProduct = products.find(item => item.id === productId);
+          const product = {
+            ...(catalogProduct || {}),
+            ...(orderProduct || {}),
+          };
+          if (!product.id) product.id = productId;
+          if (!product.title) product.title = "Product title";
+          if (!product.imageUrl && catalogProduct?.imageUrl) product.imageUrl = catalogProduct.imageUrl;
+          if ((!Array.isArray(product.images) || !product.images.length) && Array.isArray(catalogProduct?.images)) {
+            product.images = catalogProduct.images;
+          }
           const unitPrice = Number(product.price || 0);
           return {
             ...product,
@@ -3755,13 +3764,17 @@ function renderOrders() {
                 <h3>Order Items (${totalItemCount})</h3>
                 <strong>Total: ${formatCoins(order.totalCoins || 0)}</strong>
               </div>
-              <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${firstItem.productId || firstItem.id || "item"}`)}" data-product="${firstItem.productId || firstItem.id || ""}" type="button">
-                ${productVisual(firstItem, "order-item-image")}
-                <div>
-                  <strong>${escapeHtml(firstItem.title || "Product title")}</strong>
-                  <span>Qty: ${firstItem.qty} × ${formatCoins(firstItem.unitPrice)}</span>
-                </div>
-              </button>
+              <div class="order-items-list">
+                ${displayItems.map(item => `
+                  <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${item.productId || item.id || "item"}`)}" data-product="${item.productId || item.id || ""}" type="button">
+                    ${productVisual(item, "order-item-image")}
+                    <div>
+                      <strong>${escapeHtml(item.title || "Product title")}</strong>
+                      <span>Quantity: ${item.qty} <b>×</b> ${formatCoins(item.unitPrice)}</span>
+                    </div>
+                  </button>
+                `).join("")}
+              </div>
             </section>
             ${isExpanded ? `
               <section class="order-detail-section order-expanded-details">
@@ -3773,17 +3786,6 @@ function renderOrders() {
                   <p><span>Order status</span><strong>${escapeHtml(statusText)}</strong></p>
                   <p><span>Order date/time</span><strong>${escapeHtml(placedDate)}</strong></p>
                   <p><span>Delivery address</span><strong>${escapeHtml([details.name, details.address, details.city, details.pincode, details.landmark ? `Near ${details.landmark}` : ""].filter(Boolean).join(" • ") || "Address not available")}</strong></p>
-                </div>
-                <div class="order-expanded-items">
-                  ${displayItems.map(item => `
-                    <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${item.productId || item.id || "item"}`)}" data-product="${item.productId || item.id || ""}" type="button">
-                      ${productVisual(item, "order-item-image")}
-                      <div>
-                        <strong>${escapeHtml(item.title || "Product title")}</strong>
-                        <span>Qty: ${item.qty} × ${formatCoins(item.unitPrice)}</span>
-                      </div>
-                    </button>
-                  `).join("")}
                 </div>
               </section>
             ` : ""}

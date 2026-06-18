@@ -2135,7 +2135,12 @@ textarea {
 .orders-summary {
   margin: 8px 0 0;
   color: var(--muted);
+  font-size: 14px;
   font-weight: 800;
+}
+
+#page-orders .page-title h1 {
+  font-size: clamp(36px, 4vw, 50px);
 }
 
 .empty-orders {
@@ -2274,12 +2279,18 @@ textarea {
 
 .order-detail-card {
   display: grid;
-  gap: 16px;
-  padding: 20px;
+  gap: 14px;
+  padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--panel);
   box-shadow: var(--shadow-soft);
+}
+
+.order-detail-top > div:first-child > strong {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.3;
 }
 
 .order-detail-top,
@@ -2302,6 +2313,7 @@ textarea {
 .order-detail-section span,
 .order-item-row span {
   color: var(--muted);
+  font-size: 14px;
 }
 
 .order-total-box {
@@ -2325,10 +2337,10 @@ textarea {
 
 .order-status-panel,
 .order-detail-section {
-  padding: 16px;
+  padding: 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
-  background: var(--paper-soft);
+  background: #f7faf7;
 }
 
 .order-status-copy {
@@ -2417,6 +2429,9 @@ textarea {
 
 .order-detail-section h3 {
   margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.25;
 }
 
 .order-detail-section p {
@@ -2424,15 +2439,17 @@ textarea {
 }
 
 .order-detail-section .order-cancel-reason {
-  align-items: flex-start;
-  padding: 10px;
+  align-items: center;
+  padding: 12px 14px;
   border: 1px solid #f0b7ad;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff3f1;
 }
 
 .order-detail-section .order-cancel-reason strong {
   color: var(--red);
+  font-size: 14px;
+  line-height: 1.4;
   text-align: right;
 }
 
@@ -2452,14 +2469,22 @@ textarea {
   justify-content: start;
   gap: 4px;
   min-width: 0;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: white;
 }
 
+.order-summary-strip span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .order-summary-strip strong {
   min-width: 0;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
@@ -2483,14 +2508,14 @@ textarea {
   gap: 14px;
 }
 
-.order-summary-grid,
-.order-expanded-items {
+.order-items-list {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
-.order-expanded-items {
-  padding-top: 2px;
+.order-summary-grid {
+  display: grid;
+  gap: 12px;
 }
 
 .order-item-link {
@@ -2504,11 +2529,13 @@ textarea {
 }
 
 .order-detail-section .order-item-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  padding: 16px;
-  border: 1px solid #E5E7EB;
+  padding: 12px;
+  border: 1px solid #dde6dd;
   border-radius: 12px;
   background: white;
 }
@@ -2521,8 +2548,9 @@ textarea {
 .order-item-image {
   position: relative;
   overflow: hidden;
-  width: 62px;
-  height: 62px;
+  width: 88px;
+  height: 88px;
+  border: 1px solid var(--line);
   border-radius: 10px;
   background: linear-gradient(135deg, var(--art-a), var(--art-b));
 }
@@ -2534,17 +2562,29 @@ textarea {
   min-width: 0;
 }
 
+.order-item-row > div > strong {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
 .order-item-row > div > span {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.order-item-row > div > span b {
+  color: #9aa59f;
   font-weight: 800;
 }
 
 .order-detail-footer {
   border-top: 1px solid var(--line);
   padding-top: 14px;
+  font-size: 14px;
 }
 
 .order-detail-footer a {
@@ -4025,6 +4065,25 @@ textarea {
 
   .order-item-row {
     align-items: flex-start;
+  }
+
+  .order-detail-section .order-item-row {
+    grid-template-columns: 72px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .order-item-image {
+    width: 72px;
+    height: 72px;
+  }
+
+  .order-detail-section .order-cancel-reason {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-detail-section .order-cancel-reason strong {
+    text-align: left;
   }
 
   .product-grid {

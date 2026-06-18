@@ -861,7 +861,36 @@ async function handleApi(req, res) {
 
   if (method === "GET" && parts[1] === "orders") {
     const userId = url.searchParams.get("userId");
-    const orders = userId ? db.orders.filter(order => order.userId === userId) : db.orders;
+    const visibleOrders = userId ? db.orders.filter(order => order.userId === userId) : db.orders;
+    const orders = visibleOrders.map(order => {
+      const snapshots = Array.isArray(order.products) ? order.products : [];
+      const productIds = [...new Set(Array.isArray(order.productIds) ? order.productIds : [])];
+      const snapshotIds = new Set(snapshots.map(snapshot => snapshot.productId || snapshot.id));
+      const sourceProducts = [
+        ...snapshots,
+        ...productIds.filter(productId => !snapshotIds.has(productId)).map(productId => ({ id: productId, productId }))
+      ];
+      return {
+        ...order,
+        products: sourceProducts.map(snapshot => {
+          const productId = snapshot.productId || snapshot.id;
+          const catalogProduct = db.products.find(product => product.id === productId);
+          return {
+            ...snapshot,
+            id: snapshot.id || catalogProduct?.id || productId,
+            productId,
+            title: snapshot.title || catalogProduct?.title || "Product",
+            price: Number(snapshot.price ?? catalogProduct?.price ?? 0),
+            condition: snapshot.condition || catalogProduct?.condition || "",
+            category: snapshot.category || catalogProduct?.category || "",
+            imageUrl: snapshot.imageUrl || catalogProduct?.imageUrl || "",
+            images: Array.isArray(snapshot.images) && snapshot.images.length
+              ? snapshot.images
+              : (Array.isArray(catalogProduct?.images) ? catalogProduct.images : [])
+          };
+        })
+      };
+    });
     return sendJson(res, 200, { orders });
   }
 
