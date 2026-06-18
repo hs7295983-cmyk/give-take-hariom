@@ -1258,7 +1258,7 @@ textarea {
 }
 
 #page-account {
-  max-width: 1060px;
+  max-width: 1220px;
   background: var(--paper-soft);
   border-radius: 20px;
 }
@@ -1274,9 +1274,15 @@ textarea {
   font-size: 16px;
 }
 
+#page-account .page-title h1 {
+  max-width: 960px;
+  font-size: clamp(38px, 4.2vw, 54px);
+}
+
 #accountGrid.profile-grid {
-  grid-template-columns: 1fr;
-  gap: 14px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 #accountGrid > article,
@@ -1298,6 +1304,7 @@ textarea {
 
 .account-profile-card {
   display: flex;
+  grid-column: span 4;
   gap: 14px;
   align-items: center;
   padding: 20px;
@@ -1320,6 +1327,7 @@ textarea {
 
 .account-profile-copy {
   display: grid;
+  min-width: 0;
   gap: 5px;
 }
 
@@ -1335,6 +1343,8 @@ textarea {
 
 .account-profile-copy p {
   color: var(--muted);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .verified-badge {
@@ -1380,6 +1390,10 @@ textarea {
   gap: 12px;
 }
 
+.account-stats {
+  grid-column: span 8;
+}
+
 .account-stats article {
   display: grid;
   gap: 6px;
@@ -1410,6 +1424,7 @@ textarea {
 }
 
 .account-quick-actions {
+  grid-column: span 8;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -1449,6 +1464,7 @@ textarea {
 
 .account-wallet-card {
   display: flex;
+  grid-column: span 4;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -1474,7 +1490,8 @@ textarea {
   font-size: 14px;
 }
 
-.account-panel {
+#accountGrid > .account-panel {
+  grid-column: 1 / -1;
   padding: 20px;
 }
 
@@ -1571,6 +1588,7 @@ textarea {
 
 .account-logout-row {
   display: flex;
+  grid-column: 1 / -1;
   justify-content: flex-end;
   padding: 6px 0 0;
 }
@@ -3741,6 +3759,19 @@ textarea {
 
   .admin-today-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #accountGrid.profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-profile-card,
+  .account-stats,
+  .account-quick-actions,
+  .account-wallet-card,
+  .account-panel,
+  .account-logout-row {
+    grid-column: 1;
   }
 }
 
