@@ -31,6 +31,7 @@ const fallbackCategories = [
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
 const customerSellBlockedCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
+const pausedShoppingCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const categoryIcons = {
   electronics: '<svg viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M11 18h2"/></svg>',
   books: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19a2.5 2.5 0 0 1 2.5-2H20"/><path d="M8 7h8"/></svg>',
@@ -3305,11 +3306,12 @@ function renderCategories() {
   const homeCategories = homeCategoryIds
     .map(id => categories.find(category => category.id === id))
     .filter(Boolean);
-  els.categoryGrid.innerHTML = homeCategories.map((category, index) => `
-    <article class="category-card" data-category="${category.id}">
+  els.categoryGrid.innerHTML = homeCategories.map(category => `
+    <article class="category-card${isPausedShoppingCategory(category.id) ? " category-card-paused" : ""}" data-category="${category.id}">
       <div class="category-icon" aria-hidden="true">${categoryIcons[category.id] || categoryIcons.default}</div>
       <div>
         <h3>${escapeHtml(category.name)}</h3>
+        ${isPausedShoppingCategory(category.id) ? '<span class="category-coming-soon">Coming soon</span>' : ""}
       </div>
     </article>
   `).join("");
@@ -3328,12 +3330,30 @@ function isCustomerSellBlockedCategory(category) {
   return customerSellBlockedCategoryIds.has(id) || /fashion|clothes|shoes/.test(name);
 }
 
+function isPausedShoppingCategory(category) {
+  const id = String(category?.id || category || "").trim().toLowerCase();
+  return pausedShoppingCategoryIds.has(id);
+}
+
+function comingSoonPanel() {
+  return `
+    <article class="category-coming-soon-panel" aria-live="polite">
+      <div class="category-coming-soon-icon" aria-hidden="true">${categoryIcons.fashion}</div>
+      <p class="kicker">Coming Soon</p>
+      <h2>Good style is coming. Trusted quality comes first.</h2>
+      <p>We’re carefully selecting clothes and shoes that meet our quality standards—because your trust matters more than filling a shelf.</p>
+      <button class="secondary-button" data-route="market" type="button">Explore other products</button>
+    </article>
+  `;
+}
+
 function getFilteredProducts() {
   const category = els.categoryFilter?.value || "all";
   const city = els.cityFilter?.value || "all";
   const sort = els.sortFilter?.value || "trending";
   const query = state.query.toLowerCase();
   let list = [...products].filter(product => {
+    if (isPausedShoppingCategory(product.category)) return false;
     const matchesCategory = category === "all"
       || product.category === category
       || (category === "electronics" && product.category === "mobiles");
@@ -3361,17 +3381,22 @@ function renderProducts() {
     if (state.category) {
       const category = categories.find(item => item.id === state.category);
       els.categoryTitle.textContent = category?.name || "Category";
-      els.categoryProducts.innerHTML = loading;
+      els.categoryProducts.innerHTML = isPausedShoppingCategory(state.category)
+        ? comingSoonPanel()
+        : loading;
     }
     return;
   }
-  els.featuredProducts.innerHTML = products.slice(0, 8).map(card).join("");
+  const availableProducts = products.filter(product => !isPausedShoppingCategory(product.category));
+  els.featuredProducts.innerHTML = availableProducts.slice(0, 8).map(card).join("");
   els.productGrid.innerHTML = getFilteredProducts().map(card).join("");
   if (state.category) {
     const category = categories.find(item => item.id === state.category);
     const categoryProducts = products.filter(product => product.category === state.category || (state.category === "electronics" && product.category === "mobiles"));
     els.categoryTitle.textContent = category?.name || "Category";
-    els.categoryProducts.innerHTML = categoryProducts.length
+    els.categoryProducts.innerHTML = isPausedShoppingCategory(state.category)
+      ? comingSoonPanel()
+      : categoryProducts.length
       ? categoryProducts.map(card).join("")
       : loadingPanel("No products available in this category yet.");
   }
@@ -3402,6 +3427,11 @@ function renderProductDetail() {
   if (!product) {
     updateProductPageShare();
     els.productDetail.innerHTML = loadingPanel("Product not found.");
+    return;
+  }
+  if (isPausedShoppingCategory(product.category)) {
+    updateProductPageShare();
+    els.productDetail.innerHTML = comingSoonPanel();
     return;
   }
   updateProductPageShare(product.id);
