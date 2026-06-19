@@ -8,6 +8,8 @@ const categories = [
   { id: "toys", name: "Toys & More", text: "Toys, hobby items, bundles, and low-value useful items." }
 ];
 
+const recategorizedProductIds = new Set(["gtl13", "gtl21", "gtl28", "gtl36", "gtl40", "gtl53"]);
+
 const products = [
   {
     id: "gtl01",
@@ -2980,7 +2982,7 @@ function createSeed() {
       coinValue: 1,
       coinRechargeMinimum: 50,
       coinRechargeStep: 50,
-      catalogVersion: "remove-furniture-category-2026-06-19",
+      catalogVersion: "price-safe-furniture-removal-2026-06-19",
       serviceCities: ["Lucknow", "Ayodhya", "Gonda"],
       checkoutCurrency: "coins-only",
       updatedAt: new Date().toISOString()
@@ -2992,7 +2994,11 @@ function createSeed() {
       expectedReturn: ""
     },
     categories,
-    products: [...homeKitchenScreenshotProducts, ...electronicsScreenshotProducts, ...products.filter(product => !["home", "electronics"].includes(product.category))],
+    products: [
+      ...homeKitchenScreenshotProducts,
+      ...electronicsScreenshotProducts,
+      ...products.filter(product => !["home", "electronics"].includes(product.category) || recategorizedProductIds.has(product.id))
+    ],
     users: [],
     wallets: {},
     sellRequests: [],

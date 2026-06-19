@@ -27,6 +27,8 @@ const fallbackCategories = [
   { id: "toys", name: "Toys & More", text: "Toys, hobby items, bundles, and low-value useful items." },
 ];
 
+const recategorizedProductIds = new Set(["gtl13", "gtl21", "gtl28", "gtl36", "gtl40", "gtl53"]);
+
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
 const homeCategoryIds = ["electronics", "books", "fashion", "home", "bags", "toys"];
 const customerSellBlockedCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
@@ -2625,8 +2627,15 @@ const fallbackElectronicsProducts = [
   }
 ];
 
-fallbackProducts.splice(0, fallbackProducts.length, ...fallbackHomeKitchenProducts, ...fallbackElectronicsProducts, ...fallbackProducts.filter(product => !["home", "electronics"].includes(product.category)));
+fallbackProducts.splice(
+  0,
+  fallbackProducts.length,
+  ...fallbackHomeKitchenProducts,
+  ...fallbackElectronicsProducts,
+  ...fallbackProducts.filter(product => !["home", "electronics"].includes(product.category) || recategorizedProductIds.has(product.id))
+);
 
+const legacyPriceOverrides = loadLegacyPriceOverrides();
 purgeLegacyCatalogCache();
 const cachedCatalog = loadCachedCatalog();
 let categories = cachedCatalog?.categories || [...fallbackCategories];
@@ -2843,6 +2852,65 @@ function loadCachedCatalog() {
   }
 }
 
+function loadLegacyPriceOverrides() {
+  try {
+    const catalogs = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith(CATALOG_CACHE_PREFIX) || key === CATALOG_CACHE_KEY) continue;
+      try {
+        const catalog = JSON.parse(localStorage.getItem(key) || "null");
+        if (catalog && Array.isArray(catalog.products)) catalogs.push(catalog);
+      } catch {}
+    }
+    const latestLegacyCatalog = catalogs
+      .filter(catalog => catalog.version !== CATALOG_CACHE_VERSION)
+      .sort((a, b) => Number(b.savedAt || 0) - Number(a.savedAt || 0))[0];
+    if (!latestLegacyCatalog) return new Map();
+    return new Map(latestLegacyCatalog.products
+      .filter(product => product?.id && product.updatedAt && Number.isFinite(Number(product.price)))
+      .map(product => [product.id, { price: Number(product.price), updatedAt: product.updatedAt }]));
+  } catch {
+    return new Map();
+  }
+}
+
+function applyRecoveredPrice(product) {
+  const recovered = legacyPriceOverrides.get(product?.id);
+  return recovered && shouldApplyRecoveredPrice(product, recovered)
+    ? { ...product, price: recovered.price, updatedAt: recovered.updatedAt }
+    : product;
+}
+
+function shouldApplyRecoveredPrice(serverProduct, recovered) {
+  if (!serverProduct || !recovered) return false;
+  const serverUpdatedAt = Date.parse(serverProduct.updatedAt || "");
+  const recoveredUpdatedAt = Date.parse(recovered.updatedAt || "");
+  return !Number.isFinite(serverUpdatedAt)
+    || (Number.isFinite(recoveredUpdatedAt) && recoveredUpdatedAt > serverUpdatedAt);
+}
+
+async function persistRecoveredPrices(serverProducts) {
+  if (!adminToken || !legacyPriceOverrides.size) return;
+  const serverProductsById = new Map((serverProducts || []).map(product => [product.id, product]));
+  const updates = [...legacyPriceOverrides.entries()].filter(([productId, recovered]) => {
+    const serverProduct = serverProductsById.get(productId);
+    if (!shouldApplyRecoveredPrice(serverProduct, recovered)) {
+      legacyPriceOverrides.delete(productId);
+      return false;
+    }
+    return Number(serverProduct.price) !== recovered.price;
+  });
+  const results = await Promise.allSettled(updates.map(([productId, recovered]) => api(`/api/admin/products/${encodeURIComponent(productId)}`, {
+    method: "PATCH",
+    admin: true,
+    body: JSON.stringify({ price: recovered.price }),
+  })));
+  results.forEach((result, index) => {
+    if (result.status === "fulfilled") legacyPriceOverrides.delete(updates[index][0]);
+  });
+}
+
 function purgeLegacyCatalogCache() {
   try {
     LEGACY_CATALOG_CACHE_KEYS.forEach(key => localStorage.removeItem(key));
@@ -2895,7 +2963,8 @@ async function loadBackendData() {
       userId ? api(`/api/sell-requests?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ sellRequests: [] }),
     ]);
     categories = categoryData.categories;
-    products = productData.products;
+    products = productData.products.map(applyRecoveredPrice);
+    await persistRecoveredPrices(productData.products);
     cacheCatalog();
     productDetails = new Map(
       products
@@ -3032,8 +3101,11 @@ async function refreshAdminProducts() {
     api("/api/admin/dashboard", { admin: true }),
     api("/api/products?sort=trending"),
   ]);
-  adminDashboard = adminData;
-  products = productData.products;
+  adminDashboard = {
+    ...adminData,
+    products: (adminData.products || []).map(applyRecoveredPrice),
+  };
+  products = productData.products.map(applyRecoveredPrice);
   productDetails.clear();
   productDetailRequests.clear();
   clearCatalogCache();
@@ -3090,9 +3162,10 @@ async function loadProductDetail(productId) {
   const request = api(`/api/products/${encodeURIComponent(productId)}`)
     .then(data => {
       if (!data.product) return existing;
-      productDetails.set(productId, data.product);
-      products = products.map(product => product.id === productId ? { ...product, ...data.product } : product);
-      return data.product;
+      const recoveredProduct = applyRecoveredPrice(data.product);
+      productDetails.set(productId, recoveredProduct);
+      products = products.map(product => product.id === productId ? { ...product, ...recoveredProduct } : product);
+      return recoveredProduct;
     })
     .catch(error => {
       if (existing) {
@@ -5421,6 +5494,7 @@ function wireEvents() {
           admin: true,
           body: JSON.stringify(payload),
         });
+        legacyPriceOverrides.delete(productId);
         saveProductToCachedCatalog(data.product);
         renderProducts();
         renderProductDetail();
@@ -5745,7 +5819,7 @@ function wireEvents() {
         });
         adminToken = data.token;
         localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
-        await loadProtectedData();
+        await loadBackendData();
         renderAdmin();
         renderPartnerTasks();
         alert("Admin login successful.");

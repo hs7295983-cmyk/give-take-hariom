@@ -33,9 +33,30 @@ function getPool() {
   return pool;
 }
 
+function mergeCatalogProducts(currentProducts = [], seedProducts = []) {
+  const currentProductsById = new Map(currentProducts.map(product => [product.id, product]));
+  const seedProductIds = new Set(seedProducts.map(product => product.id));
+  const migratedSeedProducts = seedProducts.map(seedProduct => {
+    const currentProduct = currentProductsById.get(seedProduct.id);
+    if (!currentProduct) return seedProduct;
+    return {
+      ...seedProduct,
+      ...currentProduct,
+      // Catalog-owned classification follows the new seed while live inventory
+      // fields such as price, status, and quantity remain untouched.
+      category: seedProduct.category
+    };
+  });
+  const customProducts = currentProducts
+    .filter(product => !seedProductIds.has(product.id))
+    .map(product => product.category === "furniture" ? { ...product, category: "home" } : product);
+  return [...migratedSeedProducts, ...customProducts];
+}
+
 function applyCatalogVersion(db) {
   const seed = createSeed();
   if (db.meta?.catalogVersion === seed.meta.catalogVersion) return { db, changed: false };
+  const currentProducts = Array.isArray(db.products) ? db.products : [];
   const nextDb = {
     ...db,
     meta: {
@@ -44,7 +65,7 @@ function applyCatalogVersion(db) {
       updatedAt: new Date().toISOString()
     },
     categories: seed.categories,
-    products: seed.products
+    products: mergeCatalogProducts(currentProducts, seed.products)
   };
   return { db: nextDb, changed: true };
 }
@@ -114,4 +135,4 @@ async function writeDb(db) {
   fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
 }
 
-module.exports = { ensureDb, readDb, writeDb, getStorageInfo };
+module.exports = { ensureDb, readDb, writeDb, getStorageInfo, mergeCatalogProducts };
