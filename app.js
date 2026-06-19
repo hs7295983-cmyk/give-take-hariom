@@ -1678,7 +1678,7 @@ const fallbackHomeKitchenProducts = [
   {
     "id": "hk04",
     "title": "Leakproof 450ml Glass Water Bottle For Outdoor & Sports",
-    "price": 69,
+    "price": 99,
     "category": "home",
     "city": "Lucknow",
     "condition": "New",
@@ -1997,7 +1997,7 @@ const fallbackHomeKitchenProducts = [
   {
     "id": "hk15",
     "title": "Stainless Steel Round Roaster Grill With Wooden Handle - 7.6x13 In",
-    "price": 70,
+    "price": 99,
     "category": "home",
     "city": "Gonda",
     "condition": "New",
@@ -2171,7 +2171,7 @@ const fallbackElectronicsProducts = [
     "title": "Camera & Mobile Tripod",
     "category": "electronics",
     "city": "Gonda",
-    "price": 234,
+    "price": 299,
     "condition": "New",
     "source": "GIVE & TAKE Verified",
     "views": 674,
@@ -2495,7 +2495,7 @@ const fallbackElectronicsProducts = [
     "title": "Mobile Holder Astronaut Phone Stand Planet Creative Fun 3D Design (1 Pc / Mix Design)",
     "category": "electronics",
     "city": "Gonda",
-    "price": 87,
+    "price": 99,
     "condition": "New",
     "source": "GIVE & TAKE Verified",
     "views": 578,
@@ -4119,6 +4119,35 @@ async function runAdminOpsAgent(action, payload = {}) {
   renderAdmin();
 }
 
+async function syncBrowserPricesToBackend() {
+  const priceHealth = state.adminAgent.result?.localReport?.priceHealth || [];
+  const mismatches = priceHealth.filter(item => !item.ok && item.browserPrice !== null && item.browserPrice !== undefined);
+  if (!adminToken || !mismatches.length || state.adminAgent.loading) return;
+  state.adminAgent.loading = true;
+  state.adminAgent.error = "";
+  renderAdmin();
+  try {
+    const data = await api("/api/admin/products/sync-browser-prices", {
+      method: "POST",
+      admin: true,
+      body: JSON.stringify({
+        clientCatalog: mismatches.map(item => ({ id: item.id, price: item.browserPrice })),
+      }),
+    });
+    const updatedById = new Map((data.products || []).map(product => [product.id, product]));
+    products = products.map(product => updatedById.has(product.id) ? { ...product, ...updatedById.get(product.id) } : product);
+    cacheCatalog();
+    state.adminAgent.loading = false;
+    await loadProtectedData();
+    await runAdminOpsAgent("price-health");
+    alert(`${data.updatedCount || 0} browser prices saved to backend.`);
+  } catch (error) {
+    state.adminAgent.loading = false;
+    state.adminAgent.error = error.message;
+    renderAdmin();
+  }
+}
+
 function renderAgentTextList(items, emptyText) {
   const list = Array.isArray(items) ? items.filter(Boolean) : [];
   if (!list.length) return `<p class="admin-agent-empty">${escapeHtml(emptyText)}</p>`;
@@ -4174,6 +4203,7 @@ function renderAdminOpsAgent() {
   const result = agent.result;
   const report = result?.ai?.report || null;
   const localReport = result?.localReport || null;
+  const priceMismatches = (localReport?.priceHealth || []).filter(item => !item.ok && item.browserPrice !== null && item.browserPrice !== undefined);
   const aiStatus = result
     ? result.ai?.enabled
       ? result.ai?.error
@@ -4244,7 +4274,7 @@ function renderAdminOpsAgent() {
             <section><h4>Inventory Issues</h4>${renderAgentIssueCards(report.inventoryIssues || localReport?.inventoryIssues, "inventory issues")}</section>
             <section><h4>Duplicates</h4>${renderAgentIssueCards(report.duplicateGroups || localReport?.duplicateGroups, "duplicates")}</section>
             <section><h4>Orders</h4>${renderAgentIssueCards(report.orderSummaries || localReport?.orderSummaries, "orders")}</section>
-            <section><h4>Price Health</h4>${renderAgentIssueCards(report.priceHealth || localReport?.priceHealth, "prices")}</section>
+            <section><h4>Price Health</h4>${priceMismatches.length ? `<button class="primary-button" data-sync-browser-prices type="button" ${agent.loading ? "disabled" : ""}>Save ${priceMismatches.length} Browser Prices</button>` : ""}${renderAgentIssueCards(report.priceHealth || localReport?.priceHealth, "prices")}</section>
             <section class="span-2"><h4>Listing Draft</h4>${renderListingDraft(report.listingDraft || localReport?.listingDraft)}</section>
             <section class="span-2"><h4>Support Drafts</h4>${renderSupportDrafts(report.supportDrafts)}</section>
           </div>
@@ -5243,6 +5273,12 @@ function wireEvents() {
     const adminAgentAction = event.target.closest("[data-admin-agent-action]");
     if (adminAgentAction) {
       await runAdminOpsAgent(adminAgentAction.dataset.adminAgentAction || "audit");
+      return;
+    }
+
+    const syncBrowserPrices = event.target.closest("[data-sync-browser-prices]");
+    if (syncBrowserPrices) {
+      await syncBrowserPricesToBackend();
       return;
     }
 

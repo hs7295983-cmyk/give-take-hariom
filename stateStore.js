@@ -39,12 +39,19 @@ function mergeCatalogProducts(currentProducts = [], seedProducts = []) {
   const migratedSeedProducts = seedProducts.map(seedProduct => {
     const currentProduct = currentProductsById.get(seedProduct.id);
     if (!currentProduct) return seedProduct;
+    const seedPriceRevision = Number(seedProduct.priceRevision || 0);
+    const currentPriceRevision = Number(currentProduct.priceRevision || 0);
+    const applyCatalogPriceCorrection = seedPriceRevision > currentPriceRevision;
     return {
       ...seedProduct,
       ...currentProduct,
       // Catalog-owned classification follows the new seed while live inventory
       // fields such as price, status, and quantity remain untouched.
-      category: seedProduct.category
+      category: seedProduct.category,
+      ...(applyCatalogPriceCorrection ? {
+        price: seedProduct.price,
+        priceRevision: seedPriceRevision
+      } : {})
     };
   });
   const customProducts = currentProducts

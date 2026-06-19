@@ -390,7 +390,7 @@ function buildPriceHealth(products, clientCatalog) {
           ? "Browser and backend match"
           : "Browser cached price differs from backend"
     };
-  }).filter(item => !item.ok || item.backendPrice <= 0).slice(0, 30);
+  }).filter(item => !item.ok).slice(0, 30);
 }
 
 function draftListingFallback(input, categories) {
@@ -1247,6 +1247,29 @@ async function handleApi(req, res) {
     db.maintenance = { ...db.maintenance, ...body };
     await writeDb(db);
     return sendJson(res, 200, { maintenance: db.maintenance });
+  }
+
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "products" && parts[3] === "sync-browser-prices") {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const clientCatalog = Array.isArray(body.clientCatalog) ? body.clientCatalog.slice(0, 300) : [];
+    const browserPrices = new Map(clientCatalog
+      .filter(item => item?.id && Number.isFinite(Number(item.price)) && Number(item.price) >= 0)
+      .map(item => [String(item.id), Number(item.price)]));
+    const updatedProducts = [];
+    for (const product of db.products || []) {
+      if (!browserPrices.has(product.id)) continue;
+      const browserPrice = browserPrices.get(product.id);
+      if (Number(product.price) === browserPrice) continue;
+      product.price = browserPrice;
+      product.updatedAt = new Date().toISOString();
+      updatedProducts.push(product);
+    }
+    if (updatedProducts.length) await writeDb(db);
+    return sendJson(res, 200, {
+      updatedCount: updatedProducts.length,
+      products: updatedProducts
+    });
   }
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "products") {
