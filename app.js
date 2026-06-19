@@ -6,7 +6,7 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
-const CATALOG_CACHE_VERSION = 4;
+const CATALOG_CACHE_VERSION = 5;
 const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
 const LATEST_CATALOG_CACHE_KEY = "give_take_catalog_cache_latest";
 const CATALOG_CACHE_PREFIX = "give_take_catalog_cache_v";
@@ -21,7 +21,6 @@ const fallbackCategories = [
   { id: "mobiles", name: "Mobiles", text: "Phones with IMEI, lock, battery, display, and diagnostic checks." },
   { id: "electronics", name: "Electronics", text: "Laptops, tablets, headphones, speakers, and smart devices." },
   { id: "books", name: "Books", text: "Study books, course sets, exam material, and novels." },
-  { id: "furniture", name: "Furniture", text: "Tables, chairs, storage, and useful home furniture." },
   { id: "fashion", name: "Clothes & Shoes", text: "Clean, verified wearable items and accessories." },
   { id: "home", name: "Home & Kitchen", text: "Useful household, kitchen, decor, and appliance items." },
   { id: "bags", name: "Bags", text: "Backpacks, handbags, luggage, and office bags." },
@@ -29,13 +28,12 @@ const fallbackCategories = [
 ];
 
 const SERVICE_CITIES_TEXT = "Lucknow, Ayodhya, Gonda";
-const homeCategoryIds = ["electronics", "books", "furniture", "fashion", "home", "bags", "toys"];
+const homeCategoryIds = ["electronics", "books", "fashion", "home", "bags", "toys"];
 const customerSellBlockedCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const pausedShoppingCategoryIds = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const categoryIcons = {
   electronics: '<svg viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M11 18h2"/></svg>',
   books: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19a2.5 2.5 0 0 1 2.5-2H20"/><path d="M8 7h8"/></svg>',
-  furniture: '<svg viewBox="0 0 24 24"><path d="M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4"/><path d="M4 11h16v6H4z"/><path d="M6 17v3"/><path d="M18 17v3"/></svg>',
   fashion: '<svg viewBox="0 0 24 24"><path d="M9 4 6 6 3 7l2 5 3-1v9h8v-9l3 1 2-5-3-1-3-2"/><path d="M9 4a3 3 0 0 0 6 0"/></svg>',
   home: '<svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/></svg>',
   bags: '<svg viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>',
@@ -385,7 +383,7 @@ const fallbackProducts = [
   {
     id: "gtl13",
     title: "Plastic Hand Mobile Stand (Mix Color / 1 Pc)",
-    category: "furniture",
+    category: "electronics",
     city: "Lucknow",
     price: 50,
     condition: "New",
@@ -609,7 +607,7 @@ const fallbackProducts = [
   {
     id: "gtl21",
     title: "Bicycle-Shaped Plastic Flower Pot Stand for Home Decor",
-    category: "furniture",
+    category: "home",
     city: "Gonda",
     price: 200,
     condition: "New",
@@ -805,7 +803,7 @@ const fallbackProducts = [
   {
     id: "gtl28",
     title: "Premium Big Desktop Mobile Phone Stand Holder for Smartphones",
-    category: "furniture",
+    category: "electronics",
     city: "Lucknow",
     price: 200,
     condition: "New",
@@ -1029,7 +1027,7 @@ const fallbackProducts = [
   {
     id: "gtl36",
     title: "Happy Birthday LED Acrylic Message Lamp with Wooden Base | Decorative Table Light",
-    category: "furniture",
+    category: "home",
     city: "Gonda",
     price: 400,
     condition: "New",
@@ -1141,7 +1139,7 @@ const fallbackProducts = [
   {
     id: "gtl40",
     title: "Romantic Heart Love Table Decor Gift Set (1 Set)",
-    category: "furniture",
+    category: "home",
     city: "Lucknow",
     price: 400,
     condition: "New",
@@ -1477,7 +1475,7 @@ const fallbackProducts = [
   {
     id: "gtl52",
     title: "Kids inflatable sofa chair with backrest & Foot Air Pump (1 Set 85x74 Cm Approx)",
-    category: "furniture",
+    category: "toys",
     city: "Lucknow",
     price: 1099,
     condition: "New",
@@ -1505,7 +1503,7 @@ const fallbackProducts = [
   {
     id: "gtl53",
     title: "2 in 1 Plastic Keychain with Mobile Stand / Phone Holder (100 Pcs Set / Multicolor)",
-    category: "furniture",
+    category: "electronics",
     city: "Ayodhya",
     price: 1099,
     condition: "New",
@@ -2828,6 +2826,7 @@ function loadCachedCatalog() {
       .filter(item => {
         const catalog = item?.catalog;
         return catalog
+          && catalog.version === CATALOG_CACHE_VERSION
           && Date.now() - Number(catalog.savedAt || 0) <= maxAgeMs
           && Array.isArray(catalog.categories)
           && Array.isArray(catalog.products)
@@ -3483,7 +3482,6 @@ function renderFormFields() {
     mobiles: ["Brand and model", "Storage/RAM", "IMEI available?", "Bill/warranty", "Battery/display issues"],
     electronics: ["Brand/model/serial", "Power and charging status", "Accessories included", "Known defects"],
     books: ["Class/course/subject", "Edition/year", "Pages missing?", "Writing/highlighting condition"],
-    furniture: ["Material", "Cracks/scratches"],
     home: ["Brand if any", "Working condition", "Missing parts", "Hygiene/safety condition"],
     bags: ["Size/type", "Zip/handle condition", "Tears or stains", "Brand if any"],
     toys: ["Age group", "Set completeness", "Missing pieces", "Cleanliness"],

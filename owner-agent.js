@@ -114,11 +114,10 @@ function inferCategory(input) {
     ["mobiles", ["mobile", "phone", "iphone", "android", "samsung", "redmi", "oppo", "vivo"]],
     ["electronics", ["charger", "earbud", "bluetooth", "speaker", "usb", "cable", "powerbank", "keyboard", "mouse", "watch"]],
     ["books", ["book", "novel", "exam", "course", "ncert", "notes", "study"]],
-    ["furniture", ["chair", "table", "sofa", "rack", "almirah", "desk"]],
     ["fashion", ["shirt", "shoe", "kurta", "jeans", "dress", "watch", "belt"]],
     ["bags", ["bag", "backpack", "luggage", "purse", "handbag"]],
     ["toys", ["toy", "game", "kids", "puzzle", "remote car"]],
-    ["home", ["kitchen", "bottle", "holder", "cap", "lamp", "cleaner", "mop", "storage", "wall", "home"]]
+    ["home", ["kitchen", "bottle", "holder", "cap", "lamp", "cleaner", "mop", "storage", "wall", "home", "chair", "table", "sofa", "rack", "almirah", "desk"]]
   ];
   const match = rules.find(([, keywords]) => keywords.some(keyword => text.includes(keyword)));
   return match ? match[0] : "home";

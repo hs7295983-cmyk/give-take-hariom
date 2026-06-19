@@ -2,7 +2,6 @@ const categories = [
   { id: "mobiles", name: "Mobiles", text: "Phones with IMEI, lock, battery, display, and diagnostic checks." },
   { id: "electronics", name: "Electronics", text: "Laptops, tablets, headphones, speakers, and smart devices." },
   { id: "books", name: "Books", text: "Study books, course sets, exam material, and novels." },
-  { id: "furniture", name: "Furniture", text: "Tables, chairs, storage, and useful home furniture." },
   { id: "fashion", name: "Clothes & Shoes", text: "Clean, verified wearable items and accessories." },
   { id: "home", name: "Home & Kitchen", text: "Useful household, kitchen, decor, and appliance items." },
   { id: "bags", name: "Bags", text: "Backpacks, handbags, luggage, and office bags." },
@@ -349,7 +348,7 @@ const products = [
   {
     id: "gtl13",
     title: "Plastic Hand Mobile Stand (Mix Color / 1 Pc)",
-    category: "furniture",
+    category: "electronics",
     city: "Lucknow",
     price: 50,
     condition: "New",
@@ -573,7 +572,7 @@ const products = [
   {
     id: "gtl21",
     title: "Bicycle-Shaped Plastic Flower Pot Stand for Home Decor",
-    category: "furniture",
+    category: "home",
     city: "Gonda",
     price: 200,
     condition: "New",
@@ -769,7 +768,7 @@ const products = [
   {
     id: "gtl28",
     title: "Premium Big Desktop Mobile Phone Stand Holder for Smartphones",
-    category: "furniture",
+    category: "electronics",
     city: "Lucknow",
     price: 200,
     condition: "New",
@@ -993,7 +992,7 @@ const products = [
   {
     id: "gtl36",
     title: "Happy Birthday LED Acrylic Message Lamp with Wooden Base | Decorative Table Light",
-    category: "furniture",
+    category: "home",
     city: "Gonda",
     price: 400,
     condition: "New",
@@ -1105,7 +1104,7 @@ const products = [
   {
     id: "gtl40",
     title: "Romantic Heart Love Table Decor Gift Set (1 Set)",
-    category: "furniture",
+    category: "home",
     city: "Lucknow",
     price: 400,
     condition: "New",
@@ -1441,7 +1440,7 @@ const products = [
   {
     id: "gtl52",
     title: "Kids inflatable sofa chair with backrest & Foot Air Pump (1 Set 85x74 Cm Approx)",
-    category: "furniture",
+    category: "toys",
     city: "Lucknow",
     price: 1099,
     condition: "New",
@@ -1469,7 +1468,7 @@ const products = [
   {
     id: "gtl53",
     title: "2 in 1 Plastic Keychain with Mobile Stand / Phone Holder (100 Pcs Set / Multicolor)",
-    category: "furniture",
+    category: "electronics",
     city: "Ayodhya",
     price: 1099,
     condition: "New",
@@ -2981,7 +2980,7 @@ function createSeed() {
       coinValue: 1,
       coinRechargeMinimum: 50,
       coinRechargeStep: 50,
-      catalogVersion: "home-electronics-deodap-gallery-2026-06-14",
+      catalogVersion: "remove-furniture-category-2026-06-19",
       serviceCities: ["Lucknow", "Ayodhya", "Gonda"],
       checkoutCurrency: "coins-only",
       updatedAt: new Date().toISOString()
