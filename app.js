@@ -3589,6 +3589,36 @@ function fileToCompressedDataUrl(file) {
   });
 }
 
+function validateProductImageUrl(imageUrl) {
+  const value = String(imageUrl || "").trim();
+  if (!value) return Promise.resolve();
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(value);
+  } catch {
+    return Promise.reject(new Error("Enter a valid direct image URL, or upload the image file."));
+  }
+  if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+    return Promise.reject(new Error("Image URL must start with http:// or https://."));
+  }
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const timer = window.setTimeout(() => {
+      image.src = "";
+      reject(new Error("Image link did not load. Use Copy Image Address or upload the image file."));
+    }, 8000);
+    image.onload = () => {
+      window.clearTimeout(timer);
+      resolve();
+    };
+    image.onerror = () => {
+      window.clearTimeout(timer);
+      reject(new Error("This is not a direct image link. Use Copy Image Address or upload the image file."));
+    };
+    image.src = value;
+  });
+}
+
 async function collectSellPhotos(fileList) {
   const files = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
   if (files.length < 4 || files.length > 5) {
@@ -4515,10 +4545,11 @@ function renderAdmin() {
           <option>Needs repair</option>
         </select>
         <input name="quantity" type="number" min="1" step="1" value="1" placeholder="Quantity" />
-        <input name="imageUrl" class="span-2" type="url" placeholder="Product image URL" />
+        <input name="imageUrl" class="span-2" type="url" placeholder="Direct image URL (.jpg, .png, .webp)" aria-describedby="adminImageHint" />
         <label class="admin-file-field span-2">Upload product image from laptop/Mac
           <input name="imageFile" type="file" accept="image/*" />
         </label>
+        <small class="admin-image-hint span-2" id="adminImageHint">Product-page link नहीं—image पर right-click करके “Copy Image Address” करें, या file upload करें.</small>
         <input name="checks" class="span-2" placeholder="Checks, comma separated: Warehouse checked, Cleaned, Tested" />
         <button class="primary-button" type="submit">Add Product</button>
       </form>
@@ -5489,6 +5520,7 @@ function wireEvents() {
       }
 
       try {
+        if (field === "imageUrl") await validateProductImageUrl(payload.imageUrl);
         const data = await api(`/api/admin/products/${productId}`, {
           method: "PATCH",
           admin: true,
@@ -5951,6 +5983,9 @@ function wireEvents() {
         if (imageFile) {
           if (!imageFile.type.startsWith("image/")) throw new Error("Please choose an image file.");
           imageUrl = await fileToCompressedDataUrl(imageFile);
+        } else {
+          if (!imageUrl) throw new Error("Add a direct image URL or upload the product image file.");
+          await validateProductImageUrl(imageUrl);
         }
         await api("/api/admin/products", {
           method: "POST",
