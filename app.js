@@ -2643,7 +2643,7 @@ let products = cachedCatalog?.products || [];
 let productDetails = new Map();
 let productDetailRequests = new Map();
 let backendDataReady = Boolean(cachedCatalog);
-let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+let adminToken = loadStoredAdminToken();
 let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
 let currentUser = loadCachedCustomerUser();
 let authRestorePending = Boolean(customerToken && !currentUser);
@@ -2663,6 +2663,33 @@ let platformConfig = {
     }
   }
 };
+
+function loadStoredAdminToken() {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+  if (!token) return "";
+  try {
+    const [encodedPayload, signature, extra] = token.split(".");
+    if (!encodedPayload || !signature || extra) throw new Error("Invalid admin token");
+    const base64 = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(padded));
+    if (payload.type !== "admin-session" || !Number.isFinite(payload.expiresAt) || payload.expiresAt <= Date.now()) {
+      throw new Error("Expired admin token");
+    }
+    return token;
+  } catch {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    return "";
+  }
+}
+
+function clearAdminSession() {
+  adminToken = "";
+  adminDashboard = null;
+  partnerTasks = [];
+  partnerTasksLoaded = false;
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
 
 function normalizeWallet(nextWallet) {
   return nextWallet && typeof nextWallet.balance === "number"
@@ -2800,6 +2827,7 @@ async function api(path, options = {}) {
   });
   const data = await response.json();
   if (!response.ok) {
+    if (response.status === 401 && options.admin) clearAdminSession();
     const error = new Error(data.error || "Request failed");
     error.status = response.status;
     throw error;
