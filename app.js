@@ -3460,7 +3460,7 @@ function renderProducts() {
     return;
   }
   const availableProducts = products.filter(product => !isPausedShoppingCategory(product.category));
-  els.featuredProducts.innerHTML = availableProducts.slice(0, 8).map(card).join("");
+  els.featuredProducts.innerHTML = availableProducts.map(card).join("");
   els.productGrid.innerHTML = getFilteredProducts().map(card).join("");
   if (state.category) {
     const category = categories.find(item => item.id === state.category);
