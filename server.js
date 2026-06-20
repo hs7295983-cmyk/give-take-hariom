@@ -66,6 +66,17 @@ function sendError(res, status, message) {
   sendJson(res, status, { error: message });
 }
 
+function logUnexpectedError(req, error, context = "Unexpected server error") {
+  const method = req?.method || "UNKNOWN";
+  const url = req?.url || "unknown-url";
+  console.error(`${context} [${method} ${url}]`, error);
+}
+
+function sendUnexpectedError(req, res, error, publicMessage = "Something went wrong. Please try again.") {
+  logUnexpectedError(req, error);
+  sendError(res, 500, publicMessage);
+}
+
 class RequestError extends Error {
   constructor(status, message) {
     super(message);
@@ -747,7 +758,8 @@ async function handleApi(req, res) {
     } catch (error) {
       otpRecord.used = true;
       await writeDb(db);
-      return sendError(res, 503, error.message);
+      logUnexpectedError(req, error, "OTP email delivery failed");
+      return sendError(res, 503, "OTP email could not be sent right now. Please try again later.");
     }
     return sendJson(res, 200, { ok: true, expiresInSeconds: 300 });
   }
@@ -1698,7 +1710,7 @@ const server = http.createServer(async (req, res) => {
     }
     serveStatic(req, res);
   } catch (error) {
-    sendError(res, 500, error.message || "Server error");
+    sendUnexpectedError(req, res, error);
   }
 });
 
