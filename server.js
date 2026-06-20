@@ -9,14 +9,20 @@ const { ensureDb, readDb, writeDb, updateDb, getStorageInfo } = require("./state
 const rootDir = fs.existsSync(path.join(__dirname, "index.html")) ? __dirname : path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 4173);
 const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : "local-admin-1234");
-const adminToken = adminPassword
-  ? crypto.createHash("sha256").update(`give-and-take-admin:${adminPassword}`).digest("hex")
-  : "";
 const brevoApiKey = process.env.BREVO_API_KEY || "";
 const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
 const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
 const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
-const customerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 365);
+const configuredCustomerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 30);
+const customerSessionDays = Number.isFinite(configuredCustomerSessionDays)
+  ? Math.min(60, Math.max(1, Math.floor(configuredCustomerSessionDays)))
+  : 30;
+const configuredAdminSessionHours = Number(process.env.ADMIN_SESSION_HOURS || 8);
+const adminSessionHours = Number.isFinite(configuredAdminSessionHours)
+  ? Math.min(24, Math.max(1, configuredAdminSessionHours))
+  : 8;
+const customerSessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
+const adminSessionDurationMs = adminSessionHours * 60 * 60_000;
 const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
 const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
@@ -128,6 +134,49 @@ function secureStringEqual(first, second) {
   return firstBuffer.length === secondBuffer.length && crypto.timingSafeEqual(firstBuffer, secondBuffer);
 }
 
+function signAdminSessionPayload(encodedPayload) {
+  return crypto
+    .createHmac("sha256", `${sessionSecret}:${adminPassword}`)
+    .update(encodedPayload)
+    .digest("base64url");
+}
+
+function createAdminSessionToken() {
+  const issuedAt = Date.now();
+  const expiresAt = issuedAt + adminSessionDurationMs;
+  const payload = Buffer.from(JSON.stringify({
+    type: "admin-session",
+    issuedAt,
+    expiresAt,
+    nonce: crypto.randomBytes(16).toString("hex")
+  })).toString("base64url");
+  return {
+    token: `${payload}.${signAdminSessionPayload(payload)}`,
+    expiresAt: new Date(expiresAt).toISOString()
+  };
+}
+
+function verifyAdminSessionToken(token) {
+  if (!adminPassword || !sessionSecret || typeof token !== "string") return false;
+  const [encodedPayload, signature, extra] = token.split(".");
+  if (!encodedPayload || !signature || extra) return false;
+  if (!secureStringEqual(signature, signAdminSessionPayload(encodedPayload))) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+    const now = Date.now();
+    return payload.type === "admin-session"
+      && typeof payload.nonce === "string"
+      && /^[a-f0-9]{32}$/.test(payload.nonce)
+      && Number.isFinite(payload.issuedAt)
+      && Number.isFinite(payload.expiresAt)
+      && payload.issuedAt <= now + 60_000
+      && payload.expiresAt > now
+      && payload.expiresAt - payload.issuedAt <= adminSessionDurationMs;
+  } catch {
+    return false;
+  }
+}
+
 setInterval(() => {
   const staleBefore = Date.now() - (2 * 60 * 60_000);
   for (const [key, attempts] of rateLimitBuckets.entries()) {
@@ -141,7 +190,12 @@ function requireAdmin(req, res) {
     sendError(res, 503, "Admin password is not configured");
     return false;
   }
-  if (auth !== `Bearer ${adminToken}`) {
+  if (!sessionSecret) {
+    sendError(res, 503, "Session secret is not configured");
+    return false;
+  }
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!verifyAdminSessionToken(token)) {
     sendError(res, 401, "Admin login required");
     return false;
   }
@@ -233,6 +287,17 @@ function publicUser(user) {
   return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
 }
 
+function customerSessionExpiresAtMs(session) {
+  const storedExpiry = new Date(session?.expiresAt).getTime();
+  const createdAt = new Date(session?.createdAt).getTime();
+  if (!Number.isFinite(storedExpiry) || !Number.isFinite(createdAt)) return 0;
+  return Math.min(storedExpiry, createdAt + customerSessionDurationMs);
+}
+
+function customerSessionIsValid(session, now = Date.now()) {
+  return customerSessionExpiresAtMs(session) > now;
+}
+
 function requireCustomer(req, res, db) {
   if (!sessionSecret) {
     sendError(res, 503, "Session secret is not configured");
@@ -246,7 +311,7 @@ function requireCustomer(req, res, db) {
   }
   const session = (db.authSessions || []).find(item => (
     item.tokenHash === hashSession(token)
-    && new Date(item.expiresAt).getTime() > Date.now()
+    && customerSessionIsValid(item)
   ));
   if (!session) {
     sendError(res, 401, "Session expired");
@@ -731,16 +796,15 @@ async function handleApi(req, res) {
       user.updatedAt = new Date().toISOString();
     }
     const token = crypto.randomBytes(32).toString("hex");
-    const sessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
     const session = {
       id: id("SESSION"),
       userId: user.id,
       email,
       tokenHash: hashSession(token),
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(now + sessionDurationMs).toISOString()
+      expiresAt: new Date(now + customerSessionDurationMs).toISOString()
     };
-    db.authSessions = db.authSessions.filter(item => new Date(item.expiresAt).getTime() > now).slice(0, 200);
+    db.authSessions = db.authSessions.filter(item => customerSessionIsValid(item, now)).slice(0, 200);
     db.authSessions.unshift(session);
     if (!db.wallets[user.id]) db.wallets[user.id] = { balance: 0, ledger: [] };
     await writeDb(db);
@@ -750,15 +814,7 @@ async function handleApi(req, res) {
   if (method === "GET" && parts[1] === "auth" && parts[2] === "me") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
-    const { session, user } = customer;
-    const now = Date.now();
-    const sessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
-    const remainingMs = new Date(session.expiresAt).getTime() - now;
-    if (remainingMs < 30 * 24 * 60 * 60_000) {
-      session.expiresAt = new Date(now + sessionDurationMs).toISOString();
-      session.lastSeenAt = new Date(now).toISOString();
-      await writeDb(db);
-    }
+    const { user } = customer;
     return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets?.[user.id] || { balance: 0, ledger: [] } });
   }
 
@@ -972,7 +1028,7 @@ async function handleApi(req, res) {
         const sessionStillValid = (transactionDb.authSessions || []).some(session => (
           session.tokenHash === customer.session.tokenHash
           && session.userId === userId
-          && new Date(session.expiresAt).getTime() > Date.now()
+          && customerSessionIsValid(session)
         ));
         const user = (transactionDb.users || []).find(item => item.id === userId);
         if (!sessionStillValid || !user) throw new RequestError(401, "Session expired");
@@ -1232,12 +1288,14 @@ async function handleApi(req, res) {
     if (!enforceRateLimit(res, { ...adminLoginLimit, consume: false })) return;
     const body = await readBody(req);
     if (!adminPassword) return sendError(res, 503, "Admin password is not configured");
+    if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     if (!secureStringEqual(body.password, adminPassword)) {
       recordRateLimitAttempt(adminLoginLimit.scope, adminLoginLimit.identity, adminLoginLimit.windowMs);
       return sendError(res, 401, "Wrong admin password");
     }
     clearRateLimit(adminLoginLimit.scope, adminLoginLimit.identity);
-    return sendJson(res, 200, { token: adminToken });
+    const adminSession = createAdminSessionToken();
+    return sendJson(res, 200, adminSession);
   }
 
   if (method === "GET" && parts[1] === "partner" && parts[2] === "tasks") {
