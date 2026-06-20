@@ -20,6 +20,7 @@ const customerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 365);
 const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
 const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
+const rateLimitBuckets = new Map();
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -65,6 +66,74 @@ class RequestError extends Error {
     this.status = status;
   }
 }
+
+function clientIp(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+  const address = forwarded[0] || req.socket?.remoteAddress || "unknown";
+  return address.replace(/^::ffff:/, "").slice(0, 128);
+}
+
+function privateRateLimitKey(scope, identity) {
+  const digest = crypto.createHash("sha256").update(String(identity || "unknown")).digest("hex");
+  return `${scope}:${digest}`;
+}
+
+function activeRateLimitAttempts(key, windowMs, now = Date.now()) {
+  const cutoff = now - windowMs;
+  const attempts = (rateLimitBuckets.get(key) || []).filter(timestamp => timestamp > cutoff);
+  if (attempts.length) rateLimitBuckets.set(key, attempts);
+  else rateLimitBuckets.delete(key);
+  return attempts;
+}
+
+function sendRateLimitError(res, attempts, windowMs, message) {
+  const now = Date.now();
+  const oldestAttempt = attempts[0] || now;
+  const retryAfterSeconds = Math.max(1, Math.ceil((oldestAttempt + windowMs - now) / 1000));
+  res.setHeader("Retry-After", String(retryAfterSeconds));
+  return sendError(res, 429, message || "Too many attempts. Please wait and try again.");
+}
+
+function enforceRateLimit(res, { scope, identity, limit, windowMs, message, consume = true }) {
+  const key = privateRateLimitKey(scope, identity);
+  const attempts = activeRateLimitAttempts(key, windowMs);
+  if (attempts.length >= limit) {
+    sendRateLimitError(res, attempts, windowMs, message);
+    return false;
+  }
+  if (consume) {
+    attempts.push(Date.now());
+    rateLimitBuckets.set(key, attempts);
+  }
+  return true;
+}
+
+function recordRateLimitAttempt(scope, identity, windowMs) {
+  const key = privateRateLimitKey(scope, identity);
+  const attempts = activeRateLimitAttempts(key, windowMs);
+  attempts.push(Date.now());
+  rateLimitBuckets.set(key, attempts);
+}
+
+function clearRateLimit(scope, identity) {
+  rateLimitBuckets.delete(privateRateLimitKey(scope, identity));
+}
+
+function secureStringEqual(first, second) {
+  const firstBuffer = Buffer.from(String(first || ""));
+  const secondBuffer = Buffer.from(String(second || ""));
+  return firstBuffer.length === secondBuffer.length && crypto.timingSafeEqual(firstBuffer, secondBuffer);
+}
+
+setInterval(() => {
+  const staleBefore = Date.now() - (2 * 60 * 60_000);
+  for (const [key, attempts] of rateLimitBuckets.entries()) {
+    if (!attempts.length || attempts.at(-1) < staleBefore) rateLimitBuckets.delete(key);
+  }
+}, 15 * 60_000).unref();
 
 function requireAdmin(req, res) {
   const auth = req.headers.authorization || "";
@@ -544,11 +613,19 @@ async function callOpenAiAdminAgent({ action, prompt, localReport, listingInput,
 }
 
 async function handleApi(req, res) {
-  const db = await readDb();
   const { url, parts } = parsePath(req);
   const method = req.method;
 
   if (method === "OPTIONS") return sendJson(res, 200, { ok: true });
+  const ip = clientIp(req);
+  if (!enforceRateLimit(res, {
+    scope: "api-general",
+    identity: ip,
+    limit: 600,
+    windowMs: 5 * 60_000,
+    message: "Too many requests. Please wait a few minutes and try again."
+  })) return;
+  const db = await readDb();
 
   if (method === "GET" && parts[1] === "health") {
     return sendJson(res, 200, {
@@ -568,6 +645,20 @@ async function handleApi(req, res) {
     const email = normalizeEmail(body.email);
     if (!email || !email.includes("@")) return sendError(res, 400, "Enter a valid email");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
+    if (!enforceRateLimit(res, {
+      scope: "otp-request-ip",
+      identity: ip,
+      limit: 8,
+      windowMs: 15 * 60_000,
+      message: "Too many OTP requests from this connection. Please wait 15 minutes."
+    })) return;
+    if (!enforceRateLimit(res, {
+      scope: "otp-request-email",
+      identity: email,
+      limit: 4,
+      windowMs: 15 * 60_000,
+      message: "Too many OTP requests for this email. Please wait 15 minutes."
+    })) return;
     db.authOtps = db.authOtps || [];
     const now = Date.now();
     const recent = db.authOtps.find(item => item.email === email && item.createdAtMs && now - item.createdAtMs < 60_000);
@@ -603,6 +694,20 @@ async function handleApi(req, res) {
     const name = String(body.name || "").trim();
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
+    if (!enforceRateLimit(res, {
+      scope: "otp-verify-ip",
+      identity: ip,
+      limit: 15,
+      windowMs: 15 * 60_000,
+      message: "Too many OTP verification attempts. Please wait 15 minutes."
+    })) return;
+    if (!enforceRateLimit(res, {
+      scope: "otp-verify-email",
+      identity: email,
+      limit: 8,
+      windowMs: 15 * 60_000,
+      message: "Too many OTP verification attempts for this email. Please wait 15 minutes."
+    })) return;
     db.authOtps = db.authOtps || [];
     db.authSessions = db.authSessions || [];
     db.users = db.users || [];
@@ -735,6 +840,13 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "wallet" && parts[2] === "recharge") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
+    if (!enforceRateLimit(res, {
+      scope: "wallet-recharge-user",
+      identity: customer.user.id,
+      limit: 8,
+      windowMs: 60 * 60_000,
+      message: "Too many recharge requests. Please wait before submitting another one."
+    })) return;
     const body = await readBody(req);
     const userId = customer.user.id;
     if (!db.wallets[userId]) db.wallets[userId] = { balance: 0, ledger: [] };
@@ -778,6 +890,13 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "sell-requests") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
+    if (!enforceRateLimit(res, {
+      scope: "sell-request-user",
+      identity: customer.user.id,
+      limit: 5,
+      windowMs: 60 * 60_000,
+      message: "Too many selling submissions. Please wait before submitting another product."
+    })) return;
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
     if (isBlockedCustomerSellCategory(body.category)) {
@@ -824,6 +943,13 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "orders") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
+    if (!enforceRateLimit(res, {
+      scope: "checkout-user",
+      identity: customer.user.id,
+      limit: 20,
+      windowMs: 15 * 60_000,
+      message: "Too many checkout attempts. Please wait a few minutes and try again."
+    })) return;
     const body = await readBody(req);
     const userId = customer.user.id;
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
@@ -1004,6 +1130,13 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "returns") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
+    if (!enforceRateLimit(res, {
+      scope: "return-request-user",
+      identity: customer.user.id,
+      limit: 10,
+      windowMs: 60 * 60_000,
+      message: "Too many return requests. Please wait before trying again."
+    })) return;
     const body = await readBody(req);
     const order = (db.orders || []).find(item => item.id === body.orderId && item.userId === customer.user.id);
     if (!order) return sendError(res, 404, "Order not found");
@@ -1027,6 +1160,13 @@ async function handleApi(req, res) {
     const hasCustomerAuth = String(req.headers.authorization || "").startsWith("Bearer ");
     const customer = hasCustomerAuth ? requireCustomer(req, res, db) : null;
     if (hasCustomerAuth && !customer) return;
+    if (!enforceRateLimit(res, {
+      scope: "feedback-ip",
+      identity: ip,
+      limit: 10,
+      windowMs: 60 * 60_000,
+      message: "Too many feedback submissions. Please wait before submitting again."
+    })) return;
     const body = await readBody(req);
     const overallRating = Number(body.overallRating);
     const browsingExperience = String(body.browsingExperience || "").trim();
@@ -1058,6 +1198,13 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "join-applications") {
+    if (!enforceRateLimit(res, {
+      scope: "join-application-ip",
+      identity: ip,
+      limit: 5,
+      windowMs: 60 * 60_000,
+      message: "Too many applications submitted. Please wait before trying again."
+    })) return;
     const body = await readBody(req);
     const application = {
       id: id("GT-J"),
@@ -1075,9 +1222,21 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "login") {
+    const adminLoginLimit = {
+      scope: "admin-login-failure",
+      identity: ip,
+      limit: 5,
+      windowMs: 15 * 60_000,
+      message: "Too many incorrect admin login attempts. Please wait 15 minutes."
+    };
+    if (!enforceRateLimit(res, { ...adminLoginLimit, consume: false })) return;
     const body = await readBody(req);
     if (!adminPassword) return sendError(res, 503, "Admin password is not configured");
-    if (body.password !== adminPassword) return sendError(res, 401, "Wrong admin password");
+    if (!secureStringEqual(body.password, adminPassword)) {
+      recordRateLimitAttempt(adminLoginLimit.scope, adminLoginLimit.identity, adminLoginLimit.windowMs);
+      return sendError(res, 401, "Wrong admin password");
+    }
+    clearRateLimit(adminLoginLimit.scope, adminLoginLimit.identity);
     return sendJson(res, 200, { token: adminToken });
   }
 
@@ -1173,6 +1332,13 @@ async function handleApi(req, res) {
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "ops-agent") {
     if (!requireAdmin(req, res)) return;
+    if (!enforceRateLimit(res, {
+      scope: "admin-ops-agent-ip",
+      identity: ip,
+      limit: 30,
+      windowMs: 60 * 60_000,
+      message: "Too many admin agent requests. Please wait before trying again."
+    })) return;
     const body = await readBody(req);
     const action = String(body.action || "audit").trim() || "audit";
     const listingInput = body.listingInput || {};
