@@ -4478,6 +4478,7 @@ function renderAdmin() {
     <article class="wide-card admin-section-switcher">
       <button class="${state.adminSection === "overview" ? "active" : ""}" data-admin-section="overview" type="button">Admin Overview</button>
       <button class="${state.adminSection === "ops-agent" ? "active" : ""}" data-admin-section="ops-agent" type="button">Ops Agent</button>
+      <button class="danger-button" data-admin-logout type="button">Admin Logout</button>
     </article>
   `;
   if (state.adminSection === "ops-agent") {
@@ -5130,6 +5131,23 @@ function wireEvents() {
       renderAll();
       location.hash = "auth";
       alert("Logged out.");
+      return;
+    }
+
+    const adminLogout = event.target.closest("[data-admin-logout]");
+    if (adminLogout) {
+      if (!confirm("Logout from admin section? You will need the admin password again.")) return;
+      try {
+        adminLogout.disabled = true;
+        adminLogout.textContent = "Logging out...";
+        await api("/api/admin/logout", { method: "POST", admin: true, body: JSON.stringify({}) });
+      } catch (error) {
+        console.warn(`Admin logout request failed: ${error.message}`);
+      }
+      clearAdminSession();
+      renderAdmin();
+      renderPartnerTasks();
+      alert("Admin logged out.");
       return;
     }
 
