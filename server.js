@@ -53,6 +53,20 @@ const publicStaticFiles = new Map([
   ["/owner-agent.js", "owner-agent.js"]
 ]);
 
+const securityHeaders = Object.freeze({
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+});
+
+function withSecurityHeaders(headers = {}) {
+  return {
+    ...securityHeaders,
+    ...headers
+  };
+}
+
 function normalizeAllowedOrigin(value) {
   const rawOrigin = String(value || "").trim();
   if (!rawOrigin) return "";
@@ -98,18 +112,18 @@ function corsHeaders(req) {
 }
 
 function sendCorsBlocked(res) {
-  res.writeHead(403, {
+  res.writeHead(403, withSecurityHeaders({
     "Content-Type": "application/json; charset=utf-8",
     ...corsHeaders(res.giveTakeRequest)
-  });
+  }));
   res.end(JSON.stringify({ error: "Origin not allowed" }));
 }
 
 function sendJson(res, status, payload) {
-  res.writeHead(status, {
+  res.writeHead(status, withSecurityHeaders({
     "Content-Type": "application/json; charset=utf-8",
     ...corsHeaders(res.giveTakeRequest)
-  });
+  }));
   res.end(JSON.stringify(payload));
 }
 
@@ -1719,7 +1733,7 @@ async function handleApi(req, res) {
 
 function serveStatic(req, res) {
   if (!["GET", "HEAD"].includes(req.method)) {
-    res.writeHead(405, { "Content-Type": "text/plain; charset=utf-8", "Allow": "GET, HEAD" });
+    res.writeHead(405, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8", "Allow": "GET, HEAD" }));
     res.end("Method not allowed");
     return;
   }
@@ -1729,14 +1743,14 @@ function serveStatic(req, res) {
   try {
     requestPath = decodeURIComponent(url.pathname);
   } catch {
-    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    res.writeHead(400, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8" }));
     res.end("Bad request");
     return;
   }
 
   const publicFile = publicStaticFiles.get(requestPath);
   if (!publicFile) {
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.writeHead(404, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8" }));
     res.end("Not found");
     return;
   }
@@ -1744,12 +1758,12 @@ function serveStatic(req, res) {
   const resolved = path.join(rootDir, publicFile);
   fs.readFile(resolved, (error, content) => {
     if (error) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.writeHead(404, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8" }));
       res.end("Not found");
       return;
     }
     const ext = path.extname(resolved).toLowerCase();
-    res.writeHead(200, { "Content-Type": mimeTypes[ext] || "application/octet-stream" });
+    res.writeHead(200, withSecurityHeaders({ "Content-Type": mimeTypes[ext] || "application/octet-stream" }));
     res.end(req.method === "HEAD" ? undefined : content);
   });
 }
