@@ -144,6 +144,33 @@ function publicUser(user) {
   return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
 }
 
+function requireCustomer(req, res, db) {
+  if (!sessionSecret) {
+    sendError(res, 503, "Session secret is not configured");
+    return null;
+  }
+  const auth = req.headers.authorization || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token) {
+    sendError(res, 401, "Login required");
+    return null;
+  }
+  const session = (db.authSessions || []).find(item => (
+    item.tokenHash === hashSession(token)
+    && new Date(item.expiresAt).getTime() > Date.now()
+  ));
+  if (!session) {
+    sendError(res, 401, "Session expired");
+    return null;
+  }
+  const user = (db.users || []).find(item => item.id === session.userId);
+  if (!user) {
+    sendError(res, 401, "User not found");
+    return null;
+  }
+  return { session, user };
+}
+
 function isBlockedCustomerSellCategory(value) {
   const category = String(value || "").trim().toLowerCase();
   return blockedCustomerSellCategories.has(category) || /fashion|clothes|shoes/.test(category);
@@ -596,14 +623,9 @@ async function handleApi(req, res) {
   }
 
   if (method === "GET" && parts[1] === "auth" && parts[2] === "me") {
-    const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-    if (!token || !sessionSecret) return sendError(res, 401, "Login required");
-    db.authSessions = db.authSessions || [];
-    const session = db.authSessions.find(item => item.tokenHash === hashSession(token) && new Date(item.expiresAt).getTime() > Date.now());
-    if (!session) return sendError(res, 401, "Session expired");
-    const user = (db.users || []).find(item => item.id === session.userId);
-    if (!user) return sendError(res, 401, "User not found");
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    const { session, user } = customer;
     const now = Date.now();
     const sessionDurationMs = customerSessionDays * 24 * 60 * 60_000;
     const remainingMs = new Date(session.expiresAt).getTime() - now;
@@ -626,14 +648,9 @@ async function handleApi(req, res) {
   }
 
   if (method === "PATCH" && parts[1] === "auth" && parts[2] === "address") {
-    const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-    if (!token || !sessionSecret) return sendError(res, 401, "Login required");
-    db.authSessions = db.authSessions || [];
-    const session = db.authSessions.find(item => item.tokenHash === hashSession(token) && new Date(item.expiresAt).getTime() > Date.now());
-    if (!session) return sendError(res, 401, "Session expired");
-    const user = (db.users || []).find(item => item.id === session.userId);
-    if (!user) return sendError(res, 401, "User not found");
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    const { user } = customer;
     const body = await readBody(req);
     const addressBook = {
       name: String(body.name || "").trim(),
@@ -688,14 +705,18 @@ async function handleApi(req, res) {
   }
 
   if (method === "GET" && parts[1] === "wallet" && parts[2]) {
-    const wallet = db.wallets[parts[2]] || { balance: 0, ledger: [] };
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    if (parts[2] !== customer.user.id) return sendError(res, 403, "You can only access your own wallet");
+    const wallet = db.wallets[customer.user.id] || { balance: 0, ledger: [] };
     return sendJson(res, 200, { wallet });
   }
 
   if (method === "POST" && parts[1] === "wallet" && parts[2] === "recharge") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
     const body = await readBody(req);
-    const userId = String(body.userId || "").trim();
-    if (!userId) return sendError(res, 401, "Login required");
+    const userId = customer.user.id;
     if (!db.wallets[userId]) db.wallets[userId] = { balance: 0, ledger: [] };
     const amount = Number(body.amount);
     const paymentMethod = String(body.method || "UPI").toUpperCase();
@@ -711,7 +732,7 @@ async function handleApi(req, res) {
     const rechargeRequest = {
       id: id("GT-UPI"),
       userId,
-      userEmail: body.userEmail || "",
+      userEmail: customer.user.email,
       amount,
       method: "UPI",
       upiId: db.integrations.payments.upi.upiId,
@@ -735,6 +756,8 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "sell-requests") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
     const body = await readBody(req);
     if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
     if (isBlockedCustomerSellCategory(body.category)) {
@@ -748,8 +771,8 @@ async function handleApi(req, res) {
     if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
-      userId: String(body.userId || "").trim(),
-      userEmail: body.userEmail || "",
+      userId: customer.user.id,
+      userEmail: customer.user.email,
       sellerName: String(body.sellerName || "").trim(),
       sellerPhone,
       pickupAddress: String(body.pickupAddress || "").trim(),
@@ -766,22 +789,23 @@ async function handleApi(req, res) {
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()
     };
-    if (!request.userId) return sendError(res, 401, "Login required");
     db.sellRequests.unshift(request);
     await writeDb(db);
     return sendJson(res, 201, { sellRequest: request });
   }
 
   if (method === "GET" && parts[1] === "sell-requests") {
-    const userId = url.searchParams.get("userId");
-    const sellRequests = userId ? db.sellRequests.filter(request => request.userId === userId) : db.sellRequests;
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    const sellRequests = db.sellRequests.filter(request => request.userId === customer.user.id);
     return sendJson(res, 200, { sellRequests });
   }
 
   if (method === "POST" && parts[1] === "orders") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
     const body = await readBody(req);
-    const userId = String(body.userId || "").trim();
-    if (!userId) return sendError(res, 401, "Login required");
+    const userId = customer.user.id;
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
     const selected = productIds.map(productId => db.products.find(product => product.id === productId)).filter(Boolean);
     if (!selected.length) return sendError(res, 400, "No valid products selected");
@@ -803,7 +827,7 @@ async function handleApi(req, res) {
     const order = {
       id: id("GT-O"),
       userId,
-      userEmail: body.userEmail || "",
+      userEmail: customer.user.email,
       productIds,
       products: selected.map((product, index) => ({
         id: product.id,
@@ -833,7 +857,7 @@ async function handleApi(req, res) {
       timeline: ["order-placed", "coins-deducted", "new-order"],
       createdAt: new Date().toISOString()
     };
-    const user = (db.users || []).find(item => item.id === userId);
+    const user = customer.user;
     if (user) {
       user.addressBook = {
         name: order.deliveryDetails.name,
@@ -860,8 +884,9 @@ async function handleApi(req, res) {
   }
 
   if (method === "GET" && parts[1] === "orders") {
-    const userId = url.searchParams.get("userId");
-    const visibleOrders = userId ? db.orders.filter(order => order.userId === userId) : db.orders;
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    const visibleOrders = db.orders.filter(order => order.userId === customer.user.id);
     const orders = visibleOrders.map(order => {
       const snapshots = Array.isArray(order.products) ? order.products : [];
       const productIds = [...new Set(Array.isArray(order.productIds) ? order.productIds : [])];
@@ -916,10 +941,16 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "returns") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
     const body = await readBody(req);
+    const order = (db.orders || []).find(item => item.id === body.orderId && item.userId === customer.user.id);
+    if (!order) return sendError(res, 404, "Order not found");
     const request = {
       id: id("GT-R"),
-      orderId: body.orderId,
+      orderId: order.id,
+      userId: customer.user.id,
+      userEmail: customer.user.email,
       issueCategory: body.issueCategory,
       explanation: body.explanation,
       proofFiles: body.proofFiles || [],
@@ -932,6 +963,9 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "feedbacks") {
+    const hasCustomerAuth = String(req.headers.authorization || "").startsWith("Bearer ");
+    const customer = hasCustomerAuth ? requireCustomer(req, res, db) : null;
+    if (hasCustomerAuth && !customer) return;
     const body = await readBody(req);
     const overallRating = Number(body.overallRating);
     const browsingExperience = String(body.browsingExperience || "").trim();
@@ -946,8 +980,8 @@ async function handleApi(req, res) {
     }
     const feedback = {
       id: id("GT-F"),
-      userId: String(body.userId || "").trim(),
-      userEmail: normalizeEmail(body.userEmail || ""),
+      userId: customer?.user.id || "",
+      userEmail: customer?.user.email || "",
       overallRating,
       browsingExperience,
       priceFeeling,

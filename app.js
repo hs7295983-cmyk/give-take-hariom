@@ -2958,9 +2958,9 @@ async function loadBackendData() {
       api("/api/config"),
       api("/api/categories"),
       api("/api/products?sort=trending"),
-      userId ? api(`/api/wallet/${encodeURIComponent(userId)}`) : Promise.resolve({ wallet: { balance: 0, ledger: [] } }),
-      userId ? api(`/api/orders?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ orders: [] }),
-      userId ? api(`/api/sell-requests?userId=${encodeURIComponent(userId)}`) : Promise.resolve({ sellRequests: [] }),
+      userId ? api(`/api/wallet/${encodeURIComponent(userId)}`, { customer: true }) : Promise.resolve({ wallet: { balance: 0, ledger: [] } }),
+      userId ? api("/api/orders", { customer: true }) : Promise.resolve({ orders: [] }),
+      userId ? api("/api/sell-requests", { customer: true }) : Promise.resolve({ sellRequests: [] }),
     ]);
     categories = categoryData.categories;
     products = productData.products.map(applyRecoveredPrice);
@@ -3009,7 +3009,7 @@ async function refreshCurrentWallet() {
     localStorage.removeItem(CUSTOMER_WALLET_KEY);
     return;
   }
-  const data = await api(`/api/wallet/${encodeURIComponent(userId)}`);
+  const data = await api(`/api/wallet/${encodeURIComponent(userId)}`, { customer: true });
   wallet = normalizeWallet(data.wallet);
   cacheWallet(wallet);
 }
@@ -5674,9 +5674,8 @@ function wireEvents() {
       const photos = await collectSellPhotos(sellForm.elements.photos?.files);
       const data = await api("/api/sell-requests", {
         method: "POST",
+        customer: true,
         body: JSON.stringify({
-          userId: getCurrentUserId(),
-          userEmail: currentUser?.email || "",
           sellerName: form.get("sellerName"),
           sellerPhone: form.get("sellerPhone"),
           pickupAddress: form.get("pickupAddress"),
@@ -5745,9 +5744,8 @@ function wireEvents() {
       setSubmitState(feedbackForm, true, "Submitting...");
       await api("/api/feedbacks", {
         method: "POST",
+        customer: true,
         body: JSON.stringify({
-          userId: getCurrentUserId() || "",
-          userEmail: currentUser?.email || "",
           overallRating: Number(form.get("overallRating") || 0),
           browsingExperience: form.get("browsingExperience"),
           priceFeeling: form.get("priceFeeling"),
@@ -5968,9 +5966,8 @@ function wireEvents() {
         setSubmitState(event.target, true, "Placing order...");
         const data = await api("/api/orders", {
           method: "POST",
+          customer: true,
           body: JSON.stringify({
-            userId: getCurrentUserId(),
-            userEmail: currentUser?.email || "",
             productIds,
             city: deliveryDetails.city,
             deliveryChargeMode: "cod-rupees",
@@ -6078,9 +6075,8 @@ function wireEvents() {
         setSubmitState(event.target, true, "Submitting...");
         const data = await api("/api/wallet/recharge", {
           method: "POST",
+          customer: true,
           body: JSON.stringify({
-            userId: getCurrentUserId(),
-            userEmail: currentUser?.email || "",
             amount: Number(state.rechargeAmount),
             method: "UPI",
             upiReference: form.get("upiReference"),
