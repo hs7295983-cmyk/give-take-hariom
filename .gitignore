@@ -1,0 +1,14 @@
+# macOS and local environment files
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Installed dependencies and local logs
+node_modules/
+npm-debug.log*
+
+# Local archives and product-image backups not used by the website
+*.zip
+assets/home-kitchen/
+assets/products/
