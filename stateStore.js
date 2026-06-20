@@ -8,6 +8,7 @@ const dbPath = path.join(dataDir, "give-take-db.json");
 const stateId = "give-and-take";
 const databaseUrl = process.env.DATABASE_URL || "";
 let pool = null;
+let localMutationQueue = Promise.resolve();
 
 function usingPostgres() {
   return Boolean(databaseUrl);
@@ -142,4 +143,49 @@ async function writeDb(db) {
   fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
 }
 
-module.exports = { ensureDb, readDb, writeDb, getStorageInfo, mergeCatalogProducts };
+async function updateDb(mutator) {
+  if (typeof mutator !== "function") throw new TypeError("Database mutator must be a function");
+  await ensureDb();
+
+  if (usingPostgres()) {
+    const client = await getPool().connect();
+    try {
+      await client.query("begin");
+      const current = await client.query("select data from app_state where id = $1 for update", [stateId]);
+      if (!current.rowCount) throw new Error("Application state is not initialized");
+      const db = current.rows[0].data;
+      const result = await mutator(db);
+      db.meta = db.meta || {};
+      db.meta.updatedAt = new Date().toISOString();
+      await client.query(
+        "update app_state set data = $2::jsonb, updated_at = now() where id = $1",
+        [stateId, JSON.stringify(db)]
+      );
+      await client.query("commit");
+      return result;
+    } catch (error) {
+      try {
+        await client.query("rollback");
+      } catch (rollbackError) {
+        console.error("Failed to roll back database transaction:", rollbackError.message);
+      }
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  const mutation = localMutationQueue.then(async () => {
+    await ensureLocalDb();
+    const db = JSON.parse(fs.readFileSync(dbPath, "utf8"));
+    const result = await mutator(db);
+    db.meta = db.meta || {};
+    db.meta.updatedAt = new Date().toISOString();
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+    return result;
+  });
+  localMutationQueue = mutation.catch(() => undefined);
+  return mutation;
+}
+
+module.exports = { ensureDb, readDb, writeDb, updateDb, getStorageInfo, mergeCatalogProducts };

@@ -4,7 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
 const fs = require("fs");
-const { ensureDb, readDb, writeDb, getStorageInfo } = require("./stateStore");
+const { ensureDb, readDb, writeDb, updateDb, getStorageInfo } = require("./stateStore");
 
 const rootDir = fs.existsSync(path.join(__dirname, "index.html")) ? __dirname : path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 4173);
@@ -57,6 +57,13 @@ function sendJson(res, status, payload) {
 
 function sendError(res, status, message) {
   sendJson(res, status, { error: message });
+}
+
+class RequestError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
 }
 
 function requireAdmin(req, res) {
@@ -820,70 +827,111 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const userId = customer.user.id;
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
-    const selected = productIds.map(productId => db.products.find(product => product.id === productId)).filter(Boolean);
-    if (!selected.length) return sendError(res, 400, "No valid products selected");
     const deliveryDetails = body.deliveryDetails || {};
     const deliveryCity = deliveryDetails.city || body.city;
-    if (!serviceableCity(db, deliveryCity)) return sendError(res, 400, "Delivery city is not serviceable yet");
+    if (!productIds.length) return sendError(res, 400, "No products selected");
+    if (productIds.some(productId => typeof productId !== "string" || !productId.trim())) {
+      return sendError(res, 400, "Invalid product selection");
+    }
+    if (new Set(productIds).size !== productIds.length) {
+      return sendError(res, 400, "Duplicate products are not allowed");
+    }
     if (!String(deliveryDetails.name || "").trim()) return sendError(res, 400, "Customer name is required");
     if (!String(deliveryDetails.phone || "").trim()) return sendError(res, 400, "Customer phone is required");
     if (!String(deliveryDetails.address || "").trim()) return sendError(res, 400, "Delivery address is required");
-    const totalCoins = selected.reduce((sum, product) => sum + product.price, 0);
-    const orderDeliveryCharge = totalCoins > deliveryFreeThreshold ? 0 : deliveryCharge;
-    const wallet = db.wallets[userId] || { balance: 0, ledger: [] };
-    if (wallet.balance < totalCoins) return sendError(res, 400, "Wallet has insufficient coins");
-    addLedger(db, userId, "debit", totalCoins, "Product purchase");
-    selected.forEach(product => {
-      product.status = "sold";
-      product.sold += 1;
-    });
-    const order = {
-      id: id("GT-O"),
-      userId,
-      userEmail: customer.user.email,
-      productIds,
-      products: selected.map((product, index) => ({
-        id: product.id,
-        productId: productIds[index] || product.id,
-        title: product.title,
-        price: product.price,
-        condition: product.condition,
-        category: product.category,
-        imageUrl: product.imageUrl || "",
-        images: Array.isArray(product.images) ? product.images : []
-      })),
-      totalCoins,
-      status: "new-order",
-      deliveryCity,
-      deliveryDetails: {
-        name: String(deliveryDetails.name || "").trim(),
-        phone: String(deliveryDetails.phone || "").trim(),
-        address: String(deliveryDetails.address || "").trim(),
-        city: deliveryCity,
-        pincode: String(deliveryDetails.pincode || "").trim(),
-        landmark: String(deliveryDetails.landmark || "").trim(),
-        note: String(deliveryDetails.note || "").trim()
-      },
-      deliveryCharge: orderDeliveryCharge,
-      deliveryFreeThreshold,
-      deliveryChargeMode: body.deliveryChargeMode || "cod-rupees",
-      timeline: ["order-placed", "coins-deducted", "new-order"],
-      createdAt: new Date().toISOString()
-    };
-    const user = customer.user;
-    if (user) {
-      user.addressBook = {
-        name: order.deliveryDetails.name,
-        phone: order.deliveryDetails.phone,
-        houseArea: order.deliveryDetails.address,
-        city: order.deliveryDetails.city,
-        pincode: order.deliveryDetails.pincode,
-        landmark: order.deliveryDetails.landmark,
-      };
-      user.updatedAt = new Date().toISOString();
+
+    let checkout;
+    try {
+      checkout = await updateDb(transactionDb => {
+        const sessionStillValid = (transactionDb.authSessions || []).some(session => (
+          session.tokenHash === customer.session.tokenHash
+          && session.userId === userId
+          && new Date(session.expiresAt).getTime() > Date.now()
+        ));
+        const user = (transactionDb.users || []).find(item => item.id === userId);
+        if (!sessionStillValid || !user) throw new RequestError(401, "Session expired");
+        if (!serviceableCity(transactionDb, deliveryCity)) {
+          throw new RequestError(400, "Delivery city is not serviceable yet");
+        }
+
+        const selected = productIds.map(productId => (
+          transactionDb.products.find(product => product.id === productId)
+        ));
+        if (selected.some(product => !product)) {
+          throw new RequestError(400, "One or more selected products no longer exist");
+        }
+        if (selected.some(product => product.status !== "listed" || Number(product.quantity || 0) < 1)) {
+          throw new RequestError(409, "One or more selected products are no longer available");
+        }
+
+        const totalCoins = selected.reduce((sum, product) => sum + Number(product.price || 0), 0);
+        if (!Number.isFinite(totalCoins) || totalCoins <= 0) {
+          throw new RequestError(400, "Selected products have an invalid price");
+        }
+        const wallet = transactionDb.wallets[userId] || { balance: 0, ledger: [] };
+        if (Number(wallet.balance || 0) < totalCoins) {
+          throw new RequestError(400, "Wallet has insufficient coins");
+        }
+
+        const orderDeliveryCharge = totalCoins > deliveryFreeThreshold ? 0 : deliveryCharge;
+        addLedger(transactionDb, userId, "debit", totalCoins, "Product purchase");
+        selected.forEach(product => {
+          product.quantity = Number(product.quantity || 0) - 1;
+          product.status = product.quantity > 0 ? "listed" : "sold";
+          product.sold = Number(product.sold || 0) + 1;
+          product.updatedAt = new Date().toISOString();
+        });
+        const order = {
+          id: id("GT-O"),
+          userId,
+          userEmail: user.email,
+          productIds,
+          products: selected.map(product => ({
+            id: product.id,
+            productId: product.id,
+            title: product.title,
+            price: product.price,
+            condition: product.condition,
+            category: product.category,
+            imageUrl: product.imageUrl || "",
+            images: Array.isArray(product.images) ? product.images : []
+          })),
+          totalCoins,
+          status: "new-order",
+          deliveryCity,
+          deliveryDetails: {
+            name: String(deliveryDetails.name || "").trim(),
+            phone: String(deliveryDetails.phone || "").trim(),
+            address: String(deliveryDetails.address || "").trim(),
+            city: deliveryCity,
+            pincode: String(deliveryDetails.pincode || "").trim(),
+            landmark: String(deliveryDetails.landmark || "").trim(),
+            note: String(deliveryDetails.note || "").trim()
+          },
+          deliveryCharge: orderDeliveryCharge,
+          deliveryFreeThreshold,
+          deliveryChargeMode: body.deliveryChargeMode || "cod-rupees",
+          timeline: ["order-placed", "coins-deducted", "new-order"],
+          createdAt: new Date().toISOString()
+        };
+        user.addressBook = {
+          name: order.deliveryDetails.name,
+          phone: order.deliveryDetails.phone,
+          houseArea: order.deliveryDetails.address,
+          city: order.deliveryDetails.city,
+          pincode: order.deliveryDetails.pincode,
+          landmark: order.deliveryDetails.landmark,
+        };
+        user.updatedAt = new Date().toISOString();
+        transactionDb.orders.unshift(order);
+        return { order, wallet: transactionDb.wallets[userId], user };
+      });
+    } catch (error) {
+      if (error instanceof RequestError) return sendError(res, error.status, error.message);
+      throw error;
     }
-    db.orders.unshift(order);
-    await writeDb(db);
+
+    const { order, wallet, user } = checkout;
     let confirmationEmailSent = false;
     let confirmationEmailWarning = "";
     try {
@@ -893,7 +941,7 @@ async function handleApi(req, res) {
       confirmationEmailWarning = "Order placed, but confirmation email could not be sent.";
       console.warn(`${confirmationEmailWarning} ${error.message}`);
     }
-    return sendJson(res, 201, { order, wallet: db.wallets[userId], user: publicUser(user), confirmationEmailSent, confirmationEmailWarning });
+    return sendJson(res, 201, { order, wallet, user: publicUser(user), confirmationEmailSent, confirmationEmailWarning });
   }
 
   if (method === "GET" && parts[1] === "orders") {
