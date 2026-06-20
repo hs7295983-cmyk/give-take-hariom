@@ -3018,8 +3018,8 @@ function createSeed() {
         status: "manual-upi-verification",
         upi: {
           merchantName: "GIVE & TAKE",
-          upiId: "",
-          note: "Add your UPI ID from the admin panel before public launch."
+          upiId: "giveandtake@upi",
+          note: "UPI recharge requests are credited after admin payment verification."
         },
         notes: "Only UPI is enabled. Recharge requests stay pending until admin verifies the UPI payment."
       },
