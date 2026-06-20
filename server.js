@@ -53,7 +53,7 @@ const publicStaticFiles = new Map([
   ["/owner-agent.js", "owner-agent.js"]
 ]);
 
-const contentSecurityPolicyReportOnly = [
+const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' https://cdn.jsdelivr.net",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -75,7 +75,7 @@ const securityHeaders = Object.freeze({
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy-Report-Only": contentSecurityPolicyReportOnly
+  "Content-Security-Policy": contentSecurityPolicy
 });
 
 function withSecurityHeaders(headers = {}) {
