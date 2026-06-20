@@ -28,6 +28,7 @@ const deliveryCharge = 50;
 const deliveryFreeThreshold = 499;
 const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const rateLimitBuckets = new Map();
+const adminSessionCookieName = "give_take_admin_session";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -116,14 +117,21 @@ function isAllowedCorsRequest(req) {
 function corsHeaders(req) {
   const headers = {
     "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Give-Take-Admin-Request",
     "Access-Control-Max-Age": "600"
   };
   const origin = requestOrigin(req);
   if (!isProduction) {
-    headers["Access-Control-Allow-Origin"] = "*";
+    if (origin) {
+      headers["Access-Control-Allow-Origin"] = origin;
+      headers["Access-Control-Allow-Credentials"] = "true";
+      headers["Vary"] = "Origin";
+    } else {
+      headers["Access-Control-Allow-Origin"] = "*";
+    }
   } else if (origin && allowedOrigins.has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
+    headers["Access-Control-Allow-Credentials"] = "true";
     headers["Vary"] = "Origin";
   }
   return headers;
@@ -271,6 +279,60 @@ function verifyAdminSessionToken(token) {
   }
 }
 
+function parseCookies(req) {
+  return String(req.headers.cookie || "")
+    .split(";")
+    .map(item => item.trim())
+    .filter(Boolean)
+    .reduce((cookies, item) => {
+      const separator = item.indexOf("=");
+      if (separator === -1) return cookies;
+      const name = item.slice(0, separator).trim();
+      const value = item.slice(separator + 1).trim();
+      if (name) {
+        try {
+          cookies[name] = decodeURIComponent(value);
+        } catch {
+          cookies[name] = value;
+        }
+      }
+      return cookies;
+    }, {});
+}
+
+function adminCookieToken(req) {
+  return parseCookies(req)[adminSessionCookieName] || "";
+}
+
+function adminCookieAttributes(maxAgeSeconds) {
+  const attributes = [
+    `Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}`,
+    "Path=/",
+    "HttpOnly"
+  ];
+  if (isProduction) {
+    attributes.push("Secure", "SameSite=None");
+  } else {
+    attributes.push("SameSite=Lax");
+  }
+  return attributes.join("; ");
+}
+
+function setAdminSessionCookie(res, token) {
+  res.setHeader(
+    "Set-Cookie",
+    `${adminSessionCookieName}=${encodeURIComponent(token)}; ${adminCookieAttributes(adminSessionDurationMs / 1000)}`
+  );
+}
+
+function clearAdminSessionCookie(res) {
+  res.setHeader("Set-Cookie", `${adminSessionCookieName}=; ${adminCookieAttributes(0)}`);
+}
+
+function hasAdminCookieCsrfHeader(req) {
+  return req.headers["x-give-take-admin-request"] === "1";
+}
+
 setInterval(() => {
   const staleBefore = Date.now() - (2 * 60 * 60_000);
   for (const [key, attempts] of rateLimitBuckets.entries()) {
@@ -289,8 +351,16 @@ function requireAdmin(req, res) {
     return false;
   }
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (!verifyAdminSessionToken(token)) {
+  if (token && verifyAdminSessionToken(token)) {
+    return true;
+  }
+  const cookieToken = adminCookieToken(req);
+  if (!cookieToken || !verifyAdminSessionToken(cookieToken)) {
     sendError(res, 401, "Admin login required");
+    return false;
+  }
+  if (!hasAdminCookieCsrfHeader(req)) {
+    sendError(res, 403, "Admin request verification failed");
     return false;
   }
   return true;
@@ -1391,7 +1461,16 @@ async function handleApi(req, res) {
     }
     clearRateLimit(adminLoginLimit.scope, adminLoginLimit.identity);
     const adminSession = createAdminSessionToken();
+    setAdminSessionCookie(res, adminSession.token);
     return sendJson(res, 200, adminSession);
+  }
+
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "logout") {
+    if (!hasAdminCookieCsrfHeader(req) && !String(req.headers.authorization || "").startsWith("Bearer ")) {
+      return sendError(res, 403, "Admin request verification failed");
+    }
+    clearAdminSessionCookie(res);
+    return sendJson(res, 200, { ok: true });
   }
 
   if (method === "GET" && parts[1] === "partner" && parts[2] === "tasks") {

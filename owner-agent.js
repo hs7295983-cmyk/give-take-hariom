@@ -1,8 +1,9 @@
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
+const ADMIN_SESSION_HINT_KEY = "give_take_admin_session_hint";
 const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
 const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
 
-let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+let adminToken = loadStoredAdminSessionHint();
 let categories = [];
 let products = [];
 let currentDraft = null;
@@ -56,12 +57,36 @@ function safeImageUrl(value) {
   return "";
 }
 
+function loadStoredAdminSessionHint() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  return localStorage.getItem(ADMIN_SESSION_HINT_KEY) === "1" ? "cookie-session" : "";
+}
+
+function markAdminSessionActive() {
+  adminToken = "cookie-session";
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.setItem(ADMIN_SESSION_HINT_KEY, "1");
+}
+
+function clearAdminSession() {
+  adminToken = "";
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.removeItem(ADMIN_SESSION_HINT_KEY);
+}
+
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-  if (options.admin && adminToken) headers.Authorization = `Bearer ${adminToken}`;
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const adminCookieRequest = options.admin || path === "/api/admin/login" || path === "/api/admin/logout";
+  if (adminCookieRequest) headers["X-Give-Take-Admin-Request"] = "1";
+  if (options.admin && adminToken && adminToken !== "cookie-session") headers.Authorization = `Bearer ${adminToken}`;
+  const fetchOptions = { ...options };
+  delete fetchOptions.headers;
+  delete fetchOptions.admin;
+  if (adminCookieRequest) fetchOptions.credentials = "include";
+  const response = await fetch(`${API_BASE}${path}`, { ...fetchOptions, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401 && options.admin) clearAdminSession();
     const error = new Error(data.error || "Request failed");
     error.status = response.status;
     throw error;
@@ -492,9 +517,15 @@ els.loginForm.addEventListener("submit", async event => {
       method: "POST",
       body: JSON.stringify({ password: new FormData(event.target).get("password") })
     });
-    adminToken = data.token;
-    localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
-    await loadOwnerData();
+    markAdminSessionActive();
+    try {
+      await loadOwnerData();
+    } catch (error) {
+      if (error.status !== 401 || !data.token) throw error;
+      adminToken = data.token;
+      localStorage.removeItem(ADMIN_SESSION_HINT_KEY);
+      await loadOwnerData();
+    }
   } catch (error) {
     els.status.textContent = error.message;
   } finally {
@@ -511,8 +542,7 @@ els.refreshButton.addEventListener("click", async () => {
     if (currentDraft) generateDraft();
   } catch (error) {
     if (error.status === 401) {
-      localStorage.removeItem(ADMIN_TOKEN_KEY);
-      adminToken = "";
+      clearAdminSession();
       showLocked("Login expired");
     } else {
       els.status.textContent = error.message;
@@ -595,8 +625,7 @@ els.askForm.addEventListener("submit", event => {
   try {
     await loadOwnerData();
   } catch (error) {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
-    adminToken = "";
+    clearAdminSession();
     showLocked(error.status === 401 ? "Login expired" : error.message);
   }
 })();

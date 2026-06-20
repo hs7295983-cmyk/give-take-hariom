@@ -1,6 +1,7 @@
 const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
 const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
+const ADMIN_SESSION_HINT_KEY = "give_take_admin_session_hint";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
 const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
@@ -2665,22 +2666,14 @@ let platformConfig = {
 };
 
 function loadStoredAdminToken() {
-  const token = localStorage.getItem(ADMIN_TOKEN_KEY) || "";
-  if (!token) return "";
-  try {
-    const [encodedPayload, signature, extra] = token.split(".");
-    if (!encodedPayload || !signature || extra) throw new Error("Invalid admin token");
-    const base64 = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
-    const payload = JSON.parse(atob(padded));
-    if (payload.type !== "admin-session" || !Number.isFinite(payload.expiresAt) || payload.expiresAt <= Date.now()) {
-      throw new Error("Expired admin token");
-    }
-    return token;
-  } catch {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
-    return "";
-  }
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  return localStorage.getItem(ADMIN_SESSION_HINT_KEY) === "1" ? "cookie-session" : "";
+}
+
+function markAdminSessionActive() {
+  adminToken = "cookie-session";
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.setItem(ADMIN_SESSION_HINT_KEY, "1");
 }
 
 function clearAdminSession() {
@@ -2689,6 +2682,7 @@ function clearAdminSession() {
   partnerTasks = [];
   partnerTasksLoaded = false;
   localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.removeItem(ADMIN_SESSION_HINT_KEY);
 }
 
 function normalizeWallet(nextWallet) {
@@ -2819,11 +2813,18 @@ const els = {
 
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-  if (options.admin && adminToken) headers.Authorization = `Bearer ${adminToken}`;
+  const adminCookieRequest = options.admin || path === "/api/admin/login" || path === "/api/admin/logout";
+  if (adminCookieRequest) headers["X-Give-Take-Admin-Request"] = "1";
+  if (options.admin && adminToken && adminToken !== "cookie-session") headers.Authorization = `Bearer ${adminToken}`;
   if (options.customer && customerToken) headers.Authorization = `Bearer ${customerToken}`;
+  const fetchOptions = { ...options };
+  delete fetchOptions.headers;
+  delete fetchOptions.admin;
+  delete fetchOptions.customer;
+  if (adminCookieRequest) fetchOptions.credentials = "include";
   const response = await fetch(`${API_BASE}${path}`, {
     headers,
-    ...options,
+    ...fetchOptions,
   });
   const data = await response.json();
   if (!response.ok) {
@@ -5106,6 +5107,12 @@ function wireEvents() {
           await api("/api/auth/logout", { method: "POST", customer: true, body: JSON.stringify({}) });
         } catch {}
       }
+      if (adminToken) {
+        try {
+          await api("/api/admin/logout", { method: "POST", admin: true, body: JSON.stringify({}) });
+        } catch {}
+        clearAdminSession();
+      }
       customerToken = "";
       localStorage.removeItem(CUSTOMER_TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_USER_KEY);
@@ -5950,9 +5957,13 @@ function wireEvents() {
           method: "POST",
           body: JSON.stringify({ password: form.get("password") }),
         });
-        adminToken = data.token;
-        localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
-        await loadBackendData();
+        markAdminSessionActive();
+        const loadedWithCookie = await loadBackendData();
+        if (!loadedWithCookie && !adminToken && data.token) {
+          adminToken = data.token;
+          localStorage.removeItem(ADMIN_SESSION_HINT_KEY);
+          await loadBackendData();
+        }
         renderAdmin();
         renderPartnerTasks();
         alert("Admin login successful.");
