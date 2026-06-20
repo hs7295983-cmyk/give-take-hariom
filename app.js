@@ -3227,14 +3227,15 @@ function optimizedImageUrl(imageUrl, width = 600) {
 }
 
 function productVisual(product, className = "product-visual") {
-  const fallbackStyle = `--art-a:${product.artA};--art-b:${product.artB}`;
+  const fallbackStyle = `--art-a:${safeCssColor(product.artA, "#f5f7f2")};--art-b:${safeCssColor(product.artB, "#e4efe8")}`;
   const [imageUrl] = getProductImages(product);
   const imageWidth = className.includes("cart") || className.includes("order") ? 220 : 600;
+  const displayImageUrl = imageUrl ? safeImageUrl(optimizedImageUrl(imageUrl, imageWidth)) : "";
   const isDetailImage = className.includes("detail");
-  if (imageUrl) {
+  if (displayImageUrl) {
     return `
       <div class="${className}" style="${fallbackStyle}">
-        <img class="product-photo" src="${escapeHtml(optimizedImageUrl(imageUrl, imageWidth))}" alt="${escapeHtml(product.title)}" loading="${isDetailImage ? "eager" : "lazy"}" decoding="async" ${isDetailImage ? 'fetchpriority="high"' : ""} />
+        <img class="product-photo" src="${escapeHtml(displayImageUrl)}" alt="${escapeHtml(product.title)}" loading="${isDetailImage ? "eager" : "lazy"}" decoding="async" ${isDetailImage ? 'fetchpriority="high"' : ""} />
       </div>
     `;
   }
@@ -3259,6 +3260,40 @@ function escapeHtml(value) {
     '"': "&quot;",
     "'": "&#39;"
   }[char]));
+}
+
+function safeUrl(value, options = {}) {
+  const rawUrl = String(value || "").trim();
+  if (!rawUrl) return "";
+  if (options.allowUpi && /^upi:\/\/pay\?/i.test(rawUrl)) return rawUrl;
+  if (options.allowDataImages && /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=]+$/i.test(rawUrl)) return rawUrl;
+  try {
+    const parsed = new URL(rawUrl, window.location.origin);
+    if (["http:", "https:"].includes(parsed.protocol)) return parsed.href;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+function safeImageUrl(value) {
+  return safeUrl(value, { allowDataImages: true });
+}
+
+function escapeSafeUrl(value, options = {}) {
+  return escapeHtml(safeUrl(value, options));
+}
+
+function escapeSafeImageUrl(value) {
+  return escapeHtml(safeImageUrl(value));
+}
+
+function safeCssColor(value, fallback) {
+  const color = String(value || "").trim();
+  if (/^#[0-9a-f]{3,8}$/i.test(color)) return color;
+  if (/^rgba?\([\d\s.,%]+\)$/i.test(color)) return color;
+  if (/^hsla?\([\d\s.,%]+\)$/i.test(color)) return color;
+  return fallback;
 }
 
 function isMaintenanceActive() {
@@ -3373,7 +3408,7 @@ function updateProductPageShare(productId = "") {
 function card(product) {
   return `
     <article class="product-card">
-      <button class="product-card-visual-button" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title)} details">
+      <button class="product-card-visual-button" data-product="${escapeHtml(product.id)}" type="button" aria-label="View ${escapeHtml(product.title)} details">
         ${productVisual(product)}
       </button>
       <div class="product-body">
@@ -3384,7 +3419,7 @@ function card(product) {
         <div class="coin-price">${formatCoins(product.price)}</div>
         <p>${escapeHtml(displayCategoryName(product.category))}</p>
         <div class="card-actions">
-          <button class="primary-button" data-add="${product.id}" type="button">Add to Cart</button>
+          <button class="primary-button" data-add="${escapeHtml(product.id)}" type="button">Add to Cart</button>
         </div>
       </div>
     </article>
@@ -3407,7 +3442,7 @@ function renderCategories() {
     .map(id => categories.find(category => category.id === id))
     .filter(Boolean);
   els.categoryGrid.innerHTML = homeCategories.map(category => `
-    <article class="category-card${isPausedShoppingCategory(category.id) ? " category-card-paused" : ""}" data-category="${category.id}">
+    <article class="category-card${isPausedShoppingCategory(category.id) ? " category-card-paused" : ""}" data-category="${escapeHtml(category.id)}">
       <div class="category-icon" aria-hidden="true">${categoryIcons[category.id] || categoryIcons.default}</div>
       <div>
         <h3>${escapeHtml(category.name)}</h3>
@@ -3420,8 +3455,8 @@ function renderCategories() {
 function renderSelectors() {
   const selectableCategories = categories.filter(category => category.id !== "mobiles");
   const sellableCategories = selectableCategories.filter(category => !isCustomerSellBlockedCategory(category));
-  els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + selectableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-  els.sellCategory.innerHTML = sellableCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  els.categoryFilter.innerHTML = `<option value="all">All categories</option>` + selectableCategories.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
+  els.sellCategory.innerHTML = sellableCategories.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
 }
 
 function isCustomerSellBlockedCategory(category) {
@@ -3544,29 +3579,33 @@ function renderProductDetail() {
       ${productVisual(product, "detail-image")}
       ${galleryImages.length > 1 ? `
         <div class="detail-thumbnails" aria-label="Product photos">
-          ${galleryImages.map((image, index) => `
-            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(optimizedImageUrl(image, 600))}" type="button" aria-label="Show product photo ${index + 1}">
-              <img ${index < 2 ? `src="${escapeHtml(optimizedImageUrl(image, 160))}"` : `data-gallery-thumb-src="${escapeHtml(optimizedImageUrl(image, 160))}"`} alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
+          ${galleryImages.map((image, index) => {
+            const galleryImage = safeImageUrl(optimizedImageUrl(image, 600));
+            const galleryThumb = safeImageUrl(optimizedImageUrl(image, 160));
+            if (!galleryImage || !galleryThumb) return "";
+            return `
+            <button class="${index === 0 ? "is-active" : ""}" data-gallery-image="${escapeHtml(galleryImage)}" type="button" aria-label="Show product photo ${index + 1}">
+              <img ${index < 2 ? `src="${escapeHtml(galleryThumb)}"` : `data-gallery-thumb-src="${escapeHtml(galleryThumb)}"`} alt="${escapeHtml(product.title)} photo ${index + 1}" loading="lazy" decoding="async" />
             </button>
-          `).join("")}
+          `}).join("")}
         </div>
       ` : ""}
     </div>
     <article class="detail-panel">
       <div class="badges">
-        <span class="badge">${product.source}</span>
-        <span class="badge">${product.condition}</span>
-        ${allowedDetailBadges.map(badge => `<span class="badge">${badge}</span>`).join("")}
+        <span class="badge">${escapeHtml(product.source)}</span>
+        <span class="badge">${escapeHtml(product.condition)}</span>
+        ${allowedDetailBadges.map(badge => `<span class="badge">${escapeHtml(badge)}</span>`).join("")}
       </div>
-      <h1>${product.title}</h1>
+      <h1>${escapeHtml(product.title)}</h1>
       <div class="coin-price">${formatCoins(product.price)}</div>
       <p>Product price is coin-only. Any delivery fee is shown separately and paid on delivery.</p>
       <div class="checklist">
-        ${visibleChecks.map(check => `<span>${check}</span>`).join("")}
+        ${visibleChecks.map(check => `<span>${escapeHtml(check)}</span>`).join("")}
       </div>
       <div class="detail-actions">
-        <button class="primary-button" data-buy-now="${product.id}" type="button">Buy with Coins</button>
-        <button class="secondary-button" data-add-stay="${product.id}" type="button">Add to Cart</button>
+        <button class="primary-button" data-buy-now="${escapeHtml(product.id)}" type="button">Buy with Coins</button>
+        <button class="secondary-button" data-add-stay="${escapeHtml(product.id)}" type="button">Add to Cart</button>
       </div>
     </article>
   `;
@@ -3674,7 +3713,7 @@ function renderWallet() {
           ${upi.upiId ? `<button class="upi-copy-button" data-copy-upi="${escapeHtml(upi.upiId)}" type="button">Copy</button>` : ""}
         </div>
         <small>After payment, enter your UPI transaction/reference ID below.</small>
-        <a class="primary-button upi-open-button" href="${escapeHtml(buildUpiPayUrl(state.rechargeAmount))}">Open UPI App</a>
+        <a class="primary-button upi-open-button" href="${escapeSafeUrl(buildUpiPayUrl(state.rechargeAmount), { allowUpi: true })}">Open UPI App</a>
       </div>
       <form class="upi-reference-form" id="upiReferenceForm">
         <input name="upiReference" placeholder="Enter UPI transaction/reference ID" required />
@@ -3704,7 +3743,7 @@ function renderWallet() {
   const ledger = wallet.ledger || [];
   els.ledgerList.innerHTML = ledger.map(entry => {
     const sign = entry.type === "debit" ? "-" : "+";
-    return `<div class="ledger-item"><strong>${sign}${new Intl.NumberFormat("en-IN").format(entry.amount)}</strong><span>${entry.reason}</span></div>`;
+    return `<div class="ledger-item"><strong>${sign}${new Intl.NumberFormat("en-IN").format(entry.amount)}</strong><span>${escapeHtml(entry.reason)}</span></div>`;
   }).join("") || `<div class="ledger-item ledger-empty"><strong>No coin transactions yet.</strong><span>No transactions yet. Add coins to get started.</span></div>`;
 }
 
@@ -3732,14 +3771,14 @@ function renderOrders() {
       .slice(0, 4);
     const cards = (recommended.length ? recommended : fallbackProducts.slice(0, 4)).map(product => `
       <article class="empty-cart-product">
-        <button class="empty-cart-product-link" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
+        <button class="empty-cart-product-link" data-product="${escapeHtml(product.id)}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
           ${productVisual(product, "empty-cart-product-image")}
           <span>
             <strong>${escapeHtml(product.title || "Recommended item")}</strong>
             <em>${formatCoins(product.price || 0)}</em>
           </span>
         </button>
-        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
+        <button class="secondary-button" data-add="${escapeHtml(product.id)}" type="button">Add</button>
       </article>
     `).join("");
     els.ordersGrid.innerHTML = `
@@ -3895,7 +3934,7 @@ function renderOrders() {
               </div>
               <div class="order-items-list">
                 ${displayItems.map(item => `
-                  <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${item.productId || item.id || "item"}`)}" data-product="${item.productId || item.id || ""}" type="button">
+                  <button class="order-item-row order-item-link" data-order-item-key="${escapeHtml(`${order.id}:${item.productId || item.id || "item"}`)}" data-product="${escapeHtml(item.productId || item.id || "")}" type="button">
                     ${productVisual(item, "order-item-image")}
                     <div>
                       <strong>${escapeHtml(item.title || "Product title")}</strong>
@@ -3920,7 +3959,7 @@ function renderOrders() {
             ` : ""}
             <div class="order-detail-footer">
               <span>Need Help? <a href="#support">Contact Support</a></span>
-              <button class="secondary-button" data-order-details="${order.id}" type="button">${isExpanded ? "Hide Order Details" : "View Order Details"}</button>
+              <button class="secondary-button" data-order-details="${escapeHtml(order.id)}" type="button">${isExpanded ? "Hide Order Details" : "View Order Details"}</button>
             </div>
           </article>
         `;
@@ -4402,7 +4441,7 @@ function renderAdmin() {
       const completed = statusRank >= rank;
       const disabled = completed || finalStatus || state.adminOrderView === "archived";
       const buttonText = completed && nextStatus !== "cancelled" ? `${label} ✓` : label;
-      return `<button class="${className} ${completed ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="${nextStatus}" type="button" ${disabled ? "disabled" : ""}>${buttonText}</button>`;
+      return `<button class="${className} ${completed ? "admin-status-done" : ""}" data-order-status="${escapeHtml(order.id)}" data-next-status="${escapeHtml(nextStatus)}" type="button" ${disabled ? "disabled" : ""}>${escapeHtml(buttonText)}</button>`;
     };
     return `
       <div class="admin-row stacked">
@@ -4414,8 +4453,8 @@ function renderAdmin() {
         <span>${orderProducts.map(item => escapeHtml(item.title || item.id || "Product")).join(", ")}</span>
         <div class="admin-order-images">
           ${orderProductImages.map((image, index) => `
-            <a href="${escapeHtml(image)}" target="_blank" rel="noopener" title="Open product image ${index + 1}">
-              <img src="${escapeHtml(image)}" alt="Ordered product image ${index + 1}" loading="lazy" />
+            <a href="${escapeSafeImageUrl(image)}" target="_blank" rel="noopener" title="Open product image ${index + 1}">
+              <img src="${escapeSafeImageUrl(image)}" alt="Ordered product image ${index + 1}" loading="lazy" />
             </a>
           `).join("") || `<span>No product image available</span>`}
         </div>
@@ -4425,10 +4464,10 @@ function renderAdmin() {
             ${statusButton("packed", "Packed", "secondary-button", 2)}
             ${statusButton("out-for-delivery", "Out for Delivery", "secondary-button", 3)}
             ${statusButton("delivered", "Delivered", "primary-button", 4)}
-            <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${order.id}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
-            <button class="secondary-button admin-cut-button" data-admin-archive="orders" data-archive-id="${order.id}" type="button">${rawStatus === "delivered" ? "Archive" : "Cut"}</button>
+            <button class="danger-button ${rawStatus === "cancelled" ? "admin-status-done" : ""}" data-order-status="${escapeHtml(order.id)}" data-next-status="cancelled" type="button" ${finalStatus ? "disabled" : ""}>${rawStatus === "cancelled" ? "Cancelled ✓" : "Cancel"}</button>
+            <button class="secondary-button admin-cut-button" data-admin-archive="orders" data-archive-id="${escapeHtml(order.id)}" type="button">${rawStatus === "delivered" ? "Archive" : "Cut"}</button>
           ` : `
-            <button class="secondary-button" data-admin-unarchive="orders" data-archive-id="${order.id}" type="button">Restore</button>
+            <button class="secondary-button" data-admin-unarchive="orders" data-archive-id="${escapeHtml(order.id)}" type="button">Restore</button>
           `}
         </div>
       </div>
@@ -4493,19 +4532,19 @@ function renderAdmin() {
             <span>${escapeHtml(item.details?.note || "No seller note entered")}</span>
             <div class="admin-photo-grid">
               ${(item.photos || []).map((photo, index) => `
-                <a href="${escapeHtml(photo)}" target="_blank" rel="noopener" aria-label="Open seller photo ${index + 1}">
-                  <img src="${escapeHtml(photo)}" alt="Seller uploaded product photo ${index + 1}" loading="lazy" />
+                <a href="${escapeSafeImageUrl(photo)}" target="_blank" rel="noopener" aria-label="Open seller photo ${index + 1}">
+                  <img src="${escapeSafeImageUrl(photo)}" alt="Seller uploaded product photo ${index + 1}" loading="lazy" />
                 </a>
               `).join("") || `<span>No photos uploaded</span>`}
             </div>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
               <div class="admin-actions">
-                <button class="secondary-button" data-sell-request-action="${item.id}" data-action="schedule" type="button">Schedule Pickup</button>
-                <button class="primary-button" data-sell-request-action="${item.id}" data-action="accept" data-expected="${item.expectedCoins || 0}" type="button">Accept + Credit Coins</button>
-                <button class="danger-button" data-sell-request-action="${item.id}" data-action="reject" type="button">Reject</button>
-                <button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Cut</button>
+                <button class="secondary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="schedule" type="button">Schedule Pickup</button>
+                <button class="primary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="accept" data-expected="${escapeHtml(item.expectedCoins || 0)}" type="button">Accept + Credit Coins</button>
+                <button class="danger-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="reject" type="button">Reject</button>
+                <button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${item.id}" type="button">Cut</button></div>`}
+            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button></div>`}
           </div>
         `).join("")}
       </div>
@@ -4517,13 +4556,13 @@ function renderAdmin() {
           const isPending = item.status === "pending-admin-verification";
           return `
           <div class="admin-row">
-            <span>${item.id} • ${formatCoins(item.amount || 0)} • ${escapeHtml(item.userEmail || item.userId || "User")} • ${escapeHtml(String(item.status || "request").replaceAll("-", " "))} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
+            <span>${escapeHtml(item.id)} • ${formatCoins(item.amount || 0)} • ${escapeHtml(item.userEmail || item.userId || "User")} • ${escapeHtml(String(item.status || "request").replaceAll("-", " "))} • Ref: ${escapeHtml(item.upiReference || "not entered")}</span>
             <div class="admin-actions">
               ${isPending ? `
-                <button class="primary-button" data-approve-recharge="${item.id}" type="button">Approve</button>
-                <button class="danger-button" data-reject-recharge="${item.id}" type="button">Reject</button>
+                <button class="primary-button" data-approve-recharge="${escapeHtml(item.id)}" type="button">Approve</button>
+                <button class="danger-button" data-reject-recharge="${escapeHtml(item.id)}" type="button">Reject</button>
               ` : ""}
-              <button class="secondary-button admin-cut-button" data-admin-archive="rechargeRequests" data-archive-id="${item.id}" type="button">Cut</button>
+              <button class="secondary-button admin-cut-button" data-admin-archive="rechargeRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button>
             </div>
           </div>
         `;
@@ -4555,11 +4594,11 @@ function renderAdmin() {
             <span>${escapeHtml(item.experience || "No experience note entered")}</span>
             ${item.status === "submitted" ? `
               <div class="admin-actions">
-                <button class="primary-button" data-accept-application="${item.id}" type="button">Accept</button>
-                <button class="secondary-button" data-reject-application="${item.id}" type="button">Reject</button>
-                <button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Cut</button>
+                <button class="primary-button" data-accept-application="${escapeHtml(item.id)}" type="button">Accept</button>
+                <button class="secondary-button" data-reject-application="${escapeHtml(item.id)}" type="button">Reject</button>
+                <button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${item.id}" type="button">Cut</button></div>`}
+            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button></div>`}
           </div>
         `).join("")}
       </div>
@@ -4571,7 +4610,7 @@ function renderAdmin() {
           <div class="admin-row">
             <span><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.title || item.id)} • ${escapeHtml(item.meta || "")}</span>
             <div class="admin-actions">
-              <button class="secondary-button" data-admin-unarchive="${item.type}" data-archive-id="${item.id}" type="button">Restore</button>
+              <button class="secondary-button" data-admin-unarchive="${escapeHtml(item.type)}" data-archive-id="${escapeHtml(item.id)}" type="button">Restore</button>
             </div>
           </div>
         `).join("") || `<p>No cut items yet.</p>`}
@@ -4580,9 +4619,9 @@ function renderAdmin() {
     <article class="wide-card">
       <strong>UPI Settings</strong>
       <form class="inline-form" id="upiSettingsForm">
-        <input name="merchantName" value="${upi.merchantName || "GIVE & TAKE"}" placeholder="Merchant name" />
-        <input name="upiId" value="${upi.upiId || ""}" placeholder="yourupi@bank" />
-        <input name="note" value="${upi.note || ""}" placeholder="Admin note" />
+        <input name="merchantName" value="${escapeHtml(upi.merchantName || "GIVE & TAKE")}" placeholder="Merchant name" />
+        <input name="upiId" value="${escapeHtml(upi.upiId || "")}" placeholder="yourupi@bank" />
+        <input name="note" value="${escapeHtml(upi.note || "")}" placeholder="Admin note" />
         <button class="primary-button" type="submit">Save UPI</button>
       </form>
     </article>
@@ -4592,7 +4631,7 @@ function renderAdmin() {
       <form class="admin-product-form" id="adminProductForm">
         <input name="title" placeholder="Product name" required />
         <select name="category" required>
-          ${categories.filter(category => category.id !== "mobiles").map(category => `<option value="${category.id}">${category.name}</option>`).join("")}
+          ${categories.filter(category => category.id !== "mobiles").map(category => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("")}
         </select>
         <input name="price" type="number" min="1" step="1" placeholder="Coin price" required />
         <select name="condition" required>
@@ -4631,14 +4670,14 @@ function renderAdmin() {
                 <span>${formatCoins(product.price || 0)}</span>
               </div>
               <div class="admin-product-actions">
-                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="title" type="button">Edit Name</button>
-                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="price" type="button">Edit Price</button>
-                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="imageUrl" type="button">Edit Image</button>
-                <button class="secondary-button" data-edit-product="${product.id}" data-edit-field="condition" type="button">Edit Condition</button>
-                <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${product.id}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
+                <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="title" type="button">Edit Name</button>
+                <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="price" type="button">Edit Price</button>
+                <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="imageUrl" type="button">Edit Image</button>
+                <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="condition" type="button">Edit Condition</button>
+                <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${escapeHtml(product.id)}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
                   ${product.status === "listed" ? "Unlist Product" : "List Product"}
                 </button>
-                <button class="danger-button" data-delete-product="${product.id}" type="button">Delete Product</button>
+                <button class="danger-button" data-delete-product="${escapeHtml(product.id)}" type="button">Delete Product</button>
               </div>
             </div>
           `).join("") || `<p>No products available yet.</p>`}
@@ -4669,10 +4708,10 @@ function renderPartnerTasks() {
   }
   els.partnerTasks.innerHTML = partnerTasks.map(task => `
     <article class="task-card">
-      <strong>${task.id}</strong>
-      <span>${task.type.replaceAll("-", " ")} • ${task.city} • ${task.status}</span>
-      <ul>${task.checklist.map(item => `<li>${item}</li>`).join("")}</ul>
-      <button class="secondary-button full" data-task-complete="${task.id}" type="button">Mark Checked</button>
+      <strong>${escapeHtml(task.id)}</strong>
+      <span>${escapeHtml(task.type.replaceAll("-", " "))} • ${escapeHtml(task.city)} • ${escapeHtml(task.status)}</span>
+      <ul>${task.checklist.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      <button class="secondary-button full" data-task-complete="${escapeHtml(task.id)}" type="button">Mark Checked</button>
     </article>
   `).join("");
 }
@@ -4686,14 +4725,14 @@ function renderCart() {
       .slice(0, 4) : [];
     const cards = recommended.map(product => `
       <article class="empty-cart-product">
-        <button class="empty-cart-product-link" data-product="${product.id}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
+        <button class="empty-cart-product-link" data-product="${escapeHtml(product.id)}" type="button" aria-label="View ${escapeHtml(product.title || "recommended item")}">
           ${productVisual(product, "empty-cart-product-image")}
           <span>
             <strong>${escapeHtml(product.title || "Recommended item")}</strong>
             <em>${formatCoins(product.price || 0)}</em>
           </span>
         </button>
-        <button class="secondary-button" data-add="${product.id}" type="button">Add</button>
+        <button class="secondary-button" data-add="${escapeHtml(product.id)}" type="button">Add</button>
       </article>
     `).join("");
     els.cartView.innerHTML = `
@@ -4878,19 +4917,19 @@ function renderCart() {
                 <span>${escapeHtml(displayCategoryName(product.category))}</span>
                 <div class="cart-price-row">
                   <div class="cart-qty-control" aria-label="Quantity">
-                    <button type="button" data-cart-qty-step="${product.id}" data-step="-1" aria-label="Decrease quantity">-</button>
+                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="-1" aria-label="Decrease quantity">-</button>
                     <strong>${qty}</strong>
-                    <button type="button" data-cart-qty-step="${product.id}" data-step="1" aria-label="Increase quantity">+</button>
+                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="1" aria-label="Increase quantity">+</button>
                   </div>
                   <strong class="cart-line-price">${formatCoins(product.price * qty)}</strong>
                 </div>
               </div>
               <div class="cart-item-actions">
-                <button class="cart-remove-button" data-remove-cart="${product.id}" type="button">
+                <button class="cart-remove-button" data-remove-cart="${escapeHtml(product.id)}" type="button">
                   <svg class="cart-remove-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
                   <span>Remove</span>
                 </button>
-                <button class="primary-button" data-cart-buy-now="${product.id}" type="button">Buy this now</button>
+                <button class="primary-button" data-cart-buy-now="${escapeHtml(product.id)}" type="button">Buy this now</button>
               </div>
             </article>
           `;
@@ -4930,7 +4969,7 @@ function renderCart() {
             <h2>Remove this item from cart?</h2>
             <div>
               <button class="secondary-button" data-cancel-remove-cart type="button">Cancel</button>
-              <button class="primary-button danger-button" data-confirm-remove-cart="${state.pendingRemoveCartId}" type="button">Remove</button>
+              <button class="primary-button danger-button" data-confirm-remove-cart="${escapeHtml(state.pendingRemoveCartId)}" type="button">Remove</button>
             </div>
           </section>
         </div>

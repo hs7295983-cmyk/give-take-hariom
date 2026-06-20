@@ -43,6 +43,19 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function safeImageUrl(value) {
+  const rawUrl = String(value || "").trim();
+  if (!rawUrl) return "";
+  if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=]+$/i.test(rawUrl)) return rawUrl;
+  try {
+    const parsed = new URL(rawUrl, window.location.origin);
+    if (["http:", "https:"].includes(parsed.protocol)) return parsed.href;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   if (options.admin && adminToken) headers.Authorization = `Bearer ${adminToken}`;
@@ -330,8 +343,9 @@ function updatePriceView(draft) {
 }
 
 function renderDraft(draft) {
-  const image = draft.imageUrl
-    ? `<img src="${escapeHtml(draft.imageUrl)}" alt="${escapeHtml(draft.title)}" />`
+  const imageUrl = safeImageUrl(draft.imageUrl);
+  const image = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(draft.title)}" />`
     : `<span class="brand-mark">G&T</span>`;
   els.draftOutput.innerHTML = `
     <div class="draft-grid">
@@ -374,7 +388,7 @@ function renderDuplicates(draft) {
     <div class="duplicate-list">
       ${draft.similar.map(product => `
         <div class="duplicate-item ${product.score >= 0.72 ? "high" : ""}">
-          <span>${Math.round(product.score * 100)}% similar • ${escapeHtml(product.category || "")} • ${product.price || 0} G&T</span>
+          <span>${Number.isFinite(Number(product.score)) ? Math.round(Number(product.score) * 100) : 0}% similar • ${escapeHtml(product.category || "")} • ${Number(product.price || 0) || 0} G&T</span>
           <strong>${escapeHtml(product.title || "Product")}</strong>
         </div>
       `).join("")}
