@@ -4,4 +4,10 @@ create table if not exists app_state (
   updated_at timestamptz not null default now()
 );
 
+alter table public.app_state enable row level security;
+
+revoke all privileges
+on table public.app_state
+from public, anon, authenticated;
+
 create index if not exists app_state_updated_at_idx on app_state (updated_at);
