@@ -32,6 +32,19 @@ const mimeTypes = {
   ".svg": "image/svg+xml"
 };
 
+const publicStaticFiles = new Map([
+  ["/", "index.html"],
+  ["/index.html", "index.html"],
+  ["/styles.css", "styles.css"],
+  ["/app.js", "app.js"],
+  ["/config.js", "config.js"],
+  ["/owner-agent", "owner-agent.html"],
+  ["/owner-agent/", "owner-agent.html"],
+  ["/owner-agent.html", "owner-agent.html"],
+  ["/owner-agent.css", "owner-agent.css"],
+  ["/owner-agent.js", "owner-agent.js"]
+]);
+
 function sendJson(res, status, payload) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -1369,32 +1382,39 @@ async function handleApi(req, res) {
 }
 
 function serveStatic(req, res) {
-  const { url } = parsePath(req);
-  let filePath = decodeURIComponent(url.pathname);
-  if (filePath === "/") filePath = "/index.html";
-  if (filePath === "/owner-agent") filePath = "/owner-agent.html";
-  const resolved = path.normalize(path.join(rootDir, filePath));
-  if (!resolved.startsWith(rootDir)) {
-    res.writeHead(403);
-    res.end("Forbidden");
+  if (!["GET", "HEAD"].includes(req.method)) {
+    res.writeHead(405, { "Content-Type": "text/plain; charset=utf-8", "Allow": "GET, HEAD" });
+    res.end("Method not allowed");
     return;
   }
+
+  const { url } = parsePath(req);
+  let requestPath = "";
+  try {
+    requestPath = decodeURIComponent(url.pathname);
+  } catch {
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Bad request");
+    return;
+  }
+
+  const publicFile = publicStaticFiles.get(requestPath);
+  if (!publicFile) {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+    return;
+  }
+
+  const resolved = path.join(rootDir, publicFile);
   fs.readFile(resolved, (error, content) => {
     if (error) {
-      fs.readFile(path.join(rootDir, "index.html"), (fallbackError, fallback) => {
-        if (fallbackError) {
-          res.writeHead(404);
-          res.end("Not found");
-          return;
-        }
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(fallback);
-      });
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Not found");
       return;
     }
     const ext = path.extname(resolved).toLowerCase();
     res.writeHead(200, { "Content-Type": mimeTypes[ext] || "application/octet-stream" });
-    res.end(content);
+    res.end(req.method === "HEAD" ? undefined : content);
   });
 }
 
