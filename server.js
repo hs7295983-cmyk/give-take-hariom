@@ -53,11 +53,29 @@ const publicStaticFiles = new Map([
   ["/owner-agent.js", "owner-agent.js"]
 ]);
 
+const contentSecurityPolicyReportOnly = [
+  "default-src 'self'",
+  "script-src 'self' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' https: data: blob:",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "connect-src 'self' https://give-take-beckend.onrender.com https://iwcbgztlrieawsvcxntg.supabase.co",
+  "media-src 'self' https: data: blob:",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "manifest-src 'self'"
+].join("; ");
+
 const securityHeaders = Object.freeze({
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Content-Security-Policy-Report-Only": contentSecurityPolicyReportOnly
 });
 
 function withSecurityHeaders(headers = {}) {
