@@ -13,6 +13,7 @@ const brevoApiKey = process.env.BREVO_API_KEY || "";
 const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
 const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
 const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
+const isProduction = process.env.NODE_ENV === "production";
 const configuredCustomerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 30);
 const customerSessionDays = Number.isFinite(configuredCustomerSessionDays)
   ? Math.min(60, Math.max(1, Math.floor(configuredCustomerSessionDays)))
@@ -52,12 +53,62 @@ const publicStaticFiles = new Map([
   ["/owner-agent.js", "owner-agent.js"]
 ]);
 
+function normalizeAllowedOrigin(value) {
+  const rawOrigin = String(value || "").trim();
+  if (!rawOrigin) return "";
+  try {
+    return new URL(rawOrigin).origin;
+  } catch {
+    return rawOrigin.replace(/\/+$/, "");
+  }
+}
+
+const allowedOrigins = new Set(
+  String(process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(normalizeAllowedOrigin)
+    .filter(Boolean)
+);
+
+function requestOrigin(req) {
+  return normalizeAllowedOrigin(req?.headers?.origin || "");
+}
+
+function isAllowedCorsRequest(req) {
+  const origin = requestOrigin(req);
+  if (!origin) return true;
+  if (!isProduction) return true;
+  return allowedOrigins.has(origin);
+}
+
+function corsHeaders(req) {
+  const headers = {
+    "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "600"
+  };
+  const origin = requestOrigin(req);
+  if (!isProduction) {
+    headers["Access-Control-Allow-Origin"] = "*";
+  } else if (origin && allowedOrigins.has(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+    headers["Vary"] = "Origin";
+  }
+  return headers;
+}
+
+function sendCorsBlocked(res) {
+  res.writeHead(403, {
+    "Content-Type": "application/json; charset=utf-8",
+    ...corsHeaders(res.giveTakeRequest)
+  });
+  res.end(JSON.stringify({ error: "Origin not allowed" }));
+}
+
 function sendJson(res, status, payload) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    ...corsHeaders(res.giveTakeRequest)
   });
   res.end(JSON.stringify(payload));
 }
@@ -692,6 +743,7 @@ async function handleApi(req, res) {
   const { url, parts } = parsePath(req);
   const method = req.method;
 
+  if (!isAllowedCorsRequest(req)) return sendCorsBlocked(res);
   if (method === "OPTIONS") return sendJson(res, 200, { ok: true });
   const ip = clientIp(req);
   if (!enforceRateLimit(res, {
@@ -1703,6 +1755,7 @@ function serveStatic(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  res.giveTakeRequest = req;
   try {
     if (req.url.startsWith("/api/")) {
       await handleApi(req, res);
