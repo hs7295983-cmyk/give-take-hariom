@@ -30,6 +30,10 @@ const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "c
 const rateLimitBuckets = new Map();
 const adminSessionCookieName = "give_take_admin_session";
 const customerSessionCookieName = "give_take_customer_session";
+const configuredAdminAuditLogLimit = Number(process.env.ADMIN_AUDIT_LOG_LIMIT || 250);
+const adminAuditLogLimit = Number.isFinite(configuredAdminAuditLogLimit)
+  ? Math.min(1000, Math.max(50, Math.floor(configuredAdminAuditLogLimit)))
+  : 250;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -515,12 +519,55 @@ function cleanDetailsObject(value, maxEntries = 20) {
   }, {});
 }
 
+function cleanAuditDetails(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.entries(value).slice(0, 12).reduce((details, [key, item]) => {
+    const cleanKey = cleanText(key, 60);
+    if (!cleanKey) return details;
+    if (typeof item === "number" || typeof item === "boolean") {
+      details[cleanKey] = item;
+      return details;
+    }
+    details[cleanKey] = cleanText(item, 180);
+    return details;
+  }, {});
+}
+
+function recordAdminAudit(req, action, outcome = "success", details = {}) {
+  const entry = {
+    id: id("AUDIT"),
+    actor: "admin",
+    action: cleanText(action, 80),
+    outcome: cleanText(outcome, 40),
+    createdAt: new Date().toISOString(),
+    ipHash: hashAuditValue(clientIp(req)),
+    userAgent: cleanText(req.headers["user-agent"], 180),
+    origin: cleanText(req.headers.origin, 120),
+    path: cleanText(req.url, 160),
+    details: cleanAuditDetails(details)
+  };
+  updateDb(auditDb => {
+    auditDb.adminAuditLogs = Array.isArray(auditDb.adminAuditLogs) ? auditDb.adminAuditLogs : [];
+    auditDb.adminAuditLogs.unshift(entry);
+    if (auditDb.adminAuditLogs.length > adminAuditLogLimit) {
+      auditDb.adminAuditLogs.splice(adminAuditLogLimit);
+    }
+    return { id: entry.id };
+  }).catch(error => {
+    console.warn("Admin audit log write failed:", error.message);
+  });
+}
+
 function hashOtp(email, otp) {
   return crypto.createHash("sha256").update(`${sessionSecret}:${normalizeEmail(email)}:${otp}`).digest("hex");
 }
 
 function hashSession(token) {
   return crypto.createHash("sha256").update(`${sessionSecret}:${token}`).digest("hex");
+}
+
+function hashAuditValue(value) {
+  return crypto.createHash("sha256").update(`${sessionSecret || "give-take-audit"}:${String(value || "unknown")}`).digest("hex").slice(0, 24);
 }
 
 function publicUser(user) {
@@ -1588,19 +1635,23 @@ async function handleApi(req, res) {
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     if (!secureStringEqual(body.password, adminPassword)) {
       recordRateLimitAttempt(adminLoginLimit.scope, adminLoginLimit.identity, adminLoginLimit.windowMs);
+      recordAdminAudit(req, "admin.login", "failure", { reason: "wrong-password" });
       return sendError(res, 401, "Wrong admin password");
     }
     clearRateLimit(adminLoginLimit.scope, adminLoginLimit.identity);
     const adminSession = createAdminSessionToken();
     setAdminSessionCookie(res, adminSession.token);
+    recordAdminAudit(req, "admin.login", "success", { expiresAt: adminSession.expiresAt });
     return sendJson(res, 200, { expiresAt: adminSession.expiresAt });
   }
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "logout") {
     if (!hasAdminCookieCsrfHeader(req)) {
+      recordAdminAudit(req, "admin.logout", "failure", { reason: "csrf-check-failed" });
       return sendError(res, 403, "Admin request verification failed");
     }
     clearAdminSessionCookie(res);
+    recordAdminAudit(req, "admin.logout", "success");
     return sendJson(res, 200, { ok: true });
   }
 
