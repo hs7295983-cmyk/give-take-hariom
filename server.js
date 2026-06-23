@@ -468,6 +468,53 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+function cleanText(value, maxLength = 200, options = {}) {
+  const multiline = Boolean(options.multiline);
+  let text = String(value ?? "").replace(/\0/g, "");
+  text = multiline
+    ? text.replace(/[^\S\r\n]+/g, " ").replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, " ")
+    : text.replace(/[\u0001-\u001F\u007F]/g, " ").replace(/\s+/g, " ");
+  text = text.trim();
+  return text.length > maxLength ? text.slice(0, maxLength).trim() : text;
+}
+
+function isValidPhone(value) {
+  const phone = cleanText(value, 24);
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 10 && digits.length <= 15 && /^[+\d()[\]\-\s]+$/.test(phone);
+}
+
+function isValidPincode(value) {
+  const pincode = cleanText(value, 16);
+  return /^[a-z0-9][a-z0-9\s-]{2,15}$/i.test(pincode);
+}
+
+function isValidUpiReference(value) {
+  const reference = cleanText(value, 80);
+  return reference.length >= 4 && /^[a-z0-9@._/\-\s]+$/i.test(reference);
+}
+
+function isValidDataImage(value) {
+  const image = String(value || "").trim();
+  return image.length <= 900_000 && /^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(image);
+}
+
+function cleanDataImages(value, limit = 5) {
+  return Array.isArray(value)
+    ? value.map(item => String(item || "").trim()).filter(isValidDataImage).slice(0, limit)
+    : [];
+}
+
+function cleanDetailsObject(value, maxEntries = 20) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.entries(value).slice(0, maxEntries).reduce((details, [key, item]) => {
+    const cleanKey = cleanText(key, 60);
+    const cleanValue = cleanText(item, 300, { multiline: true });
+    if (cleanKey && cleanValue) details[cleanKey] = cleanValue;
+    return details;
+  }, {});
+}
+
 function hashOtp(email, otp) {
   return crypto.createHash("sha256").update(`${sessionSecret}:${normalizeEmail(email)}:${otp}`).digest("hex");
 }
@@ -954,7 +1001,7 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const email = normalizeEmail(body.email);
     const otp = String(body.otp || "").trim();
-    const name = String(body.name || "").trim();
+    const name = cleanText(body.name, 80);
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     if (!enforceRateLimit(res, {
@@ -1036,18 +1083,20 @@ async function handleApi(req, res) {
     const { user } = customer;
     const body = await readBody(req);
     const addressBook = {
-      name: String(body.name || "").trim(),
-      phone: String(body.phone || "").trim(),
-      houseArea: String(body.houseArea || "").trim(),
-      city: String(body.city || "").trim(),
-      pincode: String(body.pincode || "").trim(),
-      landmark: String(body.landmark || "").trim(),
+      name: cleanText(body.name, 80),
+      phone: cleanText(body.phone, 24),
+      houseArea: cleanText(body.houseArea, 220),
+      city: cleanText(body.city, 80),
+      pincode: cleanText(body.pincode, 16),
+      landmark: cleanText(body.landmark, 120),
     };
     if (!addressBook.name) return sendError(res, 400, "Name is required");
     if (!addressBook.phone) return sendError(res, 400, "Phone number is required");
+    if (!isValidPhone(addressBook.phone)) return sendError(res, 400, "Enter a valid phone number");
     if (!addressBook.houseArea) return sendError(res, 400, "House/area is required");
     if (!serviceableCity(db, addressBook.city)) return sendError(res, 400, "City is not serviceable yet");
     if (!addressBook.pincode) return sendError(res, 400, "Pincode is required");
+    if (!isValidPincode(addressBook.pincode)) return sendError(res, 400, "Enter a valid pincode");
     user.addressBook = addressBook;
     user.updatedAt = new Date().toISOString();
     await writeDb(db);
@@ -1109,12 +1158,16 @@ async function handleApi(req, res) {
     const userId = customer.user.id;
     if (!db.wallets[userId]) db.wallets[userId] = { balance: 0, ledger: [] };
     const amount = Number(body.amount);
-    const paymentMethod = String(body.method || "UPI").toUpperCase();
-    if (!Number.isFinite(amount) || amount < db.meta.coinRechargeMinimum || amount % db.meta.coinRechargeStep !== 0) {
+    const paymentMethod = cleanText(body.method || "UPI", 20).toUpperCase();
+    const upiReference = cleanText(body.upiReference, 80);
+    if (!Number.isInteger(amount) || amount < db.meta.coinRechargeMinimum || amount > 100000 || amount % db.meta.coinRechargeStep !== 0) {
       return sendError(res, 400, "Recharge must be minimum 50 and in multiples of 50");
     }
     if (paymentMethod !== "UPI") {
       return sendError(res, 400, "Only UPI recharge is enabled");
+    }
+    if (!isValidUpiReference(upiReference)) {
+      return sendError(res, 400, "Enter a valid UPI transaction/reference ID");
     }
     if (!db.integrations.payments.upi?.upiId) {
       return sendError(res, 400, "Admin UPI ID is not configured yet");
@@ -1126,7 +1179,7 @@ async function handleApi(req, res) {
       amount,
       method: "UPI",
       upiId: db.integrations.payments.upi.upiId,
-      upiReference: body.upiReference || "",
+      upiReference,
       status: "pending-admin-verification",
       createdAt: new Date().toISOString()
     };
@@ -1138,9 +1191,10 @@ async function handleApi(req, res) {
 
   if (method === "POST" && parts[1] === "serviceability") {
     const body = await readBody(req);
+    const city = cleanText(body.city, 80);
     return sendJson(res, 200, {
-      city: body.city,
-      serviceable: serviceableCity(db, body.city),
+      city,
+      serviceable: serviceableCity(db, city),
       activeCities: db.meta.serviceCities
     });
   }
@@ -1156,31 +1210,46 @@ async function handleApi(req, res) {
       message: "Too many selling submissions. Please wait before submitting another product."
     })) return;
     const body = await readBody(req);
-    if (!serviceableCity(db, body.city)) return sendError(res, 400, "City is not serviceable yet");
-    if (isBlockedCustomerSellCategory(body.category)) {
+    const city = cleanText(body.city, 80);
+    const category = cleanText(body.category, 80);
+    const sellerName = cleanText(body.sellerName, 80);
+    const sellerPhone = cleanText(body.sellerPhone, 24);
+    const pickupAddress = cleanText(body.pickupAddress, 240);
+    const pickupDate = cleanText(body.pickupDate, 40);
+    const pickupTime = cleanText(body.pickupTime, 40);
+    const title = cleanText(body.title, 120);
+    const condition = cleanText(body.condition, 80);
+    const expectedCoins = Number(body.expectedCoins || 0);
+    if (!serviceableCity(db, city)) return sendError(res, 400, "City is not serviceable yet");
+    if (!db.categories.some(item => item.id === category)) return sendError(res, 400, "Select a valid category");
+    if (isBlockedCustomerSellCategory(category)) {
       return sendError(res, 400, "Clothes and shoes are not accepted from customer sellers");
     }
-    const sellerPhone = String(body.sellerPhone || "").trim();
+    if (!sellerName) return sendError(res, 400, "Seller name is required");
     if (!sellerPhone) return sendError(res, 400, "Seller phone number is required for pickup");
-    const photos = Array.isArray(body.photos)
-      ? body.photos.filter(photo => typeof photo === "string" && photo.startsWith("data:image/"))
-      : [];
+    if (!isValidPhone(sellerPhone)) return sendError(res, 400, "Enter a valid seller phone number");
+    if (!pickupAddress) return sendError(res, 400, "Pickup address is required");
+    if (!title) return sendError(res, 400, "Product title is required");
+    if (!Number.isFinite(expectedCoins) || expectedCoins < 0 || expectedCoins > 100000) {
+      return sendError(res, 400, "Expected coin value is invalid");
+    }
+    const photos = cleanDataImages(body.photos, 5);
     if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
     const request = {
       id: id("GT-S"),
       userId: customer.user.id,
       userEmail: customer.user.email,
-      sellerName: String(body.sellerName || "").trim(),
+      sellerName,
       sellerPhone,
-      pickupAddress: String(body.pickupAddress || "").trim(),
-      pickupDate: String(body.pickupDate || "").trim(),
-      pickupTime: String(body.pickupTime || "").trim(),
-      city: body.city,
-      category: body.category,
-      title: body.title,
-      expectedCoins: Number(body.expectedCoins || 0),
-      condition: body.condition,
-      details: body.details || {},
+      pickupAddress,
+      pickupDate,
+      pickupTime,
+      city,
+      category,
+      title,
+      expectedCoins,
+      condition,
+      details: cleanDetailsObject(body.details),
       photos,
       status: "upload-submitted",
       timeline: ["upload-submitted"],
@@ -1211,8 +1280,17 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const userId = customer.user.id;
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
-    const deliveryDetails = body.deliveryDetails || {};
-    const deliveryCity = deliveryDetails.city || body.city;
+    const rawDeliveryDetails = body.deliveryDetails || {};
+    const deliveryDetails = {
+      name: cleanText(rawDeliveryDetails.name, 80),
+      phone: cleanText(rawDeliveryDetails.phone, 24),
+      address: cleanText(rawDeliveryDetails.address, 240),
+      city: cleanText(rawDeliveryDetails.city || body.city, 80),
+      pincode: cleanText(rawDeliveryDetails.pincode, 16),
+      landmark: cleanText(rawDeliveryDetails.landmark, 120),
+      note: cleanText(rawDeliveryDetails.note, 300, { multiline: true })
+    };
+    const deliveryCity = deliveryDetails.city;
     if (!productIds.length) return sendError(res, 400, "No products selected");
     if (productIds.some(productId => typeof productId !== "string" || !productId.trim())) {
       return sendError(res, 400, "Invalid product selection");
@@ -1220,9 +1298,11 @@ async function handleApi(req, res) {
     if (new Set(productIds).size !== productIds.length) {
       return sendError(res, 400, "Duplicate products are not allowed");
     }
-    if (!String(deliveryDetails.name || "").trim()) return sendError(res, 400, "Customer name is required");
-    if (!String(deliveryDetails.phone || "").trim()) return sendError(res, 400, "Customer phone is required");
-    if (!String(deliveryDetails.address || "").trim()) return sendError(res, 400, "Delivery address is required");
+    if (!deliveryDetails.name) return sendError(res, 400, "Customer name is required");
+    if (!deliveryDetails.phone) return sendError(res, 400, "Customer phone is required");
+    if (!isValidPhone(deliveryDetails.phone)) return sendError(res, 400, "Enter a valid customer phone number");
+    if (!deliveryDetails.address) return sendError(res, 400, "Delivery address is required");
+    if (deliveryDetails.pincode && !isValidPincode(deliveryDetails.pincode)) return sendError(res, 400, "Enter a valid pincode");
 
     let checkout;
     try {
@@ -1284,13 +1364,13 @@ async function handleApi(req, res) {
           status: "new-order",
           deliveryCity,
           deliveryDetails: {
-            name: String(deliveryDetails.name || "").trim(),
-            phone: String(deliveryDetails.phone || "").trim(),
-            address: String(deliveryDetails.address || "").trim(),
+            name: deliveryDetails.name,
+            phone: deliveryDetails.phone,
+            address: deliveryDetails.address,
             city: deliveryCity,
-            pincode: String(deliveryDetails.pincode || "").trim(),
-            landmark: String(deliveryDetails.landmark || "").trim(),
-            note: String(deliveryDetails.note || "").trim()
+            pincode: deliveryDetails.pincode,
+            landmark: deliveryDetails.landmark,
+            note: deliveryDetails.note
           },
           deliveryCharge: orderDeliveryCharge,
           deliveryFreeThreshold,
@@ -1396,16 +1476,22 @@ async function handleApi(req, res) {
       message: "Too many return requests. Please wait before trying again."
     })) return;
     const body = await readBody(req);
-    const order = (db.orders || []).find(item => item.id === body.orderId && item.userId === customer.user.id);
+    const orderId = cleanText(body.orderId, 80);
+    const issueCategory = cleanText(body.issueCategory, 80);
+    const explanation = cleanText(body.explanation, 1000, { multiline: true });
+    const proofFiles = cleanDataImages(body.proofFiles, 5);
+    const order = (db.orders || []).find(item => item.id === orderId && item.userId === customer.user.id);
     if (!order) return sendError(res, 404, "Order not found");
+    if (!issueCategory) return sendError(res, 400, "Return issue category is required");
+    if (!explanation) return sendError(res, 400, "Return explanation is required");
     const request = {
       id: id("GT-R"),
       orderId: order.id,
       userId: customer.user.id,
       userEmail: customer.user.email,
-      issueCategory: body.issueCategory,
-      explanation: body.explanation,
-      proofFiles: body.proofFiles || [],
+      issueCategory,
+      explanation,
+      proofFiles,
       status: "return-requested",
       createdAt: new Date().toISOString()
     };
@@ -1427,10 +1513,10 @@ async function handleApi(req, res) {
     })) return;
     const body = await readBody(req);
     const overallRating = Number(body.overallRating);
-    const browsingExperience = String(body.browsingExperience || "").trim();
-    const priceFeeling = String(body.priceFeeling || "").trim();
-    const paymentClarity = String(body.paymentClarity || "").trim();
-    const improvement = String(body.improvement || "").trim();
+    const browsingExperience = cleanText(body.browsingExperience, 120);
+    const priceFeeling = cleanText(body.priceFeeling, 120);
+    const paymentClarity = cleanText(body.paymentClarity, 120);
+    const improvement = cleanText(body.improvement, 1000, { multiline: true });
     if (!Number.isInteger(overallRating) || overallRating < 1 || overallRating > 5) {
       return sendError(res, 400, "Select an overall rating");
     }
@@ -1445,7 +1531,7 @@ async function handleApi(req, res) {
       browsingExperience,
       priceFeeling,
       paymentClarity,
-      improvement: improvement.slice(0, 1000),
+      improvement,
       createdAt: new Date().toISOString()
     };
     db.feedbacks = db.feedbacks || [];
@@ -1464,13 +1550,22 @@ async function handleApi(req, res) {
       message: "Too many applications submitted. Please wait before trying again."
     })) return;
     const body = await readBody(req);
+    const role = cleanText(body.role, 80);
+    const city = cleanText(body.city, 80);
+    const name = cleanText(body.name, 80);
+    const phone = cleanText(body.phone, 24);
+    const experience = cleanText(body.experience, 1000, { multiline: true });
+    if (!role) return sendError(res, 400, "Role is required");
+    if (!city) return sendError(res, 400, "City is required");
+    if (!name) return sendError(res, 400, "Name is required");
+    if (!phone || !isValidPhone(phone)) return sendError(res, 400, "Enter a valid phone number");
     const application = {
       id: id("GT-J"),
-      role: body.role,
-      city: body.city,
-      name: body.name,
-      phone: body.phone,
-      experience: body.experience,
+      role,
+      city,
+      name,
+      phone,
+      experience,
       status: "submitted",
       createdAt: new Date().toISOString()
     };
