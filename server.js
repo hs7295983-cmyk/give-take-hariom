@@ -1845,6 +1845,12 @@ function serveStatic(req, res) {
     return;
   }
 
+  if (requestPath === "/admin" || requestPath === "/admin/") {
+    res.writeHead(302, withSecurityHeaders({ Location: "/#admin" }));
+    res.end();
+    return;
+  }
+
   const publicFile = publicStaticFiles.get(requestPath);
   if (!publicFile) {
     res.writeHead(404, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8" }));
