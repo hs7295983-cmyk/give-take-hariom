@@ -29,6 +29,7 @@ const deliveryFreeThreshold = 499;
 const blockedCustomerSellCategories = new Set(["fashion", "clothes", "shoes", "clothes-shoes", "clothes_and_shoes"]);
 const rateLimitBuckets = new Map();
 const adminSessionCookieName = "give_take_admin_session";
+const customerSessionCookieName = "give_take_customer_session";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -117,7 +118,7 @@ function isAllowedCorsRequest(req) {
 function corsHeaders(req) {
   const headers = {
     "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Give-Take-Admin-Request",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Give-Take-Admin-Request, X-Give-Take-Customer-Request",
     "Access-Control-Max-Age": "600"
   };
   const origin = requestOrigin(req);
@@ -304,7 +305,25 @@ function adminCookieToken(req) {
   return parseCookies(req)[adminSessionCookieName] || "";
 }
 
+function customerCookieToken(req) {
+  return parseCookies(req)[customerSessionCookieName] || "";
+}
+
 function adminCookieAttributes(maxAgeSeconds) {
+  const attributes = [
+    `Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}`,
+    "Path=/",
+    "HttpOnly"
+  ];
+  if (isProduction) {
+    attributes.push("Secure", "SameSite=None");
+  } else {
+    attributes.push("SameSite=Lax");
+  }
+  return attributes.join("; ");
+}
+
+function customerCookieAttributes(maxAgeSeconds) {
   const attributes = [
     `Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}`,
     "Path=/",
@@ -329,8 +348,23 @@ function clearAdminSessionCookie(res) {
   res.setHeader("Set-Cookie", `${adminSessionCookieName}=; ${adminCookieAttributes(0)}`);
 }
 
+function setCustomerSessionCookie(res, token) {
+  res.setHeader(
+    "Set-Cookie",
+    `${customerSessionCookieName}=${encodeURIComponent(token)}; ${customerCookieAttributes(customerSessionDurationMs / 1000)}`
+  );
+}
+
+function clearCustomerSessionCookie(res) {
+  res.setHeader("Set-Cookie", `${customerSessionCookieName}=; ${customerCookieAttributes(0)}`);
+}
+
 function hasAdminCookieCsrfHeader(req) {
   return req.headers["x-give-take-admin-request"] === "1";
+}
+
+function hasCustomerCookieCsrfHeader(req) {
+  return req.headers["x-give-take-customer-request"] === "1";
 }
 
 setInterval(() => {
@@ -468,9 +502,15 @@ function requireCustomer(req, res, db) {
     return null;
   }
   const auth = req.headers.authorization || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  const cookieToken = customerCookieToken(req);
+  const token = bearerToken || cookieToken;
   if (!token) {
     sendError(res, 401, "Login required");
+    return null;
+  }
+  if (!bearerToken && cookieToken && !hasCustomerCookieCsrfHeader(req)) {
+    sendError(res, 403, "Customer request verification failed");
     return null;
   }
   const session = (db.authSessions || []).find(item => (
@@ -974,23 +1014,35 @@ async function handleApi(req, res) {
     db.authSessions.unshift(session);
     if (!db.wallets[user.id]) db.wallets[user.id] = { balance: 0, ledger: [] };
     await writeDb(db);
+    setCustomerSessionCookie(res, token);
     return sendJson(res, 200, { token, user: publicUser(user), wallet: db.wallets[user.id] });
   }
 
   if (method === "GET" && parts[1] === "auth" && parts[2] === "me") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
-    const { user } = customer;
+    const { session, user } = customer;
+    const auth = req.headers.authorization || "";
+    const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+    if (bearerToken && session.tokenHash === hashSession(bearerToken)) {
+      setCustomerSessionCookie(res, bearerToken);
+    }
     return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets?.[user.id] || { balance: 0, ledger: [] } });
   }
 
   if (method === "POST" && parts[1] === "auth" && parts[2] === "logout") {
     const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+    const cookieToken = customerCookieToken(req);
+    const token = bearerToken || cookieToken;
+    if (!bearerToken && cookieToken && !hasCustomerCookieCsrfHeader(req)) {
+      return sendError(res, 403, "Customer request verification failed");
+    }
     if (token && sessionSecret) {
       db.authSessions = (db.authSessions || []).filter(item => item.tokenHash !== hashSession(token));
       await writeDb(db);
     }
+    clearCustomerSessionCookie(res);
     return sendJson(res, 200, { ok: true });
   }
 
@@ -1842,12 +1894,6 @@ function serveStatic(req, res) {
   } catch {
     res.writeHead(400, withSecurityHeaders({ "Content-Type": "text/plain; charset=utf-8" }));
     res.end("Bad request");
-    return;
-  }
-
-  if (requestPath === "/admin" || requestPath === "/admin/") {
-    res.writeHead(302, withSecurityHeaders({ Location: "/#admin" }));
-    res.end();
     return;
   }
 

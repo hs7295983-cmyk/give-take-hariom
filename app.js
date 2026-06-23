@@ -3,6 +3,7 @@ const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : confi
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const ADMIN_SESSION_HINT_KEY = "give_take_admin_session_hint";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
+const CUSTOMER_SESSION_HINT_KEY = "give_take_customer_session_hint";
 const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
@@ -2645,7 +2646,7 @@ let productDetails = new Map();
 let productDetailRequests = new Map();
 let backendDataReady = Boolean(cachedCatalog);
 let adminToken = loadStoredAdminToken();
-let customerToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
+let customerToken = loadStoredCustomerToken();
 let currentUser = loadCachedCustomerUser();
 let authRestorePending = Boolean(customerToken && !currentUser);
 let customerDataReady = !customerToken;
@@ -2683,6 +2684,32 @@ function clearAdminSession() {
   partnerTasksLoaded = false;
   localStorage.removeItem(ADMIN_TOKEN_KEY);
   localStorage.removeItem(ADMIN_SESSION_HINT_KEY);
+}
+
+function loadStoredCustomerToken() {
+  const legacyToken = localStorage.getItem(CUSTOMER_TOKEN_KEY) || "";
+  localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+  if (legacyToken) return legacyToken;
+  return localStorage.getItem(CUSTOMER_SESSION_HINT_KEY) === "1" ? "cookie-session" : "";
+}
+
+function markCustomerSessionActive() {
+  customerToken = "cookie-session";
+  localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+  localStorage.setItem(CUSTOMER_SESSION_HINT_KEY, "1");
+}
+
+function clearCustomerSession() {
+  customerToken = "";
+  localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+  localStorage.removeItem(CUSTOMER_SESSION_HINT_KEY);
+  localStorage.removeItem(CUSTOMER_USER_KEY);
+  localStorage.removeItem(CUSTOMER_WALLET_KEY);
+  localStorage.removeItem(CUSTOMER_ORDERS_KEY);
+  currentUser = null;
+  authRestorePending = false;
+  customerDataReady = true;
+  document.documentElement.classList.remove("has-customer-token");
 }
 
 function normalizeWallet(nextWallet) {
@@ -2814,14 +2841,16 @@ const els = {
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   const adminCookieRequest = options.admin || path === "/api/admin/login" || path === "/api/admin/logout";
+  const customerCookieRequest = options.customer || path === "/api/auth/verify-otp" || path === "/api/auth/logout";
   if (adminCookieRequest) headers["X-Give-Take-Admin-Request"] = "1";
+  if (customerCookieRequest) headers["X-Give-Take-Customer-Request"] = "1";
   if (options.admin && adminToken && adminToken !== "cookie-session") headers.Authorization = `Bearer ${adminToken}`;
-  if (options.customer && customerToken) headers.Authorization = `Bearer ${customerToken}`;
+  if (options.customer && customerToken && customerToken !== "cookie-session") headers.Authorization = `Bearer ${customerToken}`;
   const fetchOptions = { ...options };
   delete fetchOptions.headers;
   delete fetchOptions.admin;
   delete fetchOptions.customer;
-  if (adminCookieRequest) fetchOptions.credentials = "include";
+  if (adminCookieRequest || customerCookieRequest) fetchOptions.credentials = "include";
   const response = await fetch(`${API_BASE}${path}`, {
     headers,
     ...fetchOptions,
@@ -3045,11 +3074,7 @@ async function refreshCurrentWallet() {
 
 async function loadAuthUser() {
   if (!customerToken) {
-    authRestorePending = false;
-    localStorage.removeItem(CUSTOMER_USER_KEY);
-    localStorage.removeItem(CUSTOMER_WALLET_KEY);
-    localStorage.removeItem(CUSTOMER_ORDERS_KEY);
-    document.documentElement.classList.remove("has-customer-token");
+    clearCustomerSession();
     return;
   }
   try {
@@ -3057,17 +3082,13 @@ async function loadAuthUser() {
     currentUser = data.user || null;
     wallet = normalizeWallet(data.wallet);
     cacheWallet(wallet);
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+    localStorage.setItem(CUSTOMER_SESSION_HINT_KEY, "1");
     document.documentElement.classList.toggle("has-customer-token", Boolean(currentUser));
     if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
   } catch (error) {
     if (error.status === 401) {
-      customerToken = "";
-      localStorage.removeItem(CUSTOMER_TOKEN_KEY);
-      localStorage.removeItem(CUSTOMER_USER_KEY);
-      localStorage.removeItem(CUSTOMER_WALLET_KEY);
-      localStorage.removeItem(CUSTOMER_ORDERS_KEY);
-      currentUser = null;
-      document.documentElement.classList.remove("has-customer-token");
+      clearCustomerSession();
     }
   } finally {
     authRestorePending = false;
@@ -5114,15 +5135,7 @@ function wireEvents() {
         } catch {}
         clearAdminSession();
       }
-      customerToken = "";
-      localStorage.removeItem(CUSTOMER_TOKEN_KEY);
-      localStorage.removeItem(CUSTOMER_USER_KEY);
-      localStorage.removeItem(CUSTOMER_WALLET_KEY);
-      localStorage.removeItem(CUSTOMER_ORDERS_KEY);
-      currentUser = null;
-      authRestorePending = false;
-      customerDataReady = true;
-      document.documentElement.classList.remove("has-customer-token");
+      clearCustomerSession();
       pendingLoginEmail = "";
       pendingLoginName = "";
       wallet = { balance: 0, ledger: [] };
@@ -5942,8 +5955,7 @@ function wireEvents() {
             otp: String(form.get("otp") || "").trim(),
           }),
         });
-        customerToken = data.token;
-        localStorage.setItem(CUSTOMER_TOKEN_KEY, customerToken);
+        markCustomerSessionActive();
         currentUser = data.user || null;
         if (currentUser) localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(currentUser));
         authRestorePending = false;
@@ -5951,7 +5963,12 @@ function wireEvents() {
         document.documentElement.classList.add("has-customer-token");
         wallet = normalizeWallet(data.wallet);
         cacheWallet(wallet);
-        await loadBackendData();
+        const loadedWithCookie = await loadBackendData();
+        if (!loadedWithCookie && data.token) {
+          customerToken = data.token;
+          localStorage.removeItem(CUSTOMER_SESSION_HINT_KEY);
+          await loadBackendData();
+        }
         renderAll();
         location.hash = "wallet";
         alert("Login successful.");
