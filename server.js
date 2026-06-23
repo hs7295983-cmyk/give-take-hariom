@@ -558,6 +558,21 @@ function recordAdminAudit(req, action, outcome = "success", details = {}) {
   });
 }
 
+function publicAdminAuditLog(entry) {
+  return {
+    id: entry.id,
+    actor: entry.actor,
+    action: entry.action,
+    outcome: entry.outcome,
+    createdAt: entry.createdAt,
+    ipHash: entry.ipHash,
+    userAgent: entry.userAgent,
+    origin: entry.origin,
+    path: entry.path,
+    details: cleanAuditDetails(entry.details)
+  };
+}
+
 function hashOtp(email, otp) {
   return crypto.createHash("sha256").update(`${sessionSecret}:${normalizeEmail(email)}:${otp}`).digest("hex");
 }
@@ -1509,6 +1524,10 @@ async function handleApi(req, res) {
     if (!order.timeline.includes(body.status)) order.timeline.push(body.status);
     order.updatedAt = new Date().toISOString();
     await writeDb(db);
+    recordAdminAudit(req, "admin.order.status-update", "success", {
+      orderId: order.id,
+      status: order.status
+    });
     return sendJson(res, 200, { order });
   }
 
@@ -1745,6 +1764,17 @@ async function handleApi(req, res) {
     });
   }
 
+  if (method === "GET" && parts[1] === "admin" && parts[2] === "audit-logs") {
+    if (!requireAdmin(req, res)) return;
+    const requestedLimit = Number(url.searchParams.get("limit") || 50);
+    const limit = Number.isFinite(requestedLimit) ? Math.min(100, Math.max(1, requestedLimit)) : 50;
+    const logs = Array.isArray(db.adminAuditLogs) ? db.adminAuditLogs : [];
+    return sendJson(res, 200, {
+      logs: logs.slice(0, limit).map(publicAdminAuditLog),
+      totalStored: logs.length
+    });
+  }
+
   if (method === "POST" && parts[1] === "admin" && parts[2] === "ops-agent") {
     if (!requireAdmin(req, res)) return;
     if (!enforceRateLimit(res, {
@@ -1795,6 +1825,11 @@ async function handleApi(req, res) {
         text: `Hi, thanks for contacting GIVE & TAKE. We are checking your request: ${String(supportInput.query).slice(0, 160)}. We will update you shortly.`
       }] : []
     };
+    recordAdminAudit(req, "admin.ops-agent.run", "success", {
+      action,
+      aiConfigured: openAiConfigured,
+      aiError: Boolean(ai?.error)
+    });
     return sendJson(res, 200, {
       action,
       generatedAt: new Date().toISOString(),
@@ -1824,6 +1859,10 @@ async function handleApi(req, res) {
     item.adminArchivedAt = shouldArchive ? new Date().toISOString() : item.adminArchivedAt;
     if (!shouldArchive) item.adminUnarchivedAt = new Date().toISOString();
     await writeDb(db);
+    recordAdminAudit(req, shouldArchive ? "admin.archive" : "admin.unarchive", "success", {
+      type: body.type,
+      itemId: body.id
+    });
     return sendJson(res, 200, { archived: shouldArchive, type: body.type, id: body.id });
   }
 
@@ -1839,6 +1878,10 @@ async function handleApi(req, res) {
     };
     db.integrations.payments.status = "manual-upi-verification";
     await writeDb(db);
+    recordAdminAudit(req, "admin.payments.upi-update", "success", {
+      merchantName: db.integrations.payments.upi.merchantName,
+      upiChanged: true
+    });
     return sendJson(res, 200, { upi: db.integrations.payments.upi });
   }
 
@@ -1852,6 +1895,11 @@ async function handleApi(req, res) {
     rechargeRequest.approvedAt = new Date().toISOString();
     rechargeRequest.ledgerId = entry.id;
     await writeDb(db);
+    recordAdminAudit(req, "admin.recharge.approve", "success", {
+      rechargeId: rechargeRequest.id,
+      amount: rechargeRequest.amount,
+      userId: rechargeRequest.userId
+    });
     return sendJson(res, 200, { rechargeRequest, wallet: db.wallets[rechargeRequest.userId], entry });
   }
 
@@ -1863,6 +1911,11 @@ async function handleApi(req, res) {
     rechargeRequest.status = "rejected";
     rechargeRequest.rejectedAt = new Date().toISOString();
     await writeDb(db);
+    recordAdminAudit(req, "admin.recharge.reject", "success", {
+      rechargeId: rechargeRequest.id,
+      amount: rechargeRequest.amount,
+      userId: rechargeRequest.userId
+    });
     return sendJson(res, 200, { rechargeRequest });
   }
 
@@ -1876,6 +1929,11 @@ async function handleApi(req, res) {
     application.reviewedAt = new Date().toISOString();
     application.reviewDecision = application.status;
     await writeDb(db);
+    recordAdminAudit(req, `admin.join-application.${application.status}`, "success", {
+      applicationId: application.id,
+      role: application.role,
+      city: application.city
+    });
     return sendJson(res, 200, { application });
   }
 
@@ -1914,6 +1972,11 @@ async function handleApi(req, res) {
     }
 
     await writeDb(db);
+    recordAdminAudit(req, `admin.sell-request.${parts[4]}`, "success", {
+      requestId: request.id,
+      status: request.status,
+      finalCoins: Number(request.finalCoins || 0)
+    });
     return sendJson(res, 200, { sellRequest: request, wallet: db.wallets[request.userId] });
   }
 
@@ -1922,6 +1985,10 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     db.maintenance = { ...db.maintenance, ...body };
     await writeDb(db);
+    recordAdminAudit(req, "admin.maintenance.update", "success", {
+      full: Boolean(db.maintenance.full),
+      pausedFeatureCount: Array.isArray(db.maintenance.pausedFeatures) ? db.maintenance.pausedFeatures.length : 0
+    });
     return sendJson(res, 200, { maintenance: db.maintenance });
   }
 
@@ -1942,6 +2009,9 @@ async function handleApi(req, res) {
       updatedProducts.push(product);
     }
     if (updatedProducts.length) await writeDb(db);
+    recordAdminAudit(req, "admin.products.sync-browser-prices", "success", {
+      updatedCount: updatedProducts.length
+    });
     return sendJson(res, 200, {
       updatedCount: updatedProducts.length,
       products: updatedProducts
@@ -1975,6 +2045,12 @@ async function handleApi(req, res) {
     };
     db.products.unshift(product);
     await writeDb(db);
+    recordAdminAudit(req, "admin.product.create", "success", {
+      productId: product.id,
+      category: product.category,
+      status: product.status,
+      price: product.price
+    });
     return sendJson(res, 201, { product });
   }
 
@@ -1983,6 +2059,11 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const product = db.products.find(item => item.id === parts[3]);
     if (!product) return sendError(res, 404, "Product not found");
+    const previousProduct = {
+      status: product.status,
+      price: product.price,
+      category: product.category
+    };
     if (typeof body.title === "string" && body.title.trim()) product.title = body.title.trim();
     if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
     if (typeof body.condition === "string" && body.condition.trim()) product.condition = body.condition.trim();
@@ -1995,6 +2076,15 @@ async function handleApi(req, res) {
     if (typeof body.status === "string" && ["listed", "unlisted", "sold"].includes(body.status)) product.status = body.status;
     product.updatedAt = new Date().toISOString();
     await writeDb(db);
+    recordAdminAudit(req, "admin.product.update", "success", {
+      productId: product.id,
+      fromStatus: previousProduct.status,
+      toStatus: product.status,
+      fromPrice: previousProduct.price,
+      toPrice: product.price,
+      fromCategory: previousProduct.category,
+      toCategory: product.category
+    });
     return sendJson(res, 200, { product });
   }
 
@@ -2004,6 +2094,12 @@ async function handleApi(req, res) {
     if (index === -1) return sendError(res, 404, "Product not found");
     const [product] = db.products.splice(index, 1);
     await writeDb(db);
+    recordAdminAudit(req, "admin.product.delete", "success", {
+      productId: product.id,
+      category: product.category,
+      status: product.status,
+      price: product.price
+    });
     return sendJson(res, 200, { product });
   }
 
