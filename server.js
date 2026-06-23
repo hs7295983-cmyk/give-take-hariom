@@ -118,7 +118,7 @@ function isAllowedCorsRequest(req) {
 function corsHeaders(req) {
   const headers = {
     "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Give-Take-Admin-Request, X-Give-Take-Customer-Request",
+    "Access-Control-Allow-Headers": "Content-Type, X-Give-Take-Admin-Request, X-Give-Take-Customer-Request",
     "Access-Control-Max-Age": "600"
   };
   const origin = requestOrigin(req);
@@ -375,7 +375,6 @@ setInterval(() => {
 }, 15 * 60_000).unref();
 
 function requireAdmin(req, res) {
-  const auth = req.headers.authorization || "";
   if (!adminPassword) {
     sendError(res, 503, "Admin password is not configured");
     return false;
@@ -383,10 +382,6 @@ function requireAdmin(req, res) {
   if (!sessionSecret) {
     sendError(res, 503, "Session secret is not configured");
     return false;
-  }
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (token && verifyAdminSessionToken(token)) {
-    return true;
   }
   const cookieToken = adminCookieToken(req);
   if (!cookieToken || !verifyAdminSessionToken(cookieToken)) {
@@ -501,20 +496,17 @@ function requireCustomer(req, res, db) {
     sendError(res, 503, "Session secret is not configured");
     return null;
   }
-  const auth = req.headers.authorization || "";
-  const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   const cookieToken = customerCookieToken(req);
-  const token = bearerToken || cookieToken;
-  if (!token) {
+  if (!cookieToken) {
     sendError(res, 401, "Login required");
     return null;
   }
-  if (!bearerToken && cookieToken && !hasCustomerCookieCsrfHeader(req)) {
+  if (!hasCustomerCookieCsrfHeader(req)) {
     sendError(res, 403, "Customer request verification failed");
     return null;
   }
   const session = (db.authSessions || []).find(item => (
-    item.tokenHash === hashSession(token)
+    item.tokenHash === hashSession(cookieToken)
     && customerSessionIsValid(item)
   ));
   if (!session) {
@@ -1015,31 +1007,23 @@ async function handleApi(req, res) {
     if (!db.wallets[user.id]) db.wallets[user.id] = { balance: 0, ledger: [] };
     await writeDb(db);
     setCustomerSessionCookie(res, token);
-    return sendJson(res, 200, { token, user: publicUser(user), wallet: db.wallets[user.id] });
+    return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets[user.id] });
   }
 
   if (method === "GET" && parts[1] === "auth" && parts[2] === "me") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
-    const { session, user } = customer;
-    const auth = req.headers.authorization || "";
-    const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-    if (bearerToken && session.tokenHash === hashSession(bearerToken)) {
-      setCustomerSessionCookie(res, bearerToken);
-    }
+    const { user } = customer;
     return sendJson(res, 200, { user: publicUser(user), wallet: db.wallets?.[user.id] || { balance: 0, ledger: [] } });
   }
 
   if (method === "POST" && parts[1] === "auth" && parts[2] === "logout") {
-    const auth = req.headers.authorization || "";
-    const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
     const cookieToken = customerCookieToken(req);
-    const token = bearerToken || cookieToken;
-    if (!bearerToken && cookieToken && !hasCustomerCookieCsrfHeader(req)) {
+    if (cookieToken && !hasCustomerCookieCsrfHeader(req)) {
       return sendError(res, 403, "Customer request verification failed");
     }
-    if (token && sessionSecret) {
-      db.authSessions = (db.authSessions || []).filter(item => item.tokenHash !== hashSession(token));
+    if (cookieToken && sessionSecret) {
+      db.authSessions = (db.authSessions || []).filter(item => item.tokenHash !== hashSession(cookieToken));
       await writeDb(db);
     }
     clearCustomerSessionCookie(res);
@@ -1431,7 +1415,7 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "feedbacks") {
-    const hasCustomerAuth = String(req.headers.authorization || "").startsWith("Bearer ");
+    const hasCustomerAuth = Boolean(customerCookieToken(req));
     const customer = hasCustomerAuth ? requireCustomer(req, res, db) : null;
     if (hasCustomerAuth && !customer) return;
     if (!enforceRateLimit(res, {
@@ -1514,11 +1498,11 @@ async function handleApi(req, res) {
     clearRateLimit(adminLoginLimit.scope, adminLoginLimit.identity);
     const adminSession = createAdminSessionToken();
     setAdminSessionCookie(res, adminSession.token);
-    return sendJson(res, 200, adminSession);
+    return sendJson(res, 200, { expiresAt: adminSession.expiresAt });
   }
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "logout") {
-    if (!hasAdminCookieCsrfHeader(req) && !String(req.headers.authorization || "").startsWith("Bearer ")) {
+    if (!hasAdminCookieCsrfHeader(req)) {
       return sendError(res, 403, "Admin request verification failed");
     }
     clearAdminSessionCookie(res);
