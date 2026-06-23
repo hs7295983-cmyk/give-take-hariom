@@ -34,6 +34,9 @@ const configuredAdminAuditLogLimit = Number(process.env.ADMIN_AUDIT_LOG_LIMIT ||
 const adminAuditLogLimit = Number.isFinite(configuredAdminAuditLogLimit)
   ? Math.min(1000, Math.max(50, Math.floor(configuredAdminAuditLogLimit)))
   : 250;
+const maxImageDataUrlLength = 900_000;
+const maxImageBinaryBytes = 675_000;
+const maxImageBatchBytes = 2_250_000;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -498,15 +501,73 @@ function isValidUpiReference(value) {
   return reference.length >= 4 && /^[a-z0-9@._/\-\s]+$/i.test(reference);
 }
 
-function isValidDataImage(value) {
+function imageBufferMatchesMime(mime, buffer) {
+  if (!Buffer.isBuffer(buffer) || !buffer.length) return false;
+  if (mime === "image/jpeg") {
+    return buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  }
+  if (mime === "image/png") {
+    return buffer.length > 8
+      && buffer[0] === 0x89
+      && buffer[1] === 0x50
+      && buffer[2] === 0x4e
+      && buffer[3] === 0x47
+      && buffer[4] === 0x0d
+      && buffer[5] === 0x0a
+      && buffer[6] === 0x1a
+      && buffer[7] === 0x0a;
+  }
+  if (mime === "image/webp") {
+    return buffer.length > 12
+      && buffer.toString("ascii", 0, 4) === "RIFF"
+      && buffer.toString("ascii", 8, 12) === "WEBP";
+  }
+  return false;
+}
+
+function parseDataImage(value) {
   const image = String(value || "").trim();
-  return image.length <= 900_000 && /^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(image);
+  if (!image || image.length > maxImageDataUrlLength) return null;
+  const match = image.match(/^data:image\/(png|jpe?g|webp);base64,([a-z0-9+/]+={0,2})$/i);
+  if (!match) return null;
+  const base64 = match[2];
+  if (base64.length % 4 !== 0) return null;
+  const mime = match[1].toLowerCase() === "jpg" ? "image/jpeg" : `image/${match[1].toLowerCase()}`;
+  const buffer = Buffer.from(base64, "base64");
+  if (!buffer.length || buffer.length > maxImageBinaryBytes) return null;
+  if (!imageBufferMatchesMime(mime, buffer)) return null;
+  return { image, mime, bytes: buffer.length };
+}
+
+function isValidDataImage(value) {
+  return Boolean(parseDataImage(value));
 }
 
 function cleanDataImages(value, limit = 5) {
-  return Array.isArray(value)
-    ? value.map(item => String(item || "").trim()).filter(isValidDataImage).slice(0, limit)
-    : [];
+  if (!Array.isArray(value)) return [];
+  let totalBytes = 0;
+  const images = [];
+  for (const item of value) {
+    if (images.length >= limit) break;
+    const parsed = parseDataImage(item);
+    if (!parsed || totalBytes + parsed.bytes > maxImageBatchBytes) continue;
+    totalBytes += parsed.bytes;
+    images.push(parsed.image);
+  }
+  return images;
+}
+
+function isSafeProductImageUrl(value) {
+  const imageUrl = String(value || "").trim();
+  if (!imageUrl) return true;
+  if (/^data:image\//i.test(imageUrl)) return isValidDataImage(imageUrl);
+  if (imageUrl.length > 1200) return false;
+  try {
+    const parsedUrl = new URL(imageUrl);
+    return ["http:", "https:"].includes(parsedUrl.protocol);
+  } catch {
+    return false;
+  }
 }
 
 function cleanDetailsObject(value, maxEntries = 20) {
@@ -2021,6 +2082,8 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "admin" && parts[2] === "products") {
     if (!requireAdmin(req, res)) return;
     const body = await readBody(req);
+    const imageUrl = String(body.imageUrl || "").trim();
+    if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
     const product = {
       id: id("p"),
       title: body.title,
@@ -2035,7 +2098,7 @@ async function handleApi(req, res) {
       checks: body.checks || ["Warehouse checked"],
       artA: body.artA || "#d3f4e9",
       artB: body.artB || "#3a6e63",
-      imageUrl: String(body.imageUrl || "").trim(),
+      imageUrl,
       status: "listed",
       quantity: Number(body.quantity || 1),
       newest: db.products.length + 1,
@@ -2067,7 +2130,11 @@ async function handleApi(req, res) {
     if (typeof body.title === "string" && body.title.trim()) product.title = body.title.trim();
     if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
     if (typeof body.condition === "string" && body.condition.trim()) product.condition = body.condition.trim();
-    if (typeof body.imageUrl === "string") product.imageUrl = body.imageUrl.trim();
+    if (typeof body.imageUrl === "string") {
+      const imageUrl = body.imageUrl.trim();
+      if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
+      product.imageUrl = imageUrl;
+    }
     if (body.price !== undefined) {
       const price = Number(body.price);
       if (!Number.isFinite(price) || price < 0) return sendError(res, 400, "Product price is invalid");
