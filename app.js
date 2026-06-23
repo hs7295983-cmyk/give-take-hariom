@@ -2795,6 +2795,7 @@ const state = {
   expandedOrderId: null,
   orderSuccessNotice: null,
   addressBookEditing: false,
+  sellPhotoFiles: [],
   adminCollapsed: {
     sellRequests: true,
     recharges: true,
@@ -3709,11 +3710,50 @@ function validateProductImageUrl(imageUrl) {
 }
 
 async function collectSellPhotos(fileList) {
-  const files = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
+  const files = [...(fileList || state.sellPhotoFiles || [])].filter(file => file.type.startsWith("image/"));
   if (files.length < 4 || files.length > 5) {
     throw new Error("Please upload 4 to 5 product photos before submitting.");
   }
   return Promise.all(files.map(fileToCompressedDataUrl));
+}
+
+function sellPhotoKey(file) {
+  return [file.name, file.size, file.lastModified].join(":");
+}
+
+function updateSellPhotoStatus(message = "", isError = false) {
+  const photoError = document.getElementById("sellPhotoError");
+  if (!photoError) return;
+  const count = state.sellPhotoFiles.length;
+  photoError.hidden = false;
+  photoError.textContent = message || `${count}/5 photos selected. ${count < 4 ? `Add ${4 - count} more.` : "Ready to submit."}`;
+  photoError.classList.toggle("is-info", !isError);
+  if (!count && !message) photoError.hidden = true;
+}
+
+function addSellPhotoFiles(fileList) {
+  const incoming = [...(fileList || [])].filter(file => file.type.startsWith("image/"));
+  if (!incoming.length) {
+    updateSellPhotoStatus("Please select image files only.", true);
+    return;
+  }
+  const existingKeys = new Set(state.sellPhotoFiles.map(sellPhotoKey));
+  const remainingSlots = Math.max(0, 5 - state.sellPhotoFiles.length);
+  const nextFiles = incoming
+    .filter(file => !existingKeys.has(sellPhotoKey(file)))
+    .slice(0, remainingSlots);
+  state.sellPhotoFiles.push(...nextFiles);
+  if (incoming.length > nextFiles.length && state.sellPhotoFiles.length >= 5) {
+    updateSellPhotoStatus("Maximum 5 product photos allowed.", true);
+    return;
+  }
+  updateSellPhotoStatus();
+}
+
+function clearSellPhotoFiles(form) {
+  state.sellPhotoFiles = [];
+  if (form?.elements?.photos) form.elements.photos.value = "";
+  updateSellPhotoStatus();
 }
 
 function renderWallet() {
@@ -5758,6 +5798,10 @@ function wireEvents() {
     renderProducts();
   });
   els.sellCategory.addEventListener("change", renderFormFields);
+  document.querySelector("#sellForm input[name='photos']")?.addEventListener("change", event => {
+    addSellPhotoFiles(event.target.files);
+    event.target.value = "";
+  });
   document.getElementById("sellForm").addEventListener("submit", async event => {
     event.preventDefault();
     if (!requireCustomerLogin()) return;
@@ -5776,7 +5820,7 @@ function wireEvents() {
     }
     try {
       setSubmitState(sellForm, true, "Submitting...");
-      const photos = await collectSellPhotos(sellForm.elements.photos?.files);
+      const photos = await collectSellPhotos();
       const data = await api("/api/sell-requests", {
         method: "POST",
         customer: true,
@@ -5797,6 +5841,7 @@ function wireEvents() {
       });
       alert(`Upload submitted for review. Request ID: ${data.sellRequest.id}`);
       sellForm.reset();
+      clearSellPhotoFiles(sellForm);
       renderFormFields();
       await loadBackendData();
       renderAll();
