@@ -13,6 +13,9 @@ const brevoApiKey = process.env.BREVO_API_KEY || "";
 const otpFromEmail = process.env.OTP_FROM_EMAIL || "giveandtake.support@gmail.com";
 const otpFromName = process.env.OTP_FROM_NAME || "GIVE & TAKE";
 const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-session-secret");
+const supabaseStorageUrl = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || "give-take-uploads";
 const isProduction = process.env.NODE_ENV === "production";
 const configuredCustomerSessionDays = Number(process.env.CUSTOMER_SESSION_DAYS || 30);
 const customerSessionDays = Number.isFinite(configuredCustomerSessionDays)
@@ -555,7 +558,7 @@ function parseDataImage(value) {
   const buffer = Buffer.from(base64, "base64");
   if (!buffer.length || buffer.length > maxImageBinaryBytes) return null;
   if (!imageBufferMatchesMime(mime, buffer)) return null;
-  return { image, mime, bytes: buffer.length };
+  return { image, mime, bytes: buffer.length, buffer };
 }
 
 function isValidDataImage(value) {
@@ -587,6 +590,93 @@ function isSafeProductImageUrl(value) {
   } catch {
     return false;
   }
+}
+
+function storageIsConfigured() {
+  return Boolean(supabaseStorageUrl && supabaseServiceRoleKey && supabaseStorageBucket);
+}
+
+function imageExtensionForMime(mime) {
+  if (mime === "image/png") return "png";
+  if (mime === "image/webp") return "webp";
+  return "jpg";
+}
+
+function encodeStoragePath(value) {
+  return String(value || "")
+    .split("/")
+    .map(part => encodeURIComponent(part))
+    .join("/");
+}
+
+function storagePublicUrl(objectPath) {
+  return `${supabaseStorageUrl}/storage/v1/object/public/${encodeURIComponent(supabaseStorageBucket)}/${encodeStoragePath(objectPath)}`;
+}
+
+function uploadBufferToSupabaseStorage(objectPath, buffer, mime) {
+  return new Promise((resolve, reject) => {
+    const target = new URL(`${supabaseStorageUrl}/storage/v1/object/${encodeURIComponent(supabaseStorageBucket)}/${encodeStoragePath(objectPath)}`);
+    const request = https.request({
+      method: "POST",
+      hostname: target.hostname,
+      path: `${target.pathname}${target.search}`,
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        "Content-Type": mime,
+        "Content-Length": buffer.length,
+        "x-upsert": "false",
+        "Cache-Control": "31536000"
+      }
+    }, response => {
+      let body = "";
+      response.on("data", chunk => {
+        body += chunk;
+        if (body.length > 50_000) body = body.slice(0, 50_000);
+      });
+      response.on("end", () => {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          resolve(storagePublicUrl(objectPath));
+          return;
+        }
+        reject(new Error(`Supabase Storage upload failed with ${response.statusCode}: ${body.slice(0, 300)}`));
+      });
+    });
+    request.on("error", reject);
+    request.setTimeout(15_000, () => {
+      request.destroy(new Error("Supabase Storage upload timed out"));
+    });
+    request.end(buffer);
+  });
+}
+
+async function persistImageUploads(images, folder, ownerId) {
+  const cleanImages = cleanDataImages(images, 5);
+  if (!cleanImages.length || !storageIsConfigured()) return cleanImages;
+  const safeFolder = cleanText(folder, 60).replace(/[^a-z0-9/_-]/gi, "-") || "uploads";
+  const safeOwner = cleanText(ownerId, 80).replace(/[^a-z0-9_-]/gi, "-") || "owner";
+  const today = new Date().toISOString().slice(0, 10);
+  const stored = [];
+  for (const [index, image] of cleanImages.entries()) {
+    const parsed = parseDataImage(image);
+    if (!parsed) continue;
+    const extension = imageExtensionForMime(parsed.mime);
+    const objectPath = `${safeFolder}/${today}/${safeOwner}-${index + 1}-${crypto.randomBytes(6).toString("hex")}.${extension}`;
+    try {
+      stored.push(await uploadBufferToSupabaseStorage(objectPath, parsed.buffer, parsed.mime));
+    } catch (error) {
+      console.warn("Image storage upload failed; keeping base64 image fallback:", error.message);
+      stored.push(image);
+    }
+  }
+  return stored;
+}
+
+async function persistProductImageValue(value, folder, ownerId) {
+  const imageUrl = String(value || "").trim();
+  if (!/^data:image\//i.test(imageUrl)) return imageUrl;
+  const [storedImage] = await persistImageUploads([imageUrl], folder, ownerId);
+  return storedImage || imageUrl;
 }
 
 function cleanDetailsObject(value, maxEntries = 20) {
@@ -1472,10 +1562,12 @@ async function handleApi(req, res) {
     if (!Number.isFinite(expectedCoins) || expectedCoins < 0 || expectedCoins > 100000) {
       return sendError(res, 400, "Expected coin value is invalid");
     }
-    const photos = cleanDataImages(body.photos, 5);
-    if (photos.length < 4 || photos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
+    const cleanPhotos = cleanDataImages(body.photos, 5);
+    if (cleanPhotos.length < 4 || cleanPhotos.length > 5) return sendError(res, 400, "Please upload minimum 4 and maximum 5 product photos");
+    const requestId = id("GT-S");
+    const photos = await persistImageUploads(cleanPhotos, "sell-requests", `${customer.user.id}-${requestId}`);
     const request = {
-      id: id("GT-S"),
+      id: requestId,
       userId: customer.user.id,
       userEmail: customer.user.email,
       sellerName,
@@ -1490,6 +1582,7 @@ async function handleApi(req, res) {
       condition,
       details: cleanDetailsObject(body.details),
       photos,
+      photoStorage: photos.every(photo => /^https?:\/\//i.test(photo)) ? "supabase-storage" : "mixed-or-base64",
       status: "upload-submitted",
       timeline: ["upload-submitted"],
       createdAt: new Date().toISOString()
@@ -1722,19 +1815,22 @@ async function handleApi(req, res) {
     const orderId = cleanText(body.orderId, 80);
     const issueCategory = cleanText(body.issueCategory, 80);
     const explanation = cleanText(body.explanation, 1000, { multiline: true });
-    const proofFiles = cleanDataImages(body.proofFiles, 5);
+    const cleanProofFiles = cleanDataImages(body.proofFiles, 5);
     const order = (db.orders || []).find(item => item.id === orderId && item.userId === customer.user.id);
     if (!order) return sendError(res, 404, "Order not found");
     if (!issueCategory) return sendError(res, 400, "Return issue category is required");
     if (!explanation) return sendError(res, 400, "Return explanation is required");
+    const returnId = id("GT-R");
+    const proofFiles = await persistImageUploads(cleanProofFiles, "return-proofs", `${customer.user.id}-${returnId}`);
     const request = {
-      id: id("GT-R"),
+      id: returnId,
       orderId: order.id,
       userId: customer.user.id,
       userEmail: customer.user.email,
       issueCategory,
       explanation,
       proofFiles,
+      proofFileStorage: proofFiles.length && proofFiles.every(file => /^https?:\/\//i.test(file)) ? "supabase-storage" : "mixed-or-base64",
       status: "return-requested",
       createdAt: new Date().toISOString()
     };
@@ -2238,10 +2334,11 @@ async function handleApi(req, res) {
   if (method === "POST" && parts[1] === "admin" && parts[2] === "products") {
     if (!requireAdmin(req, res)) return;
     const body = await readBody(req);
-    const imageUrl = String(body.imageUrl || "").trim();
+    const productId = id("p");
+    const imageUrl = await persistProductImageValue(body.imageUrl, "admin-products", productId);
     if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
     const product = {
-      id: id("p"),
+      id: productId,
       title: body.title,
       category: body.category,
       city: body.city,
@@ -2255,6 +2352,7 @@ async function handleApi(req, res) {
       artA: body.artA || "#d3f4e9",
       artB: body.artB || "#3a6e63",
       imageUrl,
+      imageStorage: /^https?:\/\/.*\/storage\/v1\/object\/public\//i.test(imageUrl) ? "supabase-storage" : "url-or-base64",
       status: "listed",
       quantity: Number(body.quantity || 1),
       newest: db.products.length + 1,
@@ -2287,9 +2385,10 @@ async function handleApi(req, res) {
     if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
     if (typeof body.condition === "string" && body.condition.trim()) product.condition = body.condition.trim();
     if (typeof body.imageUrl === "string") {
-      const imageUrl = body.imageUrl.trim();
+      const imageUrl = await persistProductImageValue(body.imageUrl, "admin-products", product.id);
       if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
       product.imageUrl = imageUrl;
+      product.imageStorage = /^https?:\/\/.*\/storage\/v1\/object\/public\//i.test(imageUrl) ? "supabase-storage" : "url-or-base64";
     }
     if (body.price !== undefined) {
       const price = Number(body.price);
