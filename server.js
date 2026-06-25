@@ -148,6 +148,9 @@ function corsHeaders(req) {
 function sendCorsBlocked(res) {
   res.writeHead(403, withSecurityHeaders({
     "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Pragma": "no-cache",
+    "Expires": "0",
     ...corsHeaders(res.giveTakeRequest)
   }));
   res.end(JSON.stringify({ error: "Origin not allowed" }));
@@ -156,6 +159,9 @@ function sendCorsBlocked(res) {
 function sendJson(res, status, payload) {
   res.writeHead(status, withSecurityHeaders({
     "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Pragma": "no-cache",
+    "Expires": "0",
     ...corsHeaders(res.giveTakeRequest)
   }));
   res.end(JSON.stringify(payload));
@@ -167,6 +173,8 @@ function sendJsonDownload(res, status, payload, filename) {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Disposition": `attachment; filename="${safeFilename}"`,
     "Cache-Control": "no-store",
+    "Pragma": "no-cache",
+    "Expires": "0",
     ...corsHeaders(res.giveTakeRequest)
   }));
   res.end(JSON.stringify(payload, null, 2));
