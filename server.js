@@ -161,6 +161,17 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function sendJsonDownload(res, status, payload, filename) {
+  const safeFilename = String(filename || "give-take-backup.json").replace(/[^a-z0-9._-]/gi, "-");
+  res.writeHead(status, withSecurityHeaders({
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": `attachment; filename="${safeFilename}"`,
+    "Cache-Control": "no-store",
+    ...corsHeaders(res.giveTakeRequest)
+  }));
+  res.end(JSON.stringify(payload, null, 2));
+}
+
 function sendError(res, status, message) {
   sendJson(res, status, { error: message });
 }
@@ -631,6 +642,48 @@ function publicAdminAuditLog(entry) {
     origin: entry.origin,
     path: entry.path,
     details: cleanAuditDetails(entry.details)
+  };
+}
+
+function cloneJson(value, fallback) {
+  if (value === undefined) return fallback;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function buildRecoveryBackup(db) {
+  const backup = {
+    schemaVersion: "give-take-recovery-backup-v1",
+    exportedAt: new Date().toISOString(),
+    storage: getStorageInfo(),
+    data: {
+      meta: cloneJson(db.meta, {}),
+      maintenance: cloneJson(db.maintenance, {}),
+      categories: cloneJson(db.categories, []),
+      products: cloneJson(db.products, []),
+      users: cloneJson(db.users, []),
+      wallets: cloneJson(db.wallets, {}),
+      orders: cloneJson(db.orders, []),
+      sellRequests: cloneJson(db.sellRequests, []),
+      partnerTasks: cloneJson(db.partnerTasks, []),
+      joinApplications: cloneJson(db.joinApplications, []),
+      rechargeRequests: cloneJson(db.rechargeRequests, []),
+      returns: cloneJson(db.returns, []),
+      feedbacks: cloneJson(db.feedbacks, []),
+      integrations: cloneJson(db.integrations, {}),
+      adminAuditLogs: cloneJson(db.adminAuditLogs, [])
+    },
+    excluded: {
+      authOtps: "excluded-security-sensitive-temporary-login-data",
+      authSessions: "excluded-security-sensitive-temporary-login-data"
+    }
+  };
+  const checksumSource = JSON.stringify(backup);
+  return {
+    ...backup,
+    checksum: {
+      algorithm: "sha256",
+      value: crypto.createHash("sha256").update(checksumSource).digest("hex")
+    }
   };
 }
 
@@ -1834,6 +1887,27 @@ async function handleApi(req, res) {
       logs: logs.slice(0, limit).map(publicAdminAuditLog),
       totalStored: logs.length
     });
+  }
+
+  if (method === "GET" && parts[1] === "admin" && parts[2] === "backup" && parts[3] === "export") {
+    if (!requireAdmin(req, res)) return;
+    if (!enforceRateLimit(res, {
+      scope: "admin-backup-export-ip",
+      identity: ip,
+      limit: 5,
+      windowMs: 60 * 60_000,
+      message: "Too many backup exports. Please wait before trying again."
+    })) return;
+    const backup = buildRecoveryBackup(db);
+    recordAdminAudit(req, "admin.backup.export", "success", {
+      schemaVersion: backup.schemaVersion,
+      checksum: backup.checksum.value,
+      productCount: backup.data.products.length,
+      orderCount: backup.data.orders.length,
+      userCount: backup.data.users.length
+    });
+    const timestamp = backup.exportedAt.replace(/[:.]/g, "-");
+    return sendJsonDownload(res, 200, backup, `give-take-backup-${timestamp}.json`);
   }
 
   if (method === "POST" && parts[1] === "admin" && parts[2] === "ops-agent") {
