@@ -47,7 +47,7 @@ const categoryIcons = {
   default: '<svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M8 7V5h8v2"/></svg>',
 };
 const DELIVERY_CHARGE = 50;
-const DELIVERY_FREE_THRESHOLD = 499;
+const DELIVERY_FREE_THRESHOLD = 799;
 
 const fallbackProducts = [
   {
@@ -5318,7 +5318,7 @@ function renderCart() {
             </div>
             <div class="checkout-delivery-info">
               <span>🚚 Delivery in 3-4 Business Days</span>
-              <span>✅ Free Delivery on Orders Above ${formatCoins(499)}</span>
+              <span>✅ Free Delivery on Orders Above ${formatCoins(DELIVERY_FREE_THRESHOLD)}</span>
             </div>
             <div class="checkout-price-total">
               <span>Total Coins Required</span>
@@ -5393,7 +5393,7 @@ function renderCart() {
         </div>
         <div class="checkout-delivery-info">
           <span>🚚 Delivery in 3-4 Business Days</span>
-          <span>✅ Free Delivery on Orders Above ${formatCoins(499)}</span>
+          <span>✅ Free Delivery on Orders Above ${formatCoins(DELIVERY_FREE_THRESHOLD)}</span>
         </div>
         <div class="checkout-price-total">
           <span>Total Coins Required</span>
