@@ -3266,6 +3266,25 @@ textarea {
   line-height: 1.1;
 }
 
+.admin-backup-card {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-color: rgba(23, 108, 79, 0.18);
+  background: #fbfcf8;
+}
+
+.admin-backup-card > div {
+  display: grid;
+  gap: 5px;
+}
+
+.admin-backup-card .secondary-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
 .admin-count-badge {
   display: inline-flex;
   align-items: center;

@@ -2866,6 +2866,64 @@ async function api(path, options = {}) {
   return data;
 }
 
+function filenameFromContentDisposition(value) {
+  const header = String(value || "");
+  const utfMatch = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utfMatch) return decodeURIComponent(utfMatch[1].replace(/["']/g, ""));
+  const match = header.match(/filename="?([^";]+)"?/i);
+  return match ? match[1] : "";
+}
+
+async function downloadAdminBackup(button) {
+  if (!adminToken) {
+    alert("Admin login required.");
+    return;
+  }
+  const originalText = button?.textContent || "Download Backup";
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Preparing backup...";
+    }
+    const response = await fetch(`${API_BASE}/api/admin/backup/export`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "X-Give-Take-Admin-Request": "1"
+      }
+    });
+    if (!response.ok) {
+      let message = "Backup download failed";
+      try {
+        const data = await response.json();
+        message = data.error || message;
+      } catch {}
+      if (response.status === 401) clearAdminSession();
+      throw new Error(message);
+    }
+    const blob = await response.blob();
+    const filename = filenameFromContentDisposition(response.headers.get("Content-Disposition"))
+      || `give-take-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+    alert("Backup downloaded. Keep this file private and safe.");
+  } catch (error) {
+    alert(error.message);
+    if (!adminToken) renderAdmin();
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+
 function loadCachedCustomerUser() {
   try {
     return JSON.parse(localStorage.getItem(CUSTOMER_USER_KEY) || "null");
@@ -4569,6 +4627,13 @@ function renderAdmin() {
         <strong>${pendingSellCount}</strong>
       </div>
     </article>
+    <article class="wide-card admin-backup-card">
+      <div>
+        <strong>Recovery Backup</strong>
+        <span>Download a private JSON backup of products, orders, wallets, requests, settings, and audit logs. OTP/session secrets are excluded.</span>
+      </div>
+      <button class="secondary-button" data-admin-backup-download type="button">Download Backup</button>
+    </article>
     <article><strong>Product Review <span class="admin-count-badge ${counts.sellRequests > 0 ? "has-items" : ""}">${counts.sellRequests}</span></strong><span>${counts.sellRequests} sell requests in system</span></article>
     <article><strong>Inventory <span class="admin-count-badge ${counts.listedProducts > 0 ? "has-items" : ""}">${counts.listedProducts}</span></strong><span>${counts.listedProducts} listed of ${counts.products} products</span></article>
     <article><strong>Orders <span class="admin-count-badge ${activeAdminOrders.length > 0 ? "has-items" : ""}">${activeAdminOrders.length}</span></strong><span>${activeAdminOrders.length} active order records</span></article>
@@ -5424,6 +5489,12 @@ function wireEvents() {
     const syncBrowserPrices = event.target.closest("[data-sync-browser-prices]");
     if (syncBrowserPrices) {
       await syncBrowserPricesToBackend();
+      return;
+    }
+
+    const adminBackupDownload = event.target.closest("[data-admin-backup-download]");
+    if (adminBackupDownload) {
+      await downloadAdminBackup(adminBackupDownload);
       return;
     }
 
