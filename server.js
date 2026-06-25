@@ -517,6 +517,34 @@ function cleanReferralCode(value) {
   return code;
 }
 
+function cleanStockQuantity(value, fallback = 1, options = {}) {
+  const min = Number.isFinite(options.min) ? options.min : 0;
+  const max = Number.isFinite(options.max) ? options.max : 100000;
+  const quantity = Number(value);
+  if (!Number.isFinite(quantity)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(quantity)));
+}
+
+function normalizeOrderItems(body) {
+  const counts = new Map();
+  const addItem = (productId, quantity = 1) => {
+    const idValue = cleanText(productId, 80);
+    if (!idValue) return;
+    const qty = cleanStockQuantity(quantity, 0, { min: 0, max: 100 });
+    if (qty < 1) return;
+    counts.set(idValue, Math.min(100, Number(counts.get(idValue) || 0) + qty));
+  };
+  if (Array.isArray(body?.items)) {
+    body.items.forEach(item => {
+      if (typeof item === "string") addItem(item, 1);
+      else addItem(item?.productId || item?.id, item?.quantity || item?.qty || 1);
+    });
+  } else if (Array.isArray(body?.productIds)) {
+    body.productIds.forEach(productId => addItem(productId, 1));
+  }
+  return [...counts.entries()].map(([productId, quantity]) => ({ productId, quantity }));
+}
+
 function cleanReferralAttribution(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const code = cleanReferralCode(value.code);
@@ -1806,7 +1834,7 @@ async function handleApi(req, res) {
     })) return;
     const body = await readBody(req);
     const userId = customer.user.id;
-    const productIds = Array.isArray(body.productIds) ? body.productIds : [];
+    const orderItems = normalizeOrderItems(body);
     const incomingReferral = cleanReferralAttribution(body.referral);
     const rawDeliveryDetails = body.deliveryDetails || {};
     const deliveryDetails = {
@@ -1819,13 +1847,7 @@ async function handleApi(req, res) {
       note: cleanText(rawDeliveryDetails.note, 300, { multiline: true })
     };
     const deliveryCity = deliveryDetails.city;
-    if (!productIds.length) return sendError(res, 400, "No products selected");
-    if (productIds.some(productId => typeof productId !== "string" || !productId.trim())) {
-      return sendError(res, 400, "Invalid product selection");
-    }
-    if (new Set(productIds).size !== productIds.length) {
-      return sendError(res, 400, "Duplicate products are not allowed");
-    }
+    if (!orderItems.length) return sendError(res, 400, "No products selected");
     if (!deliveryDetails.name) return sendError(res, 400, "Customer name is required");
     if (!deliveryDetails.phone) return sendError(res, 400, "Customer phone is required");
     if (!isValidPhone(deliveryDetails.phone)) return sendError(res, 400, "Enter a valid customer phone number");
@@ -1846,17 +1868,22 @@ async function handleApi(req, res) {
           throw new RequestError(400, "Delivery city is not serviceable yet");
         }
 
-        const selected = productIds.map(productId => (
-          transactionDb.products.find(product => product.id === productId)
-        ));
-        if (selected.some(product => !product)) {
+        const selectedItems = orderItems.map(item => ({
+          ...item,
+          product: transactionDb.products.find(product => product.id === item.productId)
+        }));
+        if (selectedItems.some(item => !item.product)) {
           throw new RequestError(400, "One or more selected products no longer exist");
         }
-        if (selected.some(product => product.status !== "listed" || Number(product.quantity || 0) < 1)) {
+        if (selectedItems.some(item => item.product.status !== "listed" || Number(item.product.quantity || 0) < 1)) {
           throw new RequestError(409, "One or more selected products are no longer available");
         }
+        const lowStockItem = selectedItems.find(item => cleanStockQuantity(item.product.quantity, 0) < item.quantity);
+        if (lowStockItem) {
+          throw new RequestError(409, `${lowStockItem.product.title || "Product"} has only ${cleanStockQuantity(lowStockItem.product.quantity, 0)} left`);
+        }
 
-        const totalCoins = selected.reduce((sum, product) => sum + Number(product.price || 0), 0);
+        const totalCoins = selectedItems.reduce((sum, item) => sum + (Number(item.product.price || 0) * item.quantity), 0);
         if (!Number.isFinite(totalCoins) || totalCoins <= 0) {
           throw new RequestError(400, "Selected products have an invalid price");
         }
@@ -1869,22 +1896,33 @@ async function handleApi(req, res) {
         if (incomingReferral) attachReferralToUser(transactionDb, user, incomingReferral);
         const orderReferral = buildOrderReferral(referralForOrder(user, incomingReferral), totalCoins);
         addLedger(transactionDb, userId, "debit", totalCoins, "Product purchase");
-        selected.forEach(product => {
-          product.quantity = Number(product.quantity || 0) - 1;
+        selectedItems.forEach(({ product, quantity }) => {
+          product.quantity = cleanStockQuantity(product.quantity, 0) - quantity;
           product.status = product.quantity > 0 ? "listed" : "sold";
-          product.sold = Number(product.sold || 0) + 1;
+          product.sold = Number(product.sold || 0) + quantity;
           product.updatedAt = new Date().toISOString();
         });
+        const productIds = selectedItems.flatMap(item => Array(item.quantity).fill(item.product.id));
         const order = {
           id: id("GT-O"),
           userId,
           userEmail: user.email,
           productIds,
-          products: selected.map(product => ({
+          items: selectedItems.map(({ product, quantity }) => ({
+            productId: product.id,
+            quantity,
+            unitPrice: Number(product.price || 0),
+            lineTotal: Number(product.price || 0) * quantity
+          })),
+          products: selectedItems.map(({ product, quantity }) => ({
             id: product.id,
             productId: product.id,
             title: product.title,
             price: product.price,
+            quantity,
+            qty: quantity,
+            unitPrice: Number(product.price || 0),
+            lineTotal: Number(product.price || 0) * quantity,
             condition: product.condition,
             category: product.category,
             imageUrl: product.imageUrl || "",
@@ -2185,6 +2223,8 @@ async function handleApi(req, res) {
       condition: product.condition,
       status: product.status,
       price: product.price,
+      quantity: cleanStockQuantity(product.quantity, 0),
+      sold: Number(product.sold || 0),
       imageUrl: product.imageUrl || "",
       images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
       artA: product.artA,
@@ -2557,6 +2597,7 @@ async function handleApi(req, res) {
     const productId = id("p");
     const imageUrl = await persistProductImageValue(body.imageUrl, "admin-products", productId);
     if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
+    const quantity = cleanStockQuantity(body.quantity, 1, { min: 1, max: 100000 });
     const product = {
       id: productId,
       title: body.title,
@@ -2574,7 +2615,7 @@ async function handleApi(req, res) {
       imageUrl,
       imageStorage: /^https?:\/\/.*\/storage\/v1\/object\/public\//i.test(imageUrl) ? "supabase-storage" : "url-or-base64",
       status: "listed",
-      quantity: Number(body.quantity || 1),
+      quantity,
       newest: db.products.length + 1,
       returnWindowHours: 48,
       owner: "give-and-take",
@@ -2586,7 +2627,8 @@ async function handleApi(req, res) {
       productId: product.id,
       category: product.category,
       status: product.status,
-      price: product.price
+      price: product.price,
+      quantity: product.quantity
     });
     return sendJson(res, 201, { product });
   }
@@ -2599,7 +2641,8 @@ async function handleApi(req, res) {
     const previousProduct = {
       status: product.status,
       price: product.price,
-      category: product.category
+      category: product.category,
+      quantity: cleanStockQuantity(product.quantity, 0)
     };
     if (typeof body.title === "string" && body.title.trim()) product.title = body.title.trim();
     if (typeof body.category === "string" && body.category.trim()) product.category = body.category.trim();
@@ -2615,6 +2658,16 @@ async function handleApi(req, res) {
       if (!Number.isFinite(price) || price < 0) return sendError(res, 400, "Product price is invalid");
       product.price = price;
     }
+    if (body.quantity !== undefined) {
+      const quantity = cleanStockQuantity(body.quantity, NaN, { min: 0, max: 100000 });
+      if (!Number.isFinite(quantity)) return sendError(res, 400, "Product quantity is invalid");
+      product.quantity = quantity;
+      if (quantity < 1) product.status = "sold";
+      if (quantity > 0 && product.status === "sold" && body.status === undefined) product.status = "listed";
+    }
+    if (typeof body.status === "string" && body.status === "listed" && cleanStockQuantity(product.quantity, 0) < 1) {
+      return sendError(res, 400, "Set product quantity above 0 before listing");
+    }
     if (typeof body.status === "string" && ["listed", "unlisted", "sold"].includes(body.status)) product.status = body.status;
     product.updatedAt = new Date().toISOString();
     await writeDb(db);
@@ -2625,7 +2678,9 @@ async function handleApi(req, res) {
       fromPrice: previousProduct.price,
       toPrice: product.price,
       fromCategory: previousProduct.category,
-      toCategory: product.category
+      toCategory: product.category,
+      fromQuantity: previousProduct.quantity,
+      toQuantity: product.quantity
     });
     return sendJson(res, 200, { product });
   }

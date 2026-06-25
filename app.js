@@ -3331,6 +3331,39 @@ function coinMarkup() {
   return `<span class="coin-symbol" aria-label="G&T coins"></span>`;
 }
 
+function productStock(product) {
+  if (!product || product.status !== "listed") return 0;
+  const quantity = Number(product.quantity);
+  if (!Number.isFinite(quantity)) return 1;
+  return Math.max(0, Math.floor(quantity));
+}
+
+function stockLabel(product) {
+  const stock = productStock(product);
+  if (stock < 1) return "Sold out";
+  if (stock === 1) return "Only 1 left";
+  return `${stock} left`;
+}
+
+function syncCartQuantitiesToStock() {
+  let changed = false;
+  state.cart = state.cart.filter(productId => {
+    const product = products.find(item => item.id === productId);
+    const stock = productStock(product);
+    if (!product || stock < 1) {
+      delete state.cartQuantities[productId];
+      changed = true;
+      return false;
+    }
+    const currentQty = Number(state.cartQuantities[productId] || 1);
+    const nextQty = Math.max(1, Math.min(stock, Math.floor(currentQty) || 1));
+    if (nextQty !== currentQty) changed = true;
+    state.cartQuantities[productId] = nextQty;
+    return true;
+  });
+  return changed;
+}
+
 function buildUpiPayUrl(amount) {
   const upi = platformConfig.integrations?.payments?.upi || {};
   const params = new URLSearchParams({
@@ -3531,11 +3564,22 @@ function animateCartBadge() {
 }
 
 function addProductToCart(productId) {
+  const product = products.find(item => item.id === productId) || productDetails.get(productId);
+  const stock = productStock(product);
+  if (stock < 1) {
+    showToast("This item is sold out");
+    return;
+  }
   if (!state.cart.includes(productId)) {
     state.cart.push(productId);
     state.cartQuantities[productId] = 1;
   } else {
-    state.cartQuantities[productId] = Math.min(Number(state.cartQuantities[productId] || 1) + 1, 5);
+    const nextQty = Math.min(Number(state.cartQuantities[productId] || 1) + 1, stock);
+    if (nextQty === Number(state.cartQuantities[productId] || 1)) {
+      showToast(`Only ${stock} available`);
+      return;
+    }
+    state.cartQuantities[productId] = nextQty;
   }
   state.checkoutStep = "cart";
   saveCartState();
@@ -3586,6 +3630,7 @@ function updateProductPageShare(productId = "") {
 }
 
 function card(product) {
+  const stock = productStock(product);
   return `
     <article class="product-card">
       <button class="product-card-visual-button" data-product="${escapeHtml(product.id)}" type="button" aria-label="View ${escapeHtml(product.title)} details">
@@ -3597,9 +3642,9 @@ function card(product) {
         </div>
         <h3 title="${escapeHtml(product.title)}">${escapeHtml(compactProductTitle(product.title))}</h3>
         <div class="coin-price">${formatCoins(product.price)}</div>
-        <p>${escapeHtml(displayCategoryName(product.category))}</p>
+        <p>${escapeHtml(displayCategoryName(product.category))} • ${escapeHtml(stockLabel(product))}</p>
         <div class="card-actions">
-          <button class="primary-button" data-add="${escapeHtml(product.id)}" type="button">Add to Cart</button>
+          <button class="primary-button" data-add="${escapeHtml(product.id)}" type="button" ${stock < 1 ? "disabled" : ""}>${stock < 1 ? "Sold Out" : "Add to Cart"}</button>
         </div>
       </div>
     </article>
@@ -3754,6 +3799,7 @@ function renderProductDetail() {
   const visibleChecks = (product.checks || []).filter(check => !hiddenChecks.has(check));
   const allowedDetailBadges = (product.badges || []).filter(badge => /verified|new/i.test(badge));
   const galleryImages = getProductImages(product);
+  const stock = productStock(product);
   els.productDetail.innerHTML = `
     <div class="detail-gallery">
       ${productVisual(product, "detail-image")}
@@ -3780,12 +3826,13 @@ function renderProductDetail() {
       <h1>${escapeHtml(product.title)}</h1>
       <div class="coin-price">${formatCoins(product.price)}</div>
       <p>Product price is coin-only. Any delivery fee is shown separately and paid on delivery.</p>
+      <p><strong>${escapeHtml(stockLabel(product))}</strong></p>
       <div class="checklist">
         ${visibleChecks.map(check => `<span>${escapeHtml(check)}</span>`).join("")}
       </div>
       <div class="detail-actions">
-        <button class="primary-button" data-buy-now="${escapeHtml(product.id)}" type="button">Buy with Coins</button>
-        <button class="secondary-button" data-add-stay="${escapeHtml(product.id)}" type="button">Add to Cart</button>
+        <button class="primary-button" data-buy-now="${escapeHtml(product.id)}" type="button" ${stock < 1 ? "disabled" : ""}>${stock < 1 ? "Sold Out" : "Buy with Coins"}</button>
+        <button class="secondary-button" data-add-stay="${escapeHtml(product.id)}" type="button" ${stock < 1 ? "disabled" : ""}>Add to Cart</button>
       </div>
     </article>
   `;
@@ -5045,11 +5092,12 @@ function renderAdmin() {
               <div>
                 <strong>${escapeHtml(product.title || "Untitled product")}</strong>
                 <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
-                <span>${formatCoins(product.price || 0)}</span>
+                <span>${formatCoins(product.price || 0)} • Stock: ${Number(product.quantity || 0)} left • Sold: ${Number(product.sold || 0)}</span>
               </div>
               <div class="admin-product-actions">
                 <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="title" type="button">Edit Name</button>
                 <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="price" type="button">Edit Price</button>
+                <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="quantity" type="button">Edit Stock</button>
                 <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="imageUrl" type="button">Edit Image</button>
                 <button class="secondary-button" data-edit-product="${escapeHtml(product.id)}" data-edit-field="condition" type="button">Edit Condition</button>
                 <button class="${product.status === "listed" ? "secondary-button" : "primary-button"}" data-product-status="${escapeHtml(product.id)}" data-next-status="${product.status === "listed" ? "unlisted" : "listed"}" type="button">
@@ -5099,7 +5147,7 @@ function renderCart() {
     state.checkoutStep = "cart";
     state.pendingRemoveCartId = null;
     const recommended = backendDataReady ? products
-      .filter(product => product.status === "listed")
+      .filter(product => product.status === "listed" && productStock(product) > 0)
       .slice(0, 4) : [];
     const cards = recommended.map(product => `
       <article class="empty-cart-product">
@@ -5149,6 +5197,14 @@ function renderCart() {
   if (!backendDataReady) {
     els.cartView.innerHTML = loadingPanel("Loading latest cart prices...");
     return;
+  }
+  if (syncCartQuantitiesToStock()) {
+    saveCartState();
+    renderAuthStatus();
+    if (!state.cart.length) {
+      renderCart();
+      return;
+    }
   }
   const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
   const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
@@ -5287,17 +5343,18 @@ function renderCart() {
       <div class="cart-items">
         ${items.map(product => {
           const qty = Number(state.cartQuantities[product.id] || 1);
+          const stock = productStock(product);
           return `
             <article class="cart-item">
               ${productVisual(product, "cart-item-image")}
               <div class="cart-item-body">
                 <strong>${escapeHtml(compactProductTitle(product.title, 64))}</strong>
-                <span>${escapeHtml(displayCategoryName(product.category))}</span>
+                <span>${escapeHtml(displayCategoryName(product.category))} • ${escapeHtml(stockLabel(product))}</span>
                 <div class="cart-price-row">
                   <div class="cart-qty-control" aria-label="Quantity">
-                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="-1" aria-label="Decrease quantity">-</button>
+                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="-1" aria-label="Decrease quantity" ${qty <= 1 ? "disabled" : ""}>-</button>
                     <strong>${qty}</strong>
-                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="1" aria-label="Increase quantity">+</button>
+                    <button type="button" data-cart-qty-step="${escapeHtml(product.id)}" data-step="1" aria-label="Increase quantity" ${qty >= stock ? "disabled" : ""}>+</button>
                   </div>
                   <strong class="cart-line-price">${formatCoins(product.price * qty)}</strong>
                 </div>
@@ -5569,6 +5626,11 @@ function wireEvents() {
 
     const buyNow = event.target.closest("[data-buy-now]");
     if (buyNow) {
+      const product = products.find(item => item.id === buyNow.dataset.buyNow) || productDetails.get(buyNow.dataset.buyNow);
+      if (productStock(product) < 1) {
+        showToast("This item is sold out");
+        return;
+      }
       state.cart = [buyNow.dataset.buyNow];
       state.cartQuantities = { [buyNow.dataset.buyNow]: 1 };
       state.checkoutStep = "cart";
@@ -5618,8 +5680,19 @@ function wireEvents() {
     if (qtyStep) {
       const productId = qtyStep.dataset.cartQtyStep;
       const step = Number(qtyStep.dataset.step || 0);
+      const product = products.find(item => item.id === productId);
+      const stock = productStock(product);
+      if (stock < 1) {
+        state.cart = state.cart.filter(id => id !== productId);
+        delete state.cartQuantities[productId];
+        showToast("This item is sold out");
+        saveCartState();
+        renderCart();
+        renderAuthStatus();
+        return;
+      }
       const currentQty = Number(state.cartQuantities[productId] || 1);
-      state.cartQuantities[productId] = Math.max(1, Math.min(5, currentQty + step));
+      state.cartQuantities[productId] = Math.max(1, Math.min(stock, currentQty + step));
       saveCartState();
       renderCart();
       renderAuthStatus();
@@ -5628,6 +5701,11 @@ function wireEvents() {
 
     const cartBuyNow = event.target.closest("[data-cart-buy-now]");
     if (cartBuyNow) {
+      const product = products.find(item => item.id === cartBuyNow.dataset.cartBuyNow);
+      if (productStock(product) < 1) {
+        showToast("This item is sold out");
+        return;
+      }
       state.cart = [cartBuyNow.dataset.cartBuyNow];
       state.cartQuantities = { [cartBuyNow.dataset.cartBuyNow]: 1 };
       state.checkoutStep = "delivery";
@@ -5638,9 +5716,19 @@ function wireEvents() {
 
     const checkoutStep = event.target.closest("[data-checkout-step]");
     if (checkoutStep) {
+      if (checkoutStep.dataset.checkoutStep !== "cart" && syncCartQuantitiesToStock()) {
+        saveCartState();
+        showToast("Cart updated with available stock");
+      }
+      if (checkoutStep.dataset.checkoutStep !== "cart" && !state.cart.length) {
+        renderCart();
+        renderAuthStatus();
+        return;
+      }
       state.checkoutStep = checkoutStep.dataset.checkoutStep;
       saveCartState();
       renderCart();
+      return;
     }
 
     const route = event.target.closest("[data-route]");
@@ -6444,6 +6532,13 @@ function wireEvents() {
       if (!requireCustomerLogin()) return;
       const submitButton = event.target.querySelector("button[type='submit']");
       if (submitButton?.disabled) return;
+      if (syncCartQuantitiesToStock()) {
+        saveCartState();
+        renderCart();
+        renderAuthStatus();
+        alert("Cart was updated with available stock. Please review once and confirm again.");
+        return;
+      }
       const items = state.cart.map(id => products.find(product => product.id === id)).filter(Boolean);
       const total = items.reduce((sum, product) => sum + product.price * Number(state.cartQuantities[product.id] || 1), 0);
       if ((wallet.balance || 0) < total) {
@@ -6453,14 +6548,17 @@ function wireEvents() {
       }
       const deliveryDetails = state.deliveryDetails || {};
       const deliveryCharge = getDeliveryCharge(total);
-      const productIds = state.cart.flatMap(id => Array(Number(state.cartQuantities[id] || 1)).fill(id));
+      const orderItems = state.cart.map(id => ({
+        productId: id,
+        quantity: Number(state.cartQuantities[id] || 1),
+      }));
       try {
         setSubmitState(event.target, true, "Placing order...");
         const data = await api("/api/orders", {
           method: "POST",
           customer: true,
           body: JSON.stringify({
-            productIds,
+            items: orderItems,
             city: deliveryDetails.city,
             deliveryChargeMode: "cod-rupees",
             deliveryCharge,
