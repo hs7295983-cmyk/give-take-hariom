@@ -40,6 +40,10 @@ const adminAuditLogLimit = Number.isFinite(configuredAdminAuditLogLimit)
 const maxImageDataUrlLength = 900_000;
 const maxImageBinaryBytes = 675_000;
 const maxImageBatchBytes = 2_250_000;
+const configuredReferralCommissionPercent = Number(process.env.REFERRAL_COMMISSION_PERCENT || 10);
+const referralCommissionPercent = Number.isFinite(configuredReferralCommissionPercent)
+  ? Math.min(50, Math.max(0, configuredReferralCommissionPercent))
+  : 10;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -507,6 +511,112 @@ function cleanText(value, maxLength = 200, options = {}) {
   return text.length > maxLength ? text.slice(0, maxLength).trim() : text;
 }
 
+function cleanReferralCode(value) {
+  const code = cleanText(value, 50).toLowerCase();
+  if (!code || !/^[a-z0-9][a-z0-9_-]{1,49}$/.test(code)) return "";
+  return code;
+}
+
+function cleanReferralAttribution(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const code = cleanReferralCode(value.code);
+  if (!code) return null;
+  const capturedAt = cleanText(value.capturedAt, 40);
+  const capturedTimestamp = new Date(capturedAt || "").getTime();
+  const safeCapturedAt = Number.isFinite(capturedTimestamp)
+    ? new Date(capturedTimestamp).toISOString()
+    : new Date().toISOString();
+  return {
+    code,
+    source: cleanText(value.source || "referral-link", 40),
+    landingPage: cleanText(value.landingPage || "", 220),
+    capturedAt: safeCapturedAt
+  };
+}
+
+function publicReferralAttribution(value) {
+  const referral = cleanReferralAttribution(value);
+  if (!referral) return null;
+  return referral;
+}
+
+function ensureReferralRecord(db, code) {
+  db.referrals = db.referrals && typeof db.referrals === "object" && !Array.isArray(db.referrals) ? db.referrals : {};
+  db.referrals[code] = db.referrals[code] && typeof db.referrals[code] === "object" ? db.referrals[code] : {
+    code,
+    createdAt: new Date().toISOString(),
+    visits: 0,
+    signups: 0,
+    orders: 0,
+    totalCoins: 0,
+    estimatedCommissionCoins: 0
+  };
+  db.referrals[code].code = code;
+  return db.referrals[code];
+}
+
+function recordReferralVisit(db, referral, req) {
+  const record = ensureReferralRecord(db, referral.code);
+  record.visits = Number(record.visits || 0) + 1;
+  record.lastVisitAt = new Date().toISOString();
+  record.updatedAt = record.lastVisitAt;
+  record.lastLandingPage = referral.landingPage || record.lastLandingPage || "";
+  db.referralVisits = Array.isArray(db.referralVisits) ? db.referralVisits : [];
+  db.referralVisits.unshift({
+    id: id("REF-VISIT"),
+    code: referral.code,
+    landingPage: referral.landingPage || "",
+    capturedAt: referral.capturedAt,
+    createdAt: new Date().toISOString(),
+    ipHash: hashAuditValue(clientIp(req)),
+    userAgent: cleanText(req.headers["user-agent"], 180)
+  });
+  if (db.referralVisits.length > 1000) db.referralVisits.splice(1000);
+}
+
+function attachReferralToUser(db, user, referral) {
+  if (!user || !referral?.code) return false;
+  if (user.referredBy) return false;
+  const record = ensureReferralRecord(db, referral.code);
+  user.referredBy = referral.code;
+  user.referral = {
+    ...referral,
+    linkedAt: new Date().toISOString()
+  };
+  record.signups = Number(record.signups || 0) + 1;
+  record.lastSignupAt = user.referral.linkedAt;
+  record.updatedAt = user.referral.linkedAt;
+  return true;
+}
+
+function referralForOrder(user, bodyReferral) {
+  const requestReferral = cleanReferralAttribution(bodyReferral);
+  const userReferral = cleanReferralAttribution(user?.referral || { code: user?.referredBy });
+  return requestReferral || userReferral;
+}
+
+function buildOrderReferral(referral, totalCoins) {
+  if (!referral?.code) return null;
+  const commissionCoins = Math.round(Number(totalCoins || 0) * (referralCommissionPercent / 100));
+  return {
+    code: referral.code,
+    source: referral.source || "referral-link",
+    capturedAt: referral.capturedAt || "",
+    commissionRatePercent: referralCommissionPercent,
+    estimatedCommissionCoins: commissionCoins
+  };
+}
+
+function recordReferralOrder(db, orderReferral, totalCoins) {
+  if (!orderReferral?.code) return;
+  const record = ensureReferralRecord(db, orderReferral.code);
+  record.orders = Number(record.orders || 0) + 1;
+  record.totalCoins = Number(record.totalCoins || 0) + Number(totalCoins || 0);
+  record.estimatedCommissionCoins = Number(record.estimatedCommissionCoins || 0) + Number(orderReferral.estimatedCommissionCoins || 0);
+  record.lastOrderAt = new Date().toISOString();
+  record.updatedAt = record.lastOrderAt;
+}
+
 function isValidPhone(value) {
   const phone = cleanText(value, 24);
   const digits = phone.replace(/\D/g, "");
@@ -767,6 +877,8 @@ function buildRecoveryBackup(db) {
       rechargeRequests: cloneJson(db.rechargeRequests, []),
       returns: cloneJson(db.returns, []),
       feedbacks: cloneJson(db.feedbacks, []),
+      referrals: cloneJson(db.referrals, {}),
+      referralVisits: cloneJson(db.referralVisits, []),
       integrations: cloneJson(db.integrations, {}),
       adminAuditLogs: cloneJson(db.adminAuditLogs, [])
     },
@@ -851,6 +963,71 @@ function adminCustomerSummary(db, limit = 200) {
     activeUsers: summaries.filter(customer => customer.activeSession).length,
     returned: customers.length,
     customers
+  };
+}
+
+function adminReferralSummary(db, limit = 100) {
+  const users = Array.isArray(db.users) ? db.users : [];
+  const orders = Array.isArray(db.orders) ? db.orders : [];
+  const referralRecords = db.referrals && typeof db.referrals === "object" && !Array.isArray(db.referrals) ? db.referrals : {};
+  const codes = new Set([
+    ...Object.keys(referralRecords),
+    ...users.map(user => cleanReferralCode(user.referredBy || user.referral?.code)).filter(Boolean),
+    ...orders.map(order => cleanReferralCode(order.referral?.code || order.referredBy)).filter(Boolean)
+  ]);
+  const referrals = [...codes].map(code => {
+    const record = referralRecords[code] || {};
+    const referredUsers = users.filter(user => cleanReferralCode(user.referredBy || user.referral?.code) === code);
+    const referredOrders = orders.filter(order => cleanReferralCode(order.referral?.code || order.referredBy) === code);
+    const totalCoins = referredOrders.reduce((sum, order) => sum + Number(order.totalCoins || 0), 0);
+    const estimatedCommissionCoins = referredOrders.reduce((sum, order) => {
+      if (Number.isFinite(Number(order.referral?.estimatedCommissionCoins))) {
+        return sum + Number(order.referral.estimatedCommissionCoins || 0);
+      }
+      return sum + Math.round(Number(order.totalCoins || 0) * (referralCommissionPercent / 100));
+    }, 0);
+    const lastOrderAt = referredOrders
+      .map(order => new Date(order.createdAt || "").getTime())
+      .filter(Number.isFinite)
+      .sort((a, b) => b - a)[0];
+    return {
+      code,
+      link: `https://www.giveandtake.co.in/?ref=${encodeURIComponent(code)}`,
+      visits: Number(record.visits || 0),
+      signups: Math.max(Number(record.signups || 0), referredUsers.length),
+      orders: referredOrders.length,
+      totalCoins,
+      estimatedCommissionCoins,
+      commissionRatePercent: referralCommissionPercent,
+      lastVisitAt: record.lastVisitAt || "",
+      lastSignupAt: record.lastSignupAt || "",
+      lastOrderAt: lastOrderAt ? new Date(lastOrderAt).toISOString() : (record.lastOrderAt || ""),
+      recentOrders: referredOrders.slice(0, 10).map(order => ({
+        id: order.id,
+        userEmail: order.userEmail || "",
+        totalCoins: Number(order.totalCoins || 0),
+        estimatedCommissionCoins: Number(order.referral?.estimatedCommissionCoins || Math.round(Number(order.totalCoins || 0) * (referralCommissionPercent / 100))),
+        createdAt: order.createdAt || "",
+        status: order.status || ""
+      })),
+      recentCustomers: referredUsers.slice(0, 10).map(user => ({
+        id: user.id,
+        email: user.email,
+        name: user.name || "",
+        createdAt: user.createdAt || "",
+        lastLoginAt: user.lastLoginAt || ""
+      }))
+    };
+  }).sort((a, b) => (b.orders - a.orders) || (b.signups - a.signups) || (b.visits - a.visits));
+  return {
+    commissionRatePercent: referralCommissionPercent,
+    totalReferralCodes: referrals.length,
+    totalVisits: referrals.reduce((sum, item) => sum + Number(item.visits || 0), 0),
+    totalSignups: referrals.reduce((sum, item) => sum + Number(item.signups || 0), 0),
+    totalOrders: referrals.reduce((sum, item) => sum + Number(item.orders || 0), 0),
+    totalCoins: referrals.reduce((sum, item) => sum + Number(item.totalCoins || 0), 0),
+    totalEstimatedCommissionCoins: referrals.reduce((sum, item) => sum + Number(item.estimatedCommissionCoins || 0), 0),
+    referrals: referrals.slice(0, limit)
   };
 }
 
@@ -1329,6 +1506,7 @@ async function handleApi(req, res) {
     const email = normalizeEmail(body.email);
     const otp = String(body.otp || "").trim();
     const name = cleanText(body.name, 80);
+    const referral = cleanReferralAttribution(body.referral);
     if (!email || !otp) return sendError(res, 400, "Email and OTP are required");
     if (!sessionSecret) return sendError(res, 503, "Session secret is not configured");
     if (!enforceRateLimit(res, {
@@ -1367,6 +1545,7 @@ async function handleApi(req, res) {
       user.name = name;
       user.updatedAt = new Date().toISOString();
     }
+    if (referral) attachReferralToUser(db, user, referral);
     user.lastLoginAt = new Date().toISOString();
     user.loginCount = Number(user.loginCount || 0) + 1;
     const token = crypto.randomBytes(32).toString("hex");
@@ -1528,6 +1707,22 @@ async function handleApi(req, res) {
     });
   }
 
+  if (method === "POST" && parts[1] === "referrals" && parts[2] === "track") {
+    if (!enforceRateLimit(res, {
+      scope: "referral-track-ip",
+      identity: ip,
+      limit: 60,
+      windowMs: 60 * 60_000,
+      message: "Too many referral tracking requests. Please wait before trying again."
+    })) return;
+    const body = await readBody(req);
+    const referral = cleanReferralAttribution(body.referral);
+    if (!referral) return sendJson(res, 200, { ok: true, tracked: false });
+    recordReferralVisit(db, referral, req);
+    await writeDb(db);
+    return sendJson(res, 200, { ok: true, tracked: true });
+  }
+
   if (method === "POST" && parts[1] === "sell-requests") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
@@ -1612,6 +1807,7 @@ async function handleApi(req, res) {
     const body = await readBody(req);
     const userId = customer.user.id;
     const productIds = Array.isArray(body.productIds) ? body.productIds : [];
+    const incomingReferral = cleanReferralAttribution(body.referral);
     const rawDeliveryDetails = body.deliveryDetails || {};
     const deliveryDetails = {
       name: cleanText(rawDeliveryDetails.name, 80),
@@ -1670,6 +1866,8 @@ async function handleApi(req, res) {
         }
 
         const orderDeliveryCharge = totalCoins > deliveryFreeThreshold ? 0 : deliveryCharge;
+        if (incomingReferral) attachReferralToUser(transactionDb, user, incomingReferral);
+        const orderReferral = buildOrderReferral(referralForOrder(user, incomingReferral), totalCoins);
         addLedger(transactionDb, userId, "debit", totalCoins, "Product purchase");
         selected.forEach(product => {
           product.quantity = Number(product.quantity || 0) - 1;
@@ -1707,6 +1905,8 @@ async function handleApi(req, res) {
           deliveryCharge: orderDeliveryCharge,
           deliveryFreeThreshold,
           deliveryChargeMode: body.deliveryChargeMode || "cod-rupees",
+          referral: orderReferral,
+          referredBy: orderReferral?.code || "",
           timeline: ["order-placed", "coins-deducted", "new-order"],
           createdAt: new Date().toISOString()
         };
@@ -1720,6 +1920,7 @@ async function handleApi(req, res) {
         };
         user.updatedAt = new Date().toISOString();
         transactionDb.orders.unshift(order);
+        recordReferralOrder(transactionDb, orderReferral, totalCoins);
         return { order, wallet: transactionDb.wallets[userId], user };
       });
     } catch (error) {
@@ -2063,6 +2264,25 @@ async function handleApi(req, res) {
     recordAdminAudit(req, "admin.customers.view", "success", {
       returned: data.returned,
       totalUsers: data.totalUsers
+    });
+    return sendJson(res, 200, data);
+  }
+
+  if (method === "GET" && parts[1] === "admin" && parts[2] === "referrals") {
+    if (!requireAdmin(req, res)) return;
+    if (!enforceRateLimit(res, {
+      scope: "admin-referrals-ip",
+      identity: ip,
+      limit: 60,
+      windowMs: 60 * 60_000,
+      message: "Too many referral report requests. Please wait before trying again."
+    })) return;
+    const requestedLimit = Number(url.searchParams.get("limit") || 100);
+    const limit = Number.isFinite(requestedLimit) ? Math.min(250, Math.max(1, requestedLimit)) : 100;
+    const data = adminReferralSummary(db, limit);
+    recordAdminAudit(req, "admin.referrals.view", "success", {
+      returned: data.referrals.length,
+      totalReferralCodes: data.totalReferralCodes
     });
     return sendJson(res, 200, data);
   }

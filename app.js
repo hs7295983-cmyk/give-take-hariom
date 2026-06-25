@@ -8,6 +8,8 @@ const CUSTOMER_USER_KEY = "give_take_customer_user";
 const CUSTOMER_WALLET_KEY = "give_take_customer_wallet";
 const CUSTOMER_ORDERS_KEY = "give_take_customer_orders";
 const CART_STATE_KEY = "give_take_cart_state";
+const REFERRAL_ATTRIBUTION_KEY = "give_take_referral_attribution";
+const REFERRAL_TRACKED_KEY = "give_take_referral_tracked";
 const CATALOG_CACHE_VERSION = 5;
 const CATALOG_CACHE_KEY = `give_take_catalog_cache_v${CATALOG_CACHE_VERSION}`;
 const LATEST_CATALOG_CACHE_KEY = "give_take_catalog_cache_latest";
@@ -2656,6 +2658,8 @@ let sellRequests = [];
 let adminDashboard = null;
 let adminCustomers = null;
 let adminCustomersLoading = false;
+let adminReferrals = null;
+let adminReferralsLoading = false;
 let partnerTasks = [];
 let partnerTasksLoaded = false;
 let pendingLoginEmail = "";
@@ -2667,6 +2671,71 @@ let platformConfig = {
     }
   }
 };
+
+function cleanReferralCode(value) {
+  const code = String(value || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 50);
+  return /^[a-z0-9][a-z0-9_-]{1,49}$/.test(code) ? code : "";
+}
+
+function loadReferralAttribution() {
+  try {
+    const referral = JSON.parse(localStorage.getItem(REFERRAL_ATTRIBUTION_KEY) || "null");
+    const code = cleanReferralCode(referral?.code);
+    const capturedAtMs = new Date(referral?.capturedAt || "").getTime();
+    const maxAgeMs = 60 * 24 * 60 * 60 * 1000;
+    if (!code || !Number.isFinite(capturedAtMs) || Date.now() - capturedAtMs > maxAgeMs) {
+      localStorage.removeItem(REFERRAL_ATTRIBUTION_KEY);
+      return null;
+    }
+    return {
+      code,
+      source: String(referral.source || "instagram").slice(0, 40),
+      landingPage: String(referral.landingPage || "").slice(0, 220),
+      capturedAt: new Date(capturedAtMs).toISOString(),
+    };
+  } catch {
+    localStorage.removeItem(REFERRAL_ATTRIBUTION_KEY);
+    return null;
+  }
+}
+
+function saveReferralAttribution(referral) {
+  if (!referral?.code) return;
+  try {
+    localStorage.setItem(REFERRAL_ATTRIBUTION_KEY, JSON.stringify(referral));
+  } catch {}
+}
+
+async function trackReferralVisit(referral) {
+  if (!referral?.code) return;
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const trackingKey = `${referral.code}:${todayKey}`;
+  if (localStorage.getItem(REFERRAL_TRACKED_KEY) === trackingKey) return;
+  try {
+    await api("/api/referrals/track", {
+      method: "POST",
+      body: JSON.stringify({ referral }),
+    });
+    localStorage.setItem(REFERRAL_TRACKED_KEY, trackingKey);
+  } catch (error) {
+    console.warn("Referral visit tracking skipped:", error.message);
+  }
+}
+
+function captureReferralFromUrl() {
+  const params = new URLSearchParams(window.location.search || "");
+  const code = cleanReferralCode(params.get("ref") || params.get("referral") || params.get("influencer"));
+  if (!code) return loadReferralAttribution();
+  const referral = {
+    code,
+    source: "instagram",
+    landingPage: `${location.pathname}${location.search}${location.hash}`.slice(0, 220),
+    capturedAt: new Date().toISOString(),
+  };
+  saveReferralAttribution(referral);
+  trackReferralVisit(referral);
+  return referral;
+}
 
 function loadStoredAdminToken() {
   localStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -2684,6 +2753,8 @@ function clearAdminSession() {
   adminDashboard = null;
   adminCustomers = null;
   adminCustomersLoading = false;
+  adminReferrals = null;
+  adminReferralsLoading = false;
   partnerTasks = [];
   partnerTasksLoaded = false;
   localStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -3210,6 +3281,18 @@ async function loadAdminCustomers() {
     adminCustomers = await api("/api/admin/customers?limit=200", { admin: true });
   } finally {
     adminCustomersLoading = false;
+    renderAdmin();
+  }
+}
+
+async function loadAdminReferrals() {
+  if (!adminToken || adminReferralsLoading) return;
+  adminReferralsLoading = true;
+  renderAdmin();
+  try {
+    adminReferrals = await api("/api/admin/referrals?limit=100", { admin: true });
+  } finally {
+    adminReferralsLoading = false;
     renderAdmin();
   }
 }
@@ -4555,6 +4638,73 @@ function renderAdminCustomers() {
   `;
 }
 
+function renderAdminReferrals() {
+  if (adminReferralsLoading) {
+    return `
+      <article class="wide-card">
+        <strong>Influencer Referrals</strong>
+        <span>Loading referral report only now...</span>
+      </article>
+    `;
+  }
+  if (!adminReferrals) {
+    return `
+      <article class="wide-card admin-customers-intro">
+        <div>
+          <strong>Influencer Referrals</strong>
+          <span>Give influencers links like https://www.giveandtake.co.in/?ref=rahul10. Click below to load visits, signups, orders, and estimated commission.</span>
+        </div>
+        <button class="primary-button" data-load-admin-referrals type="button">Open Referral Report</button>
+      </article>
+    `;
+  }
+  const referrals = adminReferrals.referrals || [];
+  return `
+    <article class="wide-card admin-today-summary">
+      <div>
+        <span>Referral Codes</span>
+        <strong>${adminReferrals.totalReferralCodes || 0}</strong>
+      </div>
+      <div>
+        <span>Tracked Visits</span>
+        <strong>${adminReferrals.totalVisits || 0}</strong>
+      </div>
+      <div>
+        <span>Referral Orders</span>
+        <strong>${adminReferrals.totalOrders || 0}</strong>
+      </div>
+      <div>
+        <span>Est. Commission</span>
+        <strong>${formatCoins(adminReferrals.totalEstimatedCommissionCoins || 0)}</strong>
+      </div>
+    </article>
+    <article class="wide-card">
+      <div class="admin-section-head">
+        <div>
+          <strong>Influencer Referral Report <span class="admin-count-badge ${referrals.length ? "has-items" : ""}">${referrals.length}</span></strong>
+          <span>Commission estimate uses ${Number(adminReferrals.commissionRatePercent || 0)}%. Change REFERRAL_COMMISSION_PERCENT in Render if needed.</span>
+        </div>
+        <button class="secondary-button" data-load-admin-referrals type="button">Refresh</button>
+      </div>
+      <div class="admin-list">
+        ${referrals.map(referral => `
+          <div class="admin-row stacked">
+            <span><strong>${escapeHtml(referral.code)}</strong> • Visits: ${Number(referral.visits || 0)} • Signups: ${Number(referral.signups || 0)} • Orders: ${Number(referral.orders || 0)}</span>
+            <span>Link: <a href="${escapeSafeUrl(referral.link)}" target="_blank" rel="noopener">${escapeHtml(referral.link)}</a></span>
+            <span>Total order value: ${formatCoins(referral.totalCoins || 0)} • Estimated commission: ${formatCoins(referral.estimatedCommissionCoins || 0)}</span>
+            <span>Last visit: ${escapeHtml(formatAdminDate(referral.lastVisitAt))} • Last order: ${escapeHtml(formatAdminDate(referral.lastOrderAt))}</span>
+            ${Array.isArray(referral.recentOrders) && referral.recentOrders.length ? `
+              <span>Recent orders: ${referral.recentOrders.map(order => `${escapeHtml(order.id)} (${formatCoins(order.totalCoins || 0)})`).join(", ")}</span>
+            ` : ""}
+          </div>
+        `).join("") || `
+          <p>No referral data yet. Share a link like <strong>https://www.giveandtake.co.in/?ref=rahul10</strong>, then open this report after visits/orders.</p>
+        `}
+      </div>
+    </article>
+  `;
+}
+
 function renderAdmin() {
   if (!adminToken) {
     els.adminGrid.innerHTML = `
@@ -4681,6 +4831,7 @@ function renderAdmin() {
     <article class="wide-card admin-section-switcher">
       <button class="${state.adminSection === "overview" ? "active" : ""}" data-admin-section="overview" type="button">Admin Overview</button>
       <button class="${state.adminSection === "customers" ? "active" : ""}" data-admin-section="customers" type="button">Customers</button>
+      <button class="${state.adminSection === "referrals" ? "active" : ""}" data-admin-section="referrals" type="button">Referrals</button>
       <button class="${state.adminSection === "ops-agent" ? "active" : ""}" data-admin-section="ops-agent" type="button">Ops Agent</button>
       <button class="danger-button" data-admin-logout type="button">Admin Logout</button>
     </article>
@@ -4689,6 +4840,13 @@ function renderAdmin() {
     els.adminGrid.innerHTML = `
       ${adminSectionSwitcher}
       ${renderAdminCustomers()}
+    `;
+    return;
+  }
+  if (state.adminSection === "referrals") {
+    els.adminGrid.innerHTML = `
+      ${adminSectionSwitcher}
+      ${renderAdminReferrals()}
     `;
     return;
   }
@@ -5571,6 +5729,12 @@ function wireEvents() {
       return;
     }
 
+    const loadReferrals = event.target.closest("[data-load-admin-referrals]");
+    if (loadReferrals) {
+      await loadAdminReferrals();
+      return;
+    }
+
     const adminProductsToggle = event.target.closest("[data-admin-products-toggle]");
     if (adminProductsToggle) {
       state.adminShowProducts = !state.adminShowProducts;
@@ -6167,6 +6331,7 @@ function wireEvents() {
             name: pendingLoginName,
             email: pendingLoginEmail,
             otp: String(form.get("otp") || "").trim(),
+            referral: loadReferralAttribution(),
           }),
         });
         markCustomerSessionActive();
@@ -6300,6 +6465,7 @@ function wireEvents() {
             deliveryChargeMode: "cod-rupees",
             deliveryCharge,
             deliveryDetails,
+            referral: loadReferralAttribution(),
           }),
         });
         wallet = normalizeWallet(data.wallet);
@@ -6457,6 +6623,7 @@ function wireEvents() {
 
 async function init() {
   wireEvents();
+  captureReferralFromUrl();
   navigate();
   renderAll();
   await loadAuthUser();
