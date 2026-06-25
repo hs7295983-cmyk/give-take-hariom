@@ -2591,13 +2591,35 @@ async function handleApi(req, res) {
     });
   }
 
+  if (method === "POST" && parts[1] === "admin" && parts[2] === "products" && parts[3] === "reset-stock") {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const quantity = cleanStockQuantity(body.quantity, 5, { min: 1, max: 100000 });
+    const productsToUpdate = Array.isArray(db.products) ? db.products : [];
+    productsToUpdate.forEach(product => {
+      product.quantity = quantity;
+      if (product.status === "sold") product.status = "listed";
+      product.updatedAt = new Date().toISOString();
+    });
+    await writeDb(db);
+    recordAdminAudit(req, "admin.products.reset-stock", "success", {
+      updatedCount: productsToUpdate.length,
+      quantity
+    });
+    return sendJson(res, 200, {
+      updatedCount: productsToUpdate.length,
+      quantity,
+      products: productsToUpdate
+    });
+  }
+
   if (method === "POST" && parts[1] === "admin" && parts[2] === "products") {
     if (!requireAdmin(req, res)) return;
     const body = await readBody(req);
     const productId = id("p");
     const imageUrl = await persistProductImageValue(body.imageUrl, "admin-products", productId);
     if (!isSafeProductImageUrl(imageUrl)) return sendError(res, 400, "Product image must be a valid image URL or uploaded image file");
-    const quantity = cleanStockQuantity(body.quantity, 1, { min: 1, max: 100000 });
+    const quantity = cleanStockQuantity(body.quantity, 5, { min: 1, max: 100000 });
     const product = {
       id: productId,
       title: body.title,

@@ -3334,7 +3334,7 @@ function coinMarkup() {
 function productStock(product) {
   if (!product || product.status !== "listed") return 0;
   const quantity = Number(product.quantity);
-  if (!Number.isFinite(quantity)) return 1;
+  if (!Number.isFinite(quantity)) return 5;
   return Math.max(0, Math.floor(quantity));
 }
 
@@ -5066,7 +5066,7 @@ function renderAdmin() {
           <option>Needs cleaning</option>
           <option>Needs repair</option>
         </select>
-        <input name="quantity" type="number" min="1" step="1" value="1" placeholder="Quantity" />
+        <input name="quantity" type="number" min="1" step="1" value="5" placeholder="Quantity" />
         <input name="imageUrl" class="span-2" type="url" placeholder="Direct image URL (.jpg, .png, .webp)" aria-describedby="adminImageHint" />
         <label class="admin-file-field span-2">Upload product image from laptop/Mac
           <input name="imageFile" type="file" accept="image/*" />
@@ -5082,14 +5082,17 @@ function renderAdmin() {
           <strong>Products Manager <span class="admin-count-badge ${adminProducts.length > 0 ? "has-items" : ""}">${adminProducts.length}</span></strong>
           <span>Open only when you need to edit, list, unlist, or delete products.</span>
         </div>
-        <button class="secondary-button" data-admin-products-toggle type="button">${state.adminShowProducts ? "Hide Products" : "Show Products"}</button>
+        <div class="admin-section-actions">
+          <button class="secondary-button" data-admin-reset-stock type="button">Set All Stock 5</button>
+          <button class="secondary-button" data-admin-products-toggle type="button">${state.adminShowProducts ? "Hide Products" : "Show Products"}</button>
+        </div>
       </div>
       ${state.adminShowProducts ? `
         <div class="admin-product-manager">
           ${adminProducts.map(product => `
             <div class="admin-product-row">
               ${productVisual(product, "admin-product-thumb")}
-              <div>
+              <div class="admin-product-info">
                 <strong>${escapeHtml(product.title || "Untitled product")}</strong>
                 <span>${escapeHtml(product.category || "category")} • ${escapeHtml(product.condition || "condition")} • ${escapeHtml(product.status || "status")}</span>
                 <span>${formatCoins(product.price || 0)} • Stock: ${Number(product.quantity || 0)} left • Sold: ${Number(product.sold || 0)}</span>
@@ -5827,6 +5830,30 @@ function wireEvents() {
     if (adminProductsToggle) {
       state.adminShowProducts = !state.adminShowProducts;
       renderAdmin();
+      return;
+    }
+
+    const adminResetStock = event.target.closest("[data-admin-reset-stock]");
+    if (adminResetStock) {
+      if (!confirm("Set stock quantity to 5 for all products? Sold products will become listed again.")) return;
+      try {
+        adminResetStock.disabled = true;
+        adminResetStock.textContent = "Updating...";
+        await api("/api/admin/products/reset-stock", {
+          method: "POST",
+          admin: true,
+          body: JSON.stringify({ quantity: 5 }),
+        });
+        await loadBackendData();
+        await refreshAdminProducts();
+        renderAll();
+        alert("All product stock is now set to 5.");
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        adminResetStock.disabled = false;
+        adminResetStock.textContent = "Set All Stock 5";
+      }
       return;
     }
 

@@ -3326,6 +3326,13 @@ textarea {
   gap: 12px;
 }
 
+.admin-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .admin-section-head > div {
   display: grid;
   gap: 5px;
@@ -3586,7 +3593,7 @@ textarea {
 
 .admin-product-row {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
+  grid-template-columns: 92px minmax(260px, 1fr);
   gap: 14px;
   align-items: start;
   padding: 14px;
@@ -3598,26 +3605,47 @@ textarea {
 .admin-product-thumb {
   position: relative;
   overflow: hidden;
-  width: 72px;
-  height: 72px;
+  width: 92px;
+  height: 92px;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--art-a), var(--art-b));
 }
 
-.admin-product-row > div:not(.admin-product-thumb):first-of-type {
+.admin-product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-product-info {
   display: grid;
   gap: 6px;
+  min-width: 0;
+}
+
+.admin-product-info strong {
+  max-width: 720px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.35;
 }
 
 .admin-product-row span {
   color: var(--muted);
+  line-height: 1.45;
 }
 
 .admin-product-actions {
+  grid-column: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: flex-end;
+  justify-content: flex-start;
+}
+
+.admin-product-actions button {
+  min-height: 40px;
+  padding: 0 14px;
 }
 
 .danger-button {
@@ -4428,7 +4456,18 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .admin-section-actions {
+    justify-content: flex-start;
+  }
+
+  .admin-product-thumb {
+    width: 100%;
+    max-width: 120px;
+    height: 120px;
+  }
+
   .admin-product-actions {
+    grid-column: auto;
     justify-content: flex-start;
   }
 
