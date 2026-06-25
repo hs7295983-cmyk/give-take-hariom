@@ -2654,6 +2654,8 @@ let wallet = loadCachedWallet();
 let orders = loadCachedOrders();
 let sellRequests = [];
 let adminDashboard = null;
+let adminCustomers = null;
+let adminCustomersLoading = false;
 let partnerTasks = [];
 let partnerTasksLoaded = false;
 let pendingLoginEmail = "";
@@ -2680,6 +2682,8 @@ function markAdminSessionActive() {
 function clearAdminSession() {
   adminToken = "";
   adminDashboard = null;
+  adminCustomers = null;
+  adminCustomersLoading = false;
   partnerTasks = [];
   partnerTasksLoaded = false;
   localStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -3196,6 +3200,18 @@ async function loadProtectedData() {
 
 async function loadFullAdminData() {
   adminDashboard = await api("/api/admin/dashboard", { admin: true });
+}
+
+async function loadAdminCustomers() {
+  if (!adminToken || adminCustomersLoading) return;
+  adminCustomersLoading = true;
+  renderAdmin();
+  try {
+    adminCustomers = await api("/api/admin/customers?limit=200", { admin: true });
+  } finally {
+    adminCustomersLoading = false;
+    renderAdmin();
+  }
 }
 
 async function loadPartnerTasks() {
@@ -4471,6 +4487,74 @@ function renderAdminOpsAgent() {
   `;
 }
 
+function formatAdminDate(value) {
+  const timestamp = new Date(value || "").getTime();
+  if (!Number.isFinite(timestamp)) return "Not available";
+  return new Date(timestamp).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function renderAdminCustomers() {
+  if (adminCustomersLoading) {
+    return `
+      <article class="wide-card">
+        <strong>Customers</strong>
+        <span>Loading customer data only now...</span>
+      </article>
+    `;
+  }
+  if (!adminCustomers) {
+    return `
+      <article class="wide-card admin-customers-intro">
+        <div>
+          <strong>Customers</strong>
+          <span>Customer data is not loaded automatically. Click the button when you need owner access to customer records.</span>
+        </div>
+        <button class="primary-button" data-load-admin-customers type="button">Open Customer Data</button>
+      </article>
+    `;
+  }
+  const customers = adminCustomers.customers || [];
+  return `
+    <article class="wide-card admin-today-summary">
+      <div>
+        <span>Total Customers</span>
+        <strong>${adminCustomers.totalUsers || 0}</strong>
+      </div>
+      <div>
+        <span>Active Sessions</span>
+        <strong>${adminCustomers.activeUsers || 0}</strong>
+      </div>
+      <div>
+        <span>Loaded Now</span>
+        <strong>${adminCustomers.returned || customers.length}</strong>
+      </div>
+      <div>
+        <span>Data</span>
+        <strong>Private</strong>
+      </div>
+    </article>
+    <article class="wide-card">
+      <div class="admin-section-head">
+        <div>
+          <strong>Customers <span class="admin-count-badge ${customers.length ? "has-items" : ""}">${customers.length}</span></strong>
+          <span>Name, Gmail, login activity, wallet, and activity counts. Session tokens are never shown.</span>
+        </div>
+        <button class="secondary-button" data-load-admin-customers type="button">Refresh</button>
+      </div>
+      <div class="admin-list">
+        ${customers.map(customer => `
+          <div class="admin-row stacked">
+            <span><strong>${escapeHtml(customer.name || "Name not entered")}</strong> • ${escapeHtml(customer.email || "Email not available")}</span>
+            <span>Joined: ${escapeHtml(formatAdminDate(customer.createdAt))} • Last login: ${escapeHtml(formatAdminDate(customer.lastLoginAt))}</span>
+            <span>Status: ${customer.activeSession ? "Active session" : "No active session"}${customer.sessionExpiresAt ? ` • Session expires: ${escapeHtml(formatAdminDate(customer.sessionExpiresAt))}` : ""}</span>
+            <span>Wallet: ${formatCoins(customer.walletBalance || 0)} • Logins: ${Number(customer.loginCount || 0)} • Orders: ${Number(customer.orderCount || 0)} • Sell requests: ${Number(customer.sellRequestCount || 0)} • Recharges: ${Number(customer.rechargeRequestCount || 0)}</span>
+          </div>
+        `).join("") || `<p>No customers found yet.</p>`}
+      </div>
+    </article>
+  `;
+}
+
 function renderAdmin() {
   if (!adminToken) {
     els.adminGrid.innerHTML = `
@@ -4596,10 +4680,18 @@ function renderAdmin() {
   const adminSectionSwitcher = `
     <article class="wide-card admin-section-switcher">
       <button class="${state.adminSection === "overview" ? "active" : ""}" data-admin-section="overview" type="button">Admin Overview</button>
+      <button class="${state.adminSection === "customers" ? "active" : ""}" data-admin-section="customers" type="button">Customers</button>
       <button class="${state.adminSection === "ops-agent" ? "active" : ""}" data-admin-section="ops-agent" type="button">Ops Agent</button>
       <button class="danger-button" data-admin-logout type="button">Admin Logout</button>
     </article>
   `;
+  if (state.adminSection === "customers") {
+    els.adminGrid.innerHTML = `
+      ${adminSectionSwitcher}
+      ${renderAdminCustomers()}
+    `;
+    return;
+  }
   if (state.adminSection === "ops-agent") {
     els.adminGrid.innerHTML = `
       ${adminSectionSwitcher}
@@ -5470,6 +5562,12 @@ function wireEvents() {
     if (adminSection) {
       state.adminSection = adminSection.dataset.adminSection || "overview";
       renderAdmin();
+      return;
+    }
+
+    const loadCustomers = event.target.closest("[data-load-admin-customers]");
+    if (loadCustomers) {
+      await loadAdminCustomers();
       return;
     }
 
