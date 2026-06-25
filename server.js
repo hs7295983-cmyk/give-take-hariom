@@ -711,6 +711,59 @@ function publicUser(user) {
   return user ? { id: user.id, email: user.email, name: user.name || "", addressBook: user.addressBook || null } : null;
 }
 
+function adminCustomerSummary(db, limit = 200) {
+  const now = Date.now();
+  const users = Array.isArray(db.users) ? db.users : [];
+  const sessions = Array.isArray(db.authSessions) ? db.authSessions : [];
+  const orders = Array.isArray(db.orders) ? db.orders : [];
+  const sellRequests = Array.isArray(db.sellRequests) ? db.sellRequests : [];
+  const rechargeRequests = Array.isArray(db.rechargeRequests) ? db.rechargeRequests : [];
+  const returns = Array.isArray(db.returns) ? db.returns : [];
+  const feedbacks = Array.isArray(db.feedbacks) ? db.feedbacks : [];
+  const summarize = user => {
+    const activeSessions = sessions.filter(session => session.userId === user.id && customerSessionIsValid(session, now));
+    const latestSessionAt = sessions
+      .filter(session => session.userId === user.id && session.createdAt)
+      .map(session => new Date(session.createdAt).getTime())
+      .filter(Number.isFinite)
+      .sort((a, b) => b - a)[0];
+    const wallet = db.wallets?.[user.id] || { balance: 0, ledger: [] };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name || "",
+      createdAt: user.createdAt || "",
+      updatedAt: user.updatedAt || "",
+      lastLoginAt: user.lastLoginAt || (latestSessionAt ? new Date(latestSessionAt).toISOString() : ""),
+      loginCount: Number(user.loginCount || 0),
+      activeSession: activeSessions.length > 0,
+      activeSessionCount: activeSessions.length,
+      sessionExpiresAt: activeSessions
+        .map(customerSessionExpiresAtMs)
+        .filter(Number.isFinite)
+        .sort((a, b) => b - a)
+        .map(timestamp => new Date(timestamp).toISOString())[0] || "",
+      walletBalance: Number(wallet.balance || 0),
+      walletLedgerCount: Array.isArray(wallet.ledger) ? wallet.ledger.length : 0,
+      orderCount: orders.filter(order => order.userId === user.id).length,
+      sellRequestCount: sellRequests.filter(request => request.userId === user.id).length,
+      rechargeRequestCount: rechargeRequests.filter(request => request.userId === user.id).length,
+      returnRequestCount: returns.filter(request => request.userId === user.id).length,
+      feedbackCount: feedbacks.filter(feedback => feedback.userId === user.id).length
+    };
+  };
+  const summaries = users.map(summarize);
+  const customers = summaries
+    .sort((a, b) => new Date(b.lastLoginAt || b.createdAt).getTime() - new Date(a.lastLoginAt || a.createdAt).getTime())
+    .slice(0, limit);
+  return {
+    totalUsers: users.length,
+    activeUsers: summaries.filter(customer => customer.activeSession).length,
+    returned: customers.length,
+    customers
+  };
+}
+
 function customerSessionExpiresAtMs(session) {
   const storedExpiry = new Date(session?.expiresAt).getTime();
   const createdAt = new Date(session?.createdAt).getTime();
@@ -1224,6 +1277,8 @@ async function handleApi(req, res) {
       user.name = name;
       user.updatedAt = new Date().toISOString();
     }
+    user.lastLoginAt = new Date().toISOString();
+    user.loginCount = Number(user.loginCount || 0) + 1;
     const token = crypto.randomBytes(32).toString("hex");
     const session = {
       id: id("SESSION"),
@@ -1895,6 +1950,25 @@ async function handleApi(req, res) {
       logs: logs.slice(0, limit).map(publicAdminAuditLog),
       totalStored: logs.length
     });
+  }
+
+  if (method === "GET" && parts[1] === "admin" && parts[2] === "customers") {
+    if (!requireAdmin(req, res)) return;
+    if (!enforceRateLimit(res, {
+      scope: "admin-customers-ip",
+      identity: ip,
+      limit: 60,
+      windowMs: 60 * 60_000,
+      message: "Too many customer list requests. Please wait before trying again."
+    })) return;
+    const requestedLimit = Number(url.searchParams.get("limit") || 200);
+    const limit = Number.isFinite(requestedLimit) ? Math.min(500, Math.max(1, requestedLimit)) : 200;
+    const data = adminCustomerSummary(db, limit);
+    recordAdminAudit(req, "admin.customers.view", "success", {
+      returned: data.returned,
+      totalUsers: data.totalUsers
+    });
+    return sendJson(res, 200, data);
   }
 
   if (method === "GET" && parts[1] === "admin" && parts[2] === "backup" && parts[3] === "export") {

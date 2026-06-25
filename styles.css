@@ -3285,6 +3285,18 @@ textarea {
   white-space: nowrap;
 }
 
+.admin-customers-intro {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-customers-intro > div {
+  display: grid;
+  gap: 5px;
+}
+
 .admin-count-badge {
   display: inline-flex;
   align-items: center;
