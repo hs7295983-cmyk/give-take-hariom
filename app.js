@@ -6095,6 +6095,7 @@ function wireEvents() {
       const labels = {
         title: "product name",
         price: "coin price",
+        quantity: "stock quantity",
         imageUrl: "image URL",
         condition: "condition",
       };
@@ -6110,6 +6111,13 @@ function wireEvents() {
           return;
         }
         payload.price = price;
+      } else if (field === "quantity") {
+        const quantity = Number(nextValue);
+        if (!Number.isFinite(quantity) || quantity < 0 || !Number.isInteger(quantity)) {
+          alert("Enter a valid stock quantity, like 0, 1, 5, or 10.");
+          return;
+        }
+        payload.quantity = quantity;
       } else if (field === "imageUrl") {
         payload.imageUrl = String(nextValue).trim();
       } else {
@@ -6582,6 +6590,7 @@ function wireEvents() {
         state.deliveryDetails = {};
         saveCartState();
         await refreshCurrentWallet();
+        await loadBackendData();
         renderAll();
         location.hash = "orders";
       } catch (error) {
