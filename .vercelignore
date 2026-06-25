@@ -1,0 +1,14 @@
+server.js
+stateStore.js
+seed.js
+give-take-db.json
+schema.sql
+data/
+.env
+.env.*
+package.json
+package-lock.json
+DEPLOYMENT.md
+README.md
+home-kitchen-assets.zip
+npm-debug.log*
