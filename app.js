@@ -1,5 +1,7 @@
 const configuredApiBase = window.GIVE_TAKE_API_BASE || "";
-const API_BASE = location.protocol === "file:" ? "http://localhost:4173" : configuredApiBase;
+const isLocalFrontend = location.protocol === "file:"
+  || ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+const API_BASE = isLocalFrontend ? "http://localhost:4173" : configuredApiBase;
 const ADMIN_TOKEN_KEY = "give_take_admin_token";
 const ADMIN_SESSION_HINT_KEY = "give_take_admin_session_hint";
 const CUSTOMER_TOKEN_KEY = "give_take_customer_token";
