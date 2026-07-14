@@ -1755,6 +1755,38 @@ textarea {
   color: #6a4c0c;
 }
 
+.join-success-message {
+  display: grid;
+  gap: 6px;
+  max-width: 760px;
+  margin: 18px auto 0;
+  padding: 18px 20px;
+  border: 1px solid #bfe8c0;
+  border-radius: var(--radius-soft);
+  background: #eef9e7;
+  color: var(--green);
+  box-shadow: var(--shadow-soft);
+}
+
+.join-success-message[hidden] {
+  display: none;
+}
+
+.join-success-message strong {
+  font-size: 17px;
+}
+
+.join-success-message span,
+.join-success-message small {
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.join-success-message small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .full {
   width: 100%;
 }

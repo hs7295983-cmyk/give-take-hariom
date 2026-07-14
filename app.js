@@ -6341,7 +6341,9 @@ function wireEvents() {
     event.preventDefault();
     const joinForm = event.currentTarget;
     const submitButton = joinForm.querySelector("button[type='submit']");
+    const successMessage = document.getElementById("joinSuccessMessage");
     if (submitButton?.disabled) return;
+    if (successMessage) successMessage.hidden = true;
     const form = new FormData(joinForm);
     try {
       setSubmitState(joinForm, true, "Submitting...");
@@ -6355,8 +6357,17 @@ function wireEvents() {
           experience: form.get("experience"),
         }),
       });
-      alert(`Application submitted. Application ID: ${data.application.id}`);
       joinForm.reset();
+      if (successMessage) {
+        successMessage.innerHTML = `
+          <strong>Your Join Us request has been submitted successfully.</strong>
+          <span>Thank you for your interest in GIVE &amp; TAKE. We will contact you soon.</span>
+          <small>Application ID: ${escapeHtml(data.application.id)}</small>
+        `;
+        successMessage.hidden = false;
+        successMessage.focus();
+        successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     } catch (error) {
       alert(error.message);
     } finally {
