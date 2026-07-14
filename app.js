@@ -4966,10 +4966,6 @@ function renderAdmin() {
               `).join("") || `<span>No photos uploaded</span>`}
             </div>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
-              <label class="admin-rejection-field">
-                <span>Rejection reason <b>(sent to the seller)</b></span>
-                <textarea data-rejection-reason="${escapeHtml(item.id)}" maxlength="500" rows="3" placeholder="Explain clearly why this item cannot be accepted"></textarea>
-              </label>
               <div class="admin-actions">
                 <button class="secondary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="schedule" type="button">Schedule Pickup</button>
                 <button class="primary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="accept" data-expected="${escapeHtml(item.expectedCoins || 0)}" type="button">Accept + Credit Coins</button>
@@ -6040,9 +6036,14 @@ function wireEvents() {
         if (finalCoins === null) return;
       }
       if (action === "reject") {
-        note = sellRequestAction.closest(".admin-row")?.querySelector("[data-rejection-reason]")?.value.trim() || "";
+        const enteredReason = prompt(
+          "Why are you rejecting this item? This reason will be shown to the seller:",
+          ""
+        );
+        if (enteredReason === null) return;
+        note = enteredReason.trim();
         if (!note) {
-          alert("Please enter a rejection reason. This message will be shown to the seller.");
+          alert("A rejection reason is required. Please click Reject and enter the reason.");
           return;
         }
         if (!confirm("Reject this sell item request and send the reason to the seller?")) return;
