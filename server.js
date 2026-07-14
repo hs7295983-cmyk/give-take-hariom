@@ -2762,7 +2762,10 @@ function serveStatic(req, res) {
       return;
     }
     const ext = path.extname(resolved).toLowerCase();
-    res.writeHead(200, withSecurityHeaders({ "Content-Type": mimeTypes[ext] || "application/octet-stream" }));
+    res.writeHead(200, withSecurityHeaders({
+      "Content-Type": mimeTypes[ext] || "application/octet-stream",
+      "Cache-Control": "no-cache, must-revalidate"
+    }));
     res.end(req.method === "HEAD" ? undefined : content);
   });
 }

@@ -5019,7 +5019,10 @@ function renderAdmin() {
       ${adminSectionHeader("joinApplications", "Join Us Applications", joinApplications.length, "New applicants from the Join Us page.")}
       <div class="admin-list ${state.adminCollapsed.joinApplications ? "is-collapsed" : ""}">
         ${state.adminCollapsed.joinApplications ? collapsedAdminPlaceholder("joinApplications") : joinApplications.map(item => `
-          <div class="admin-row stacked">
+          <div class="admin-row stacked join-application-row">
+            <div class="join-application-top-actions">
+              <button class="secondary-button admin-cut-button join-application-cut" data-admin-archive="joinApplications" data-archive-id="${escapeHtml(item.id)}" type="button" aria-label="Cut ${escapeHtml(item.name || "this applicant")}'s application">✂ Cut</button>
+            </div>
             <span><strong>${escapeHtml(item.role || "Applicant")}</strong> • ${escapeHtml(item.city || "City not entered")} • ${escapeHtml(item.status || "submitted")}</span>
             <span>${escapeHtml(item.name || "Name not entered")} • ${escapeHtml(item.phone || "Phone not entered")}</span>
             <span>${escapeHtml(item.experience || "No experience note entered")}</span>
@@ -5027,9 +5030,8 @@ function renderAdmin() {
               <div class="admin-actions">
                 <button class="primary-button" data-accept-application="${escapeHtml(item.id)}" type="button">Accept</button>
                 <button class="secondary-button" data-reject-application="${escapeHtml(item.id)}" type="button">Reject</button>
-                <button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="joinApplications" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button></div>`}
+            ` : ""}
           </div>
         `).join("")}
       </div>
@@ -6341,7 +6343,17 @@ function wireEvents() {
     event.preventDefault();
     const joinForm = event.currentTarget;
     const submitButton = joinForm.querySelector("button[type='submit']");
-    const successMessage = document.getElementById("joinSuccessMessage");
+    let successMessage = document.getElementById("joinSuccessMessage");
+    if (!successMessage) {
+      successMessage = document.createElement("div");
+      successMessage.id = "joinSuccessMessage";
+      successMessage.className = "join-success-message";
+      successMessage.setAttribute("role", "status");
+      successMessage.setAttribute("aria-live", "polite");
+      successMessage.tabIndex = -1;
+      successMessage.hidden = true;
+      joinForm.insertAdjacentElement("afterend", successMessage);
+    }
     if (submitButton?.disabled) return;
     if (successMessage) successMessage.hidden = true;
     const form = new FormData(joinForm);

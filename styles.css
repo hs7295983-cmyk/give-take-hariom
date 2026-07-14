@@ -3705,6 +3705,21 @@ textarea {
   background: #fff3f1;
 }
 
+.join-application-row {
+  gap: 9px;
+}
+
+.join-application-top-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 2px;
+}
+
+.join-application-cut {
+  min-height: 34px;
+  padding: 0 11px;
+}
+
 .admin-list {
   display: grid;
   gap: 8px;
