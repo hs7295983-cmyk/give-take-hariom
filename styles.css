@@ -351,6 +351,66 @@ main {
   display: block;
 }
 
+.seller-limit-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid #efcf75;
+  border-radius: 10px;
+  background: linear-gradient(105deg, #fff9df, #fff3bd);
+  color: #59430d;
+  box-shadow: 0 10px 24px rgba(106, 76, 12, 0.09);
+}
+
+.seller-limit-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f3b33d;
+  color: #4f3907;
+  font-family: "Outfit", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.42);
+}
+
+.seller-limit-notice strong {
+  display: block;
+  font-family: "Outfit", sans-serif;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.seller-limit-notice p {
+  margin: 3px 0 0;
+  color: #765c1d;
+  font-size: 13px;
+}
+
+.seller-limit-notice a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(89, 67, 13, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+  color: #59430d;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.seller-limit-notice a:hover {
+  background: white;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
@@ -4022,6 +4082,27 @@ textarea {
 
   .page {
     padding: 18px 12px 44px;
+  }
+
+  .seller-limit-notice {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 12px;
+    padding: 13px;
+  }
+
+  .seller-limit-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  .seller-limit-notice strong {
+    font-size: 15px;
+  }
+
+  .seller-limit-notice a {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .hero {
