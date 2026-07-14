@@ -6343,6 +6343,8 @@ function wireEvents() {
     event.preventDefault();
     const joinForm = event.currentTarget;
     const submitButton = joinForm.querySelector("button[type='submit']");
+    if (submitButton?.disabled) return;
+    if (!requireCustomerLogin()) return;
     let successMessage = document.getElementById("joinSuccessMessage");
     if (!successMessage) {
       successMessage = document.createElement("div");
@@ -6354,13 +6356,13 @@ function wireEvents() {
       successMessage.hidden = true;
       joinForm.insertAdjacentElement("afterend", successMessage);
     }
-    if (submitButton?.disabled) return;
     if (successMessage) successMessage.hidden = true;
     const form = new FormData(joinForm);
     try {
       setSubmitState(joinForm, true, "Submitting...");
       const data = await api("/api/join-applications", {
         method: "POST",
+        customer: true,
         body: JSON.stringify({
           role: form.get("role"),
           city: form.get("city"),
@@ -6384,6 +6386,10 @@ function wireEvents() {
         `Your Join Us request has been submitted successfully.\n\nThank you for your interest in GIVE & TAKE. We will contact you soon.\n\nApplication ID: ${data.application.id}`
       );
     } catch (error) {
+      if (error.status === 409) {
+        alert("You have already submitted a Join Us request. Only one application is allowed per account.");
+        return;
+      }
       alert(error.message);
     } finally {
       setSubmitState(joinForm, false);

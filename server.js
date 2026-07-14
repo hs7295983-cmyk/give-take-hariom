@@ -2120,12 +2120,14 @@ async function handleApi(req, res) {
   }
 
   if (method === "POST" && parts[1] === "join-applications") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
     if (!enforceRateLimit(res, {
-      scope: "join-application-ip",
-      identity: ip,
+      scope: "join-application-user",
+      identity: customer.user.id,
       limit: 5,
       windowMs: 60 * 60_000,
-      message: "Too many applications submitted. Please wait before trying again."
+      message: "You have already submitted a Join Us request."
     })) return;
     const body = await readBody(req);
     const role = cleanText(body.role, 80);
@@ -2137,8 +2139,11 @@ async function handleApi(req, res) {
     if (!city) return sendError(res, 400, "City is required");
     if (!name) return sendError(res, 400, "Name is required");
     if (!phone || !isValidPhone(phone)) return sendError(res, 400, "Enter a valid phone number");
+    const normalizedPhone = phone.replace(/\D/g, "").slice(-10);
     const application = {
       id: id("GT-J"),
+      userId: customer.user.id,
+      userEmail: customer.user.email,
       role,
       city,
       name,
@@ -2147,8 +2152,19 @@ async function handleApi(req, res) {
       status: "submitted",
       createdAt: new Date().toISOString()
     };
-    db.joinApplications.unshift(application);
-    await writeDb(db);
+    const applicationResult = await updateDb(transactionDb => {
+      transactionDb.joinApplications = transactionDb.joinApplications || [];
+      const existingApplication = transactionDb.joinApplications.find(item => {
+        if (item.userId) return item.userId === customer.user.id;
+        return String(item.phone || "").replace(/\D/g, "").slice(-10) === normalizedPhone;
+      });
+      if (existingApplication) return { duplicate: true, application: existingApplication };
+      transactionDb.joinApplications.unshift(application);
+      return { duplicate: false, application };
+    });
+    if (applicationResult.duplicate) {
+      return sendError(res, 409, "You have already submitted a Join Us request.");
+    }
     return sendJson(res, 201, { application });
   }
 
