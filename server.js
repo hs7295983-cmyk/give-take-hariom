@@ -2119,6 +2119,24 @@ async function handleApi(req, res) {
     return sendJson(res, 201, { feedback: { id: feedback.id, createdAt: feedback.createdAt } });
   }
 
+  if (method === "GET" && parts[1] === "join-applications" && parts[2] === "me") {
+    const customer = requireCustomer(req, res, db);
+    if (!customer) return;
+    const application = (db.joinApplications || []).find(item => (
+      item.userId === customer.user.id
+      || (item.userEmail && normalizeEmail(item.userEmail) === normalizeEmail(customer.user.email))
+    ));
+    return sendJson(res, 200, {
+      application: application ? {
+        id: application.id,
+        role: application.role,
+        city: application.city,
+        status: application.status,
+        createdAt: application.createdAt
+      } : null
+    });
+  }
+
   if (method === "POST" && parts[1] === "join-applications") {
     const customer = requireCustomer(req, res, db);
     if (!customer) return;
@@ -2158,7 +2176,11 @@ async function handleApi(req, res) {
         if (item.userId) return item.userId === customer.user.id;
         return String(item.phone || "").replace(/\D/g, "").slice(-10) === normalizedPhone;
       });
-      if (existingApplication) return { duplicate: true, application: existingApplication };
+      if (existingApplication) {
+        existingApplication.userId = existingApplication.userId || customer.user.id;
+        existingApplication.userEmail = existingApplication.userEmail || customer.user.email;
+        return { duplicate: true, application: existingApplication };
+      }
       transactionDb.joinApplications.unshift(application);
       return { duplicate: false, application };
     });

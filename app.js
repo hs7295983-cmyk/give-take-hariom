@@ -2657,6 +2657,7 @@ let customerDataReady = !customerToken;
 let wallet = loadCachedWallet();
 let orders = loadCachedOrders();
 let sellRequests = [];
+let joinApplication = null;
 let adminDashboard = null;
 let adminCustomers = null;
 let adminCustomersLoading = false;
@@ -2778,6 +2779,7 @@ function markCustomerSessionActive() {
 
 function clearCustomerSession() {
   customerToken = "";
+  joinApplication = null;
   localStorage.removeItem(CUSTOMER_TOKEN_KEY);
   localStorage.removeItem(CUSTOMER_SESSION_HINT_KEY);
   localStorage.removeItem(CUSTOMER_USER_KEY);
@@ -3148,13 +3150,14 @@ function saveProductToCachedCatalog(updatedProduct) {
 async function loadBackendData() {
   try {
     const userId = getCurrentUserId();
-    const [configData, categoryData, productData, walletData, orderData, sellRequestData] = await Promise.all([
+    const [configData, categoryData, productData, walletData, orderData, sellRequestData, joinApplicationData] = await Promise.all([
       api("/api/config"),
       api("/api/categories"),
       api("/api/products?sort=trending"),
       userId ? api(`/api/wallet/${encodeURIComponent(userId)}`, { customer: true }) : Promise.resolve({ wallet: { balance: 0, ledger: [] } }),
       userId ? api("/api/orders", { customer: true }) : Promise.resolve({ orders: [] }),
       userId ? api("/api/sell-requests", { customer: true }) : Promise.resolve({ sellRequests: [] }),
+      userId ? api("/api/join-applications/me", { customer: true }) : Promise.resolve({ application: null }),
     ]);
     categories = categoryData.categories;
     products = productData.products.map(applyRecoveredPrice);
@@ -3170,6 +3173,7 @@ async function loadBackendData() {
     orders = orderData.orders;
     cacheOrders(orders);
     sellRequests = sellRequestData.sellRequests || [];
+    joinApplication = joinApplicationData.application || null;
     platformConfig = configData;
     if (adminToken) await loadProtectedData();
     backendDataReady = true;
@@ -5424,6 +5428,36 @@ function renderCart() {
   `;
 }
 
+function renderJoinApplicationStatus() {
+  const message = document.getElementById("joinSuccessMessage");
+  if (!message) return;
+  message.hidden = false;
+  message.classList.toggle("has-application", Boolean(joinApplication));
+  if (!joinApplication) {
+    message.innerHTML = `
+      <strong>Join GIVE &amp; TAKE</strong>
+      <span>Apply for a delivery, verification, warehouse, customer support, or city operations role.</span>
+      <span>After you submit your application, our team will review your details and contact you soon.</span>
+      <small>Only one Join Us application is allowed per customer account.</small>
+    `;
+    return;
+  }
+  const submittedDate = joinApplication.createdAt
+    ? new Date(joinApplication.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    : "Submitted";
+  message.innerHTML = `
+    <strong>Thank you for joining us and for your interest in GIVE &amp; TAKE.</strong>
+    <span>Your Join Us request has been submitted successfully. Our team will review it and contact you soon.</span>
+    <div class="join-application-summary">
+      <span><b>Application ID</b>${escapeHtml(joinApplication.id || "Not available")}</span>
+      <span><b>Applied role</b>${escapeHtml(joinApplication.role || "Not available")}</span>
+      <span><b>City</b>${escapeHtml(joinApplication.city || "Not available")}</span>
+      <span><b>Status</b>${escapeHtml(String(joinApplication.status || "submitted").replaceAll("-", " "))}</span>
+    </div>
+    <small>Submitted on ${escapeHtml(submittedDate)} • Only one application is allowed per account.</small>
+  `;
+}
+
 function renderAll() {
   renderSelectors();
   renderCategories();
@@ -5433,6 +5467,7 @@ function renderAll() {
   renderWallet();
   renderOrders();
   renderAccount();
+  renderJoinApplicationStatus();
   renderAdmin();
   renderPartnerTasks();
   renderAuthStatus();
@@ -5465,6 +5500,10 @@ function renderCurrentRoute() {
   }
   if (state.route === "account") {
     renderAccount();
+    return;
+  }
+  if (state.route === "join") {
+    renderJoinApplicationStatus();
     return;
   }
   if (state.route === "admin") {
@@ -6353,10 +6392,10 @@ function wireEvents() {
       successMessage.setAttribute("role", "status");
       successMessage.setAttribute("aria-live", "polite");
       successMessage.tabIndex = -1;
-      successMessage.hidden = true;
+      successMessage.hidden = false;
       joinForm.insertAdjacentElement("afterend", successMessage);
+      renderJoinApplicationStatus();
     }
-    if (successMessage) successMessage.hidden = true;
     const form = new FormData(joinForm);
     try {
       setSubmitState(joinForm, true, "Submitting...");
@@ -6372,13 +6411,9 @@ function wireEvents() {
         }),
       });
       joinForm.reset();
+      joinApplication = data.application;
       if (successMessage) {
-        successMessage.innerHTML = `
-          <strong>Your Join Us request has been submitted successfully.</strong>
-          <span>Thank you for your interest in GIVE &amp; TAKE. We will contact you soon.</span>
-          <small>Application ID: ${escapeHtml(data.application.id)}</small>
-        `;
-        successMessage.hidden = false;
+        renderJoinApplicationStatus();
         successMessage.focus();
         successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -6387,6 +6422,11 @@ function wireEvents() {
       );
     } catch (error) {
       if (error.status === 409) {
+        try {
+          const applicationData = await api("/api/join-applications/me", { customer: true });
+          joinApplication = applicationData.application || null;
+          renderJoinApplicationStatus();
+        } catch {}
         alert("You have already submitted a Join Us request. Only one application is allowed per account.");
         return;
       }
