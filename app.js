@@ -4271,11 +4271,12 @@ function renderAccount() {
     const status = String(request.status || "upload-submitted");
     const readableStatus = status.replaceAll("-", " ");
     const pickupNote = request.pickupNote || "Pickup has been scheduled. GIVE & TAKE team will contact you soon for pickup timing and verification.";
+    const rejectionReason = request.rejectionReason || request.reviewNote || "The item did not meet our acceptance requirements.";
     const statusNotes = {
       "upload-submitted": "Your item is waiting for admin review.",
       "under-review": "Admin is reviewing your item details.",
       "pickup-scheduled": pickupNote,
-      rejected: request.reviewNote || "This item request was rejected by admin.",
+      rejected: `Your item was rejected because: ${rejectionReason}`,
       accepted: `${new Intl.NumberFormat("en-IN").format(request.finalCoins || request.expectedCoins || 0)} coins credited after final approval.`,
     };
     return `
@@ -4965,13 +4966,20 @@ function renderAdmin() {
               `).join("") || `<span>No photos uploaded</span>`}
             </div>
             ${["upload-submitted", "under-review", "pickup-scheduled"].includes(item.status || "upload-submitted") ? `
+              <label class="admin-rejection-field">
+                <span>Rejection reason <b>(sent to the seller)</b></span>
+                <textarea data-rejection-reason="${escapeHtml(item.id)}" maxlength="500" rows="3" placeholder="Explain clearly why this item cannot be accepted"></textarea>
+              </label>
               <div class="admin-actions">
                 <button class="secondary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="schedule" type="button">Schedule Pickup</button>
                 <button class="primary-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="accept" data-expected="${escapeHtml(item.expectedCoins || 0)}" type="button">Accept + Credit Coins</button>
                 <button class="danger-button" data-sell-request-action="${escapeHtml(item.id)}" data-action="reject" type="button">Reject</button>
                 <button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button>
               </div>
-            ` : `<div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button></div>`}
+            ` : `
+              ${item.status === "rejected" ? `<p class="admin-rejection-message"><strong>Reason sent to seller:</strong> ${escapeHtml(item.rejectionReason || item.reviewNote || "No reason recorded")}</p>` : ""}
+              <div class="admin-actions"><button class="secondary-button admin-cut-button" data-admin-archive="sellRequests" data-archive-id="${escapeHtml(item.id)}" type="button">Cut</button></div>
+            `}
           </div>
         `).join("")}
       </div>
@@ -6019,6 +6027,7 @@ function wireEvents() {
       const requestId = sellRequestAction.dataset.sellRequestAction;
       let finalCoins = sellRequestAction.dataset.expected || "0";
       let pickupNote = "";
+      let note = "";
       if (action === "schedule") {
         pickupNote = prompt(
           "Enter pickup message for seller:",
@@ -6030,17 +6039,28 @@ function wireEvents() {
         finalCoins = prompt("Enter final coins to credit after verification:", finalCoins);
         if (finalCoins === null) return;
       }
-      if (action === "reject" && !confirm("Reject this sell item request?")) return;
+      if (action === "reject") {
+        note = sellRequestAction.closest(".admin-row")?.querySelector("[data-rejection-reason]")?.value.trim() || "";
+        if (!note) {
+          alert("Please enter a rejection reason. This message will be shown to the seller.");
+          return;
+        }
+        if (!confirm("Reject this sell item request and send the reason to the seller?")) return;
+      }
       try {
         sellRequestAction.disabled = true;
         const data = await api(`/api/admin/sell-requests/${requestId}/${action}`, {
           method: "POST",
           admin: true,
-          body: JSON.stringify({ finalCoins, pickupNote }),
+          body: JSON.stringify({ finalCoins, pickupNote, note }),
         });
         const adminData = await api("/api/admin/dashboard", { admin: true });
         adminDashboard = adminData;
         await refreshCurrentWallet();
+        if (currentUser) {
+          const sellRequestData = await api("/api/sell-requests", { customer: true });
+          sellRequests = sellRequestData.sellRequests || [];
+        }
         renderAll();
         alert(`Sell request updated: ${data.sellRequest.id}`);
       } catch (error) {

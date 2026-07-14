@@ -2526,9 +2526,13 @@ async function handleApi(req, res) {
     }
 
     if (parts[4] === "reject") {
+      const rejectionReason = cleanText(body.note, 500, { multiline: true });
+      if (!rejectionReason) return sendError(res, 400, "Rejection reason is required");
       request.status = "rejected";
       request.rejectedAt = new Date().toISOString();
-      request.reviewNote = String(body.note || "").trim();
+      request.rejectionReason = rejectionReason;
+      // Keep reviewNote populated for compatibility with older clients and data exports.
+      request.reviewNote = rejectionReason;
       request.timeline = [...new Set([...(request.timeline || []), "rejected"])];
     }
 
@@ -2548,7 +2552,8 @@ async function handleApi(req, res) {
     recordAdminAudit(req, `admin.sell-request.${parts[4]}`, "success", {
       requestId: request.id,
       status: request.status,
-      finalCoins: Number(request.finalCoins || 0)
+      finalCoins: Number(request.finalCoins || 0),
+      rejectionReason: request.rejectionReason || ""
     });
     return sendJson(res, 200, { sellRequest: request, wallet: db.wallets[request.userId] });
   }
