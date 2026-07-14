@@ -6380,6 +6380,9 @@ function wireEvents() {
         successMessage.focus();
         successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+      alert(
+        `Your Join Us request has been submitted successfully.\n\nThank you for your interest in GIVE & TAKE. We will contact you soon.\n\nApplication ID: ${data.application.id}`
+      );
     } catch (error) {
       alert(error.message);
     } finally {
